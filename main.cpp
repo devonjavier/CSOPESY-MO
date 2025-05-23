@@ -4,6 +4,10 @@
 #include <thread>  // for future thread-safe tasks
 #include <chrono>
 #include <conio.h>
+#include <ctime>
+#include <iomanip> // idk
+#include <sstream> // idk
+#include <windows.h>
 
 void initialize();
 void screen_init();
@@ -12,6 +16,44 @@ void scheduler_stop();
 void report_util();
 void clear_screen();
 void exit_os(int status);
+void new_screen();
+int count_screen(Screen* head);
+
+struct Screen{
+    std::string name;
+    int current_line; // for logging
+    int total_lines; // for logging
+    time_t time_created = time(nullptr);
+
+    Screen(const std::string& screenName = "") 
+        : name(screenName), current_line(0), total_lines(0),
+          time_created(time(nullptr)), next(nullptr) {}
+
+    void declareTime() const {
+        std::tm* localTime = std::localtime(&time_created);
+        std::ostringstream oss;
+        oss << std::put_time(localTime, "%m/%d/%y, %I:%M:%S %p");
+    }
+
+    // std::string getCurrentTime() {
+    //     return time_created; 
+    // }
+
+    void load_screen() const {
+        clear_screen();
+
+
+        // screen input art
+
+        std::cout << "Screen Name : " << name << "\n";
+        std::cout << "Time Created: ";
+        std::cout << "Enter command her:";
+
+    };
+
+    struct Screen *next; // for linked list
+};
+
 
 /*
     BALINGIT, JAVIER, RAMOS, JIRO
@@ -26,21 +68,73 @@ void exit_os(int status);
 
 //TODO: Make everything thread safe
 
+
+Screen *head = nullptr; // head of the linked list
+
 int main() {
     std::string choice;
     bool OSrunning = true;
+
 
     while (OSrunning) {
 
         screen_init();
         std::getline(std::cin, choice);
 
+        // Tokenize input
+        std::istringstream iss(choice);
+        std::string command;
+        iss >> command;
+
         if (choice == "initialize") {
             std::cout << "Initialize command recognized. Doing something.\n";
             initialize();
         } else if (choice == "screen") {
             std::cout << "Screen command recognized. Doing something.\n";
-            screen_init();
+            
+            std::string option;
+            iss >> option;
+
+            if(option == "-s"){
+                std::string screen_name;
+                iss >> screen_name;
+
+                if(screen_name.empty()){
+                    std::cout << "Please provide a screen name.\n";
+                    continue;
+                } 
+
+                // Create a new screen node
+                Screen* new_screen = new Screen(screen_name);
+
+                
+                if (head == nullptr) {
+                    head = new_screen;
+                } else {
+                    Screen* temp = head;
+                    while (temp->next != nullptr) {
+                        temp = temp->next;
+                    }
+                    temp->next = new_screen;
+                }
+
+                std::string new_time = new_screen->getFormattedTime();
+                new_time = time(new_time);
+                new_screen->time_created = new_time;
+
+                std::cout << "Screen initialized with name: " << new_screen->name << "\n";
+
+                load_screen(new_screen->name);
+    
+            } else if (option == "-r"){
+                std::string screen_name;
+                iss >> screen_name;
+
+                load_screen(screen_name);
+            } else {
+                std::cout << "Invalid screen option. Use -s or -r.\n";
+            }
+
         } else if (choice == "scheduler-test") {
             std::cout << "Scheduler-test command recognized. Doing something.\n";
             scheduler_test();
@@ -78,6 +172,23 @@ int main() {
     exit_os(0);
     return 0;
 }
+
+int count_screen(Screen* head){
+    int n = 0;
+    while(head != nullptr){
+        n++;
+        head = head->next;
+    }
+    return n;
+}
+
+void new_screen(){
+
+    std::cout << "NEW SCREEN!\n";
+    
+}
+
+
 
 // 1. initialize()
 //  - sets up the basic hardware environment
