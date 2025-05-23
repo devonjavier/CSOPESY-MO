@@ -5,7 +5,7 @@
 #include <ctime>
 #include "screen.cpp"
 #include "header.h"
-ScreenSession *head = nullptr;
+ScreenSession *head = nullptr; // linked list head
 
 void initialize() {
         // Gemini example:
@@ -190,7 +190,6 @@ void new_screen(std::string name) {
             current_screen = current_screen->next;
         }
     }
-    
 
 }
 
