@@ -2,10 +2,10 @@
 #include <string>
 #include <cstdlib> // for system()
 #include <thread>  // for future thread-safe tasks
-#include <unordered_map>
 #include <ctime>
 #include "screen.cpp"
 #include "header.h"
+ScreenSession *head = nullptr;
 
 void initialize() {
         // Gemini example:
@@ -57,6 +57,7 @@ void scheduler_test() {
     std::cout << "Starting scheduler test... (simulated)\n";
     std::this_thread::sleep_for(std::chrono::seconds(1));
 }
+
 
 // 4. scheduler_stop()
 //    - stops scheduler
@@ -125,27 +126,118 @@ void exit_os(int status) {
     std::exit(status);
 }
 
+
+std::string get_timestamp() {
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    char buffer[100];
+    std::strftime(buffer, sizeof(buffer), "%m/%d/%Y, %I:%M:%S %p", std::localtime(&now_time));
+    return std::string(buffer);
+}
+
+
+
+
+void screen_session(ScreenSession& session) {
+    std::string command;
+    while (true) {
+        #ifdef _WIN32
+            std::system("cls");
+        #else
+            std::system("clear");
+        #endif
+        std::cout << "--- Process: " << session.name << " ---\n";
+        std::cout << "Instruction: " << session.current_line << " / " << session.total_lines << "\n";
+        std::cout << "Created: " << session.timestamp << "\n";
+        std::cout << "\nType 'exit' to return to main menu\n> ";
+        std::getline(std::cin, command);
+        bool exit = accept_input(command);
+
+        if(exit == true){
+            break;
+        }
+
+        // // Simulate instruction progression
+        // session.current_line = std::min(session.current_line + 1, session.total_lines);
+    }
+}
+
+
+void new_screen(std::string name) {
+
+    if (head == nullptr) {
+        head = new ScreenSession(name, 1, 50, get_timestamp()); // placeholder values
+        screen_session(*head);
+        return;
+    }
+
+    ScreenSession *current_screen = head;
+            
+    while(current_screen != nullptr){
+
+        if(current_screen->name == name){
+            std::cout << "Screen session with name '" << name << "' already exists.\n";
+            system("pause");
+            return;
+        } else if (current_screen->next == nullptr) {
+
+            ScreenSession *new_screen = new ScreenSession(name, 1, 50, get_timestamp()); //placeholder values
+            current_screen->next = new_screen;
+            screen_session(*new_screen);
+            return;
+            
+        } else {
+            current_screen = current_screen->next;
+        }
+    }
+    
+
+}
+
+void find_screen(std::string name) {
+    ScreenSession *current_screen = head;
+
+    while(current_screen->name != name){
+        current_screen = current_screen->next;
+    }
+    
+    if(current_screen == nullptr){
+        std::cout << "Screen session with name '" << name << "' not found.\n";
+        return;
+    }
+
+    screen_session(*current_screen);
+    
+}
+
+
 bool accept_input(std::string choice){
     bool exit = false;
-    if (choice == "initialize") {
+    if (choice == "^i") {
         std::cout << "Initialize command recognized. Doing something.\n";
         initialize();
-    } else if (choice == "scheduler-test") {
+        system("pause");
+    } else if (choice == "^g") {
         std::cout << "Scheduler-test command recognized. Doing something.\n";
         scheduler_test();
-    } else if (choice == "scheduler-stop") {
+        system("pause");
+    } else if (choice == "^s") {
         std::cout << "Scheduler-stop command recognized. Doing something.\n";
+      // debugging purposesl
         scheduler_stop();
-    } else if (choice == "report-util") {
+        system("pause");
+    } else if (choice == "^u") {
         std::cout << "Report-util command recognized. Doing something.\n";
         report_util();
-    } else if (choice == "clear") {
+        system("pause");
+    } else if (choice == "^c") {
         std::cout << "Clear command recognized. Doing something.\n";
         clear_screen();
-    } else if (choice == "exit") {
+        system("pause");
+    } else if (choice == "^e") {
         std::cout << "Exit command recognized. Exiting...\n";
         exit = true;
-    } else if (choice == "help") {
+    } else if (choice == "^h") {
         std::cout << "Help command recognized.\n";
         std::cout << "Available commands:\n";
         std::cout << "1. initialize - Initialize the OS environment.\n";
@@ -156,6 +248,7 @@ bool accept_input(std::string choice){
         std::cout << "6. clear - Clear the screen.\n";
         std::cout << "7. exit - Exit the OS.\n";
         std::cout << "8. help - Show this help message.\n";
+        system("pause");
     } 
 
     else if (choice.rfind("screen -s ", 0) == 0) {
@@ -172,15 +265,15 @@ bool accept_input(std::string choice){
     return exit;
 }
 
+
 void menu(){
-    screen_init();
     std::string choice;
+    ScreenSession *current_screen = nullptr;
 
     while(true){
         screen_init();
         std:getline(std::cin, choice);
         bool exit = accept_input(choice);
-
         if(exit == true){
             break;
         }

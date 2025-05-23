@@ -10,7 +10,7 @@ void scheduler_stop();
 void report_util();
 void clear_screen();
 void exit_os(int status);
-void accept_input();
+bool accept_input(std::string);
 void menu();
 
 #endif
