@@ -233,7 +233,7 @@ bool accept_input(std::string choice){
         std::cout << "Clear command recognized. Doing something.\n";
         clear_screen();
         system("pause");
-    } else if (choice == "^e") {
+    } else if (choice == "exit") {
         std::cout << "Exit command recognized. Exiting...\n";
         exit = true;
     } else if (choice == "^h") {
