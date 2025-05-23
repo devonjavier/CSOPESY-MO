@@ -33,8 +33,16 @@ struct ScreenSession {
     int current_line;
     int total_lines;
     std::string timestamp;
+    ScreenSession *next = nullptr;  // linked list
+
+    // constructor
+    ScreenSession(std::string n, int current_line, int total_lines, std::string timestamp)
+        : name(n), current_line(current_line), total_lines(total_lines), timestamp(timestamp) {}
+
+    
 };
-std::unordered_map<std::string, ScreenSession> screens;
+
+ScreenSession *head = nullptr;
 
 std::string get_timestamp() {
     auto now = std::chrono::system_clock::now();
@@ -58,6 +66,54 @@ void screen_session(ScreenSession& session) {
         // Simulate instruction progression
         session.current_line = std::min(session.current_line + 1, session.total_lines);
     }
+}
+
+void new_screen(std::string name) {
+
+    if (head == nullptr) {
+        head = new ScreenSession(name, 1, 50, get_timestamp()); // placeholder values
+        screen_session(*head);
+        return;
+    }
+    
+    ScreenSession *current_screen = head;
+            
+    while(current_screen != nullptr){
+
+        if(current_screen->name == name){
+            std::cout << "Screen session with name '" << name << "' already exists.\n";
+            system("pause");
+            return;
+        } else if (current_screen->next == nullptr) {
+
+            ScreenSession *new_screen = new ScreenSession(name, 1, 50, get_timestamp()); //placeholder values
+            current_screen->next = new_screen;
+            screen_session(*new_screen);
+             // START OF CHANGE CENTRALIZED INPUT TAKER TYPE SHII
+            return;
+            
+        } else {
+            current_screen = current_screen->next;
+        }
+    }
+    
+
+}
+
+void find_screen(std::string name) {
+    ScreenSession *current_screen = head;
+
+    while(current_screen->name != name){
+        current_screen = current_screen->next;
+    }
+    
+    if(current_screen == nullptr){
+        std::cout << "Screen session with name '" << name << "' not found.\n";
+        return;
+    }
+
+    screen_session(*current_screen);
+    
 }
 
 
@@ -106,35 +162,25 @@ int main() {
 
 
         else if (choice.rfind("screen -s ", 0) == 0) {
-            std::string name = choice.substr(10);  // get <name>
-            if (screens.find(name) == screens.end()) {
-                screens[name] = {name, 1, 50, get_timestamp()};
-            }
-            screen_session(screens[name]);
-            system("pause");
+            std::string name = choice.substr(10);
+            new_screen(name);
         }
         else if (choice.rfind("screen -r ", 0) == 0) {
             std::string name = choice.substr(10);  // get <name>
-            if (screens.find(name) != screens.end()) {
-                screen_session(screens[name]);
-            } else {
-                std::cout << "No screen named '" << name << "' exists.\n";
-            }
-            system("pause");
-        }
-        
-        
-        else {
+            find_screen(name);
+        } else {
             std::cout << "Unknown command: " << choice << "\n";
         }
 
-        system("pause");
+
         clear_screen();
     }
 
     exit_os(0);
     return 0;
 }
+
+
 
 // 1. initialize()
 //  - sets up the basic hardware environment
