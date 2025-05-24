@@ -202,6 +202,7 @@ void find_screen(std::string name) {
     
     if(current_screen == nullptr){
         std::cout << "Screen session with name '" << name << "' not found.\n";
+        system("pause");
         return;
     }
 
