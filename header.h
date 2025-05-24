@@ -10,7 +10,7 @@ void scheduler_stop();
 void report_util();
 void clear_screen();
 void exit_os(int status);
-bool accept_input(std::string);
+bool accept_input(std::string, ScreenSession*);
 void menu();
 
 #endif

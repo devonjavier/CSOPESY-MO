@@ -4,8 +4,8 @@
 
 struct ScreenSession {
     std::string name;
-    int current_line;
-    int total_lines;
+    int current_line = 0;
+    int total_lines = 0;
     std::string timestamp;
     ScreenSession *next = nullptr;  // linked list
 

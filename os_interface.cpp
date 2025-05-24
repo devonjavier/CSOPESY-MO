@@ -151,7 +151,7 @@ void screen_session(ScreenSession& session) {
         std::cout << "Created: " << session.timestamp << "\n";
         std::cout << "\nType 'exit' to return to main menu\n> ";
         std::getline(std::cin, command);
-        bool exit = accept_input(command);
+        bool exit = accept_input(command, &session);
 
         if(exit == true){
             break;
@@ -211,28 +211,33 @@ void find_screen(std::string name) {
 }
 
 
-bool accept_input(std::string choice){
+bool accept_input(std::string choice, ScreenSession *current_screen){
     bool exit = false;
     if (choice == "^i") {
         std::cout << "Initialize command recognized. Doing something.\n";
         initialize();
+        if (current_screen) current_screen->current_line++;
         system("pause");
     } else if (choice == "^g") {
         std::cout << "Scheduler-test command recognized. Doing something.\n";
         scheduler_test();
+        if (current_screen) current_screen->current_line++;
         system("pause");
     } else if (choice == "^s") {
         std::cout << "Scheduler-stop command recognized. Doing something.\n";
       // debugging purposesl
         scheduler_stop();
+        if (current_screen) current_screen->current_line++;
         system("pause");
     } else if (choice == "^u") {
         std::cout << "Report-util command recognized. Doing something.\n";
         report_util();
+        if (current_screen) current_screen->current_line++;
         system("pause");
     } else if (choice == "^c") {
         std::cout << "Clear command recognized. Doing something.\n";
         clear_screen();
+        if (current_screen) current_screen->current_line++;
         system("pause");
     } else if (choice == "exit") {
         std::cout << "Exit command recognized. Exiting...\n";
@@ -248,7 +253,9 @@ bool accept_input(std::string choice){
         std::cout << "6. clear - Clear the screen.\n";
         std::cout << "7. exit - Exit the OS.\n";
         std::cout << "8. help - Show this help message.\n";
+        if (current_screen) current_screen->current_line++;
         system("pause");
+
     } 
 
     else if (choice.rfind("screen -s ", 0) == 0) {
@@ -272,7 +279,7 @@ void menu(){
     while(true){
         screen_init();
         std:getline(std::cin, choice);
-        bool exit = accept_input(choice);
+        bool exit = accept_input(choice, nullptr);
         if(exit == true){
             break;
         }
