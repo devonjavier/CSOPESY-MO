@@ -267,7 +267,6 @@ bool accept_input(std::string choice){
 
 void menu(){
     std::string choice;
-    ScreenSession *current_screen = nullptr;
 
     while(true){
         screen_init();
