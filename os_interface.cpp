@@ -196,7 +196,7 @@ void new_screen(std::string name) {
 void find_screen(std::string name) {
     ScreenSession *current_screen = head;
 
-    while(current_screen->name != name){
+    while(current_screen != nullptr && current_screen->name != name){
         current_screen = current_screen->next;
     }
     
