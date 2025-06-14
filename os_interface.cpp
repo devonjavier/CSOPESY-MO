@@ -3,9 +3,22 @@
 #include <cstdlib> // for system()
 #include <thread>  // for future thread-safe tasks
 #include <ctime>
-#include "screen.cpp"
+#include "classes/screen.cpp"
 #include "header.h"
+#include "config.cpp"
+#include <vector>
+#include <thread>
+#include <mutex>
+#include <atomic>
+
 ScreenSession *head = nullptr; // linked list head
+
+config configs("src/config.json");
+
+int num_cores = configs.getCores();
+int num_processes = configs.getProcesses();
+std::atomic<int> file_count(0);
+std::mutex file_mutex;
 
 void initialize() {
         // Gemini example:
@@ -47,16 +60,6 @@ void screen_init() {
 //
 //    - starts the scheduler
 //
-void scheduler_test() {
-    // TODO: Need randomization of threads 
-    // TODO: Process creation itself
-    // create_process("test_process_1", test_process_1_function, PRIORITY_HIGH);
-    // create_process("test_process_2", test_process_2_function, PRIORITY_LOW);
-    // create_process("test_process_3", test_process_3_function, PRIORITY_MEDIUM);
-    // start_scheduler();
-    std::cout << "Starting scheduler test... (simulated)\n";
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-}
 
 
 // 4. scheduler_stop()
@@ -136,6 +139,53 @@ std::string get_timestamp() {
 }
 
 
+void generate_file(int core_id){
+    while(true){
+        int current_file = file_count.fetch_add(1);
+        if(current_file >= num_processes){
+            return;
+        }
+
+        std::string filename = "process_file_" + std::to_string(current_file) + "id_" + std::to_string(core_id) + ".txt";
+        std::ofstream outfile(filename);
+
+        for (int i = 0; i < 100; ++i) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Simulate work
+            std::string timestamp = get_timestamp();
+            outfile << "(" << timestamp << ") "
+                    << "Core: " << core_id << " - "
+                    << "\"Hello world from " << filename << "!\"\n";
+        }
+
+        outfile.close();
+        std::lock_guard<std::mutex> lock(file_mutex);
+        std::cout << "Finished " << filename << " on Core " << core_id << "\n";
+
+    }
+}
+
+
+void start_file_generation() {
+    std::cout << "Generating files using " << num_cores << " cores...\n";
+    std::vector<std::thread> threads;
+
+    for (int i = 0; i < num_cores; ++i) {
+        threads.emplace_back(generate_file, i);
+    }
+
+    for (auto& t : threads) {
+        t.join();
+    }
+
+    std::cout << "All files generated.\n";
+}
+
+void scheduler_test() {
+    std::cout << "Starting scheduler test...\n";
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    start_file_generation();
+    file_count = 0;
+}
 
 
 void screen_session(ScreenSession& session) {

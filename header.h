@@ -13,4 +13,7 @@ void exit_os(int status);
 bool accept_input(std::string, ScreenSession*);
 void menu();
 
+
+
+
 #endif
