@@ -1,0 +1,6 @@
+{
+  "configurations": {
+    "cores": 4,
+    "processes": 100
+  }
+}
