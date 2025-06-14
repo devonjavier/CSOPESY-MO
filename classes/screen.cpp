@@ -2,15 +2,16 @@
 #include <chrono>
 #include <iostream>
 
-struct ScreenSession {
+class ScreenSession {
+public:
     std::string name;
-    int current_line = 0;
-    int total_lines = 0;
+    int current_line;
+    int total_lines;
     std::string timestamp;
-    ScreenSession *next = nullptr;  // linked list
+    bool finished = false; // New flag to track if the session is done
+    ScreenSession* next;
 
-    // constructor
-    ScreenSession(std::string n, int current_line, int total_lines, std::string timestamp)
-        : name(n), current_line(current_line), total_lines(total_lines), timestamp(timestamp) {}
+    ScreenSession(std::string n, int curr, int total, std::string time)
+        : name(n), current_line(curr), total_lines(total), timestamp(time), next(nullptr) {}
 };
 

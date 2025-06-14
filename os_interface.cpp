@@ -11,6 +11,20 @@
 #include <mutex>
 #include <atomic>
 
+struct ProcessInfo {
+    int id;
+    std::string filename;
+    std::string status; // "Running" or "Finished"
+    std::thread::id thread_id;
+    int thread_index;
+    std::string start_time;
+    std::string end_time;
+};
+
+std::vector<ProcessInfo> processes;
+std::mutex process_mutex;
+
+
 ScreenSession *head = nullptr; // linked list head
 
 config configs("src/config.json");
@@ -81,9 +95,8 @@ void scheduler_stop() {
 void report_util() {
     std::cout << "Memory Usage: __ / __ KB\n";
     std::cout << "CPU Usage: __%\n";
-    std::cout << "Running Processes:\n";
-    // Placeholder for process list
 }
+
 
 // 6. clear_screen()
 //    - clears the entire terminal screen
@@ -140,27 +153,37 @@ std::string get_timestamp() {
 
 
 void generate_file(int core_id){
-    while(true){
-        int current_file = file_count.fetch_add(1);
-        if(current_file >= num_processes){
-            return;
+    int current_file = file_count.fetch_add(1);
+    if (current_file >= num_processes) return;
+
+    std::string filename = "process_file_" + std::to_string(current_file) + "_id_" + std::to_string(core_id) + ".txt";
+    std::string start_time = get_timestamp();
+
+    {
+        std::lock_guard<std::mutex> lock(process_mutex);
+        processes.push_back({current_file, filename, "Running", std::this_thread::get_id(), core_id, start_time, ""});
+
+    }
+
+    std::ofstream outfile(filename);
+    for (int i = 0; i < 100; ++i) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Simulate work
+        std::string timestamp = get_timestamp();
+        outfile << "(" << timestamp << ") "
+                << "Core: " << core_id << " - "
+                << "\"Hello world from " << filename << "!\"\n";
+    }
+    outfile.close();
+
+    {
+        std::lock_guard<std::mutex> lock(process_mutex);
+        for (auto& p : processes) {
+            if (p.filename == filename) {
+                p.status = "Finished";
+                p.end_time = get_timestamp();
+                break;
+            }
         }
-
-        std::string filename = "process_file_" + std::to_string(current_file) + "id_" + std::to_string(core_id) + ".txt";
-        std::ofstream outfile(filename);
-
-        for (int i = 0; i < 100; ++i) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Simulate work
-            std::string timestamp = get_timestamp();
-            outfile << "(" << timestamp << ") "
-                    << "Core: " << core_id << " - "
-                    << "\"Hello world from " << filename << "!\"\n";
-        }
-
-        outfile.close();
-        std::lock_guard<std::mutex> lock(file_mutex);
-        std::cout << "Finished " << filename << " on Core " << core_id << "\n";
-
     }
 }
 
@@ -170,7 +193,13 @@ void start_file_generation() {
     std::vector<std::thread> threads;
 
     for (int i = 0; i < num_cores; ++i) {
-        threads.emplace_back(generate_file, i);
+        threads.emplace_back([i]() {
+            while (true) {
+                int current_file = file_count.load();
+                if (current_file >= num_processes) break;
+                generate_file(i); // core ID remains same
+            }
+        });
     }
 
     for (auto& t : threads) {
@@ -180,12 +209,19 @@ void start_file_generation() {
     std::cout << "All files generated.\n";
 }
 
+
 void scheduler_test() {
     std::cout << "Starting scheduler test...\n";
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    start_file_generation();
-    file_count = 0;
+    file_count = 0;  
+    std::thread background_task([](){
+        start_file_generation();
+    });
+
+    background_task.detach();
+    std::cout << "File generation started in background.\n";
 }
+
+
 
 
 void screen_session(ScreenSession& session) {
@@ -315,6 +351,24 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
     else if (choice.rfind("screen -r ", 0) == 0) {
         std::string name = choice.substr(10);  // get <name>
         find_screen(name);
+    } else if(choice.rfind("screen -ls", 0) == 0) {
+        std::cout << "\nBackground Processes:\n";
+        std::lock_guard<std::mutex> lock(process_mutex);
+
+        if (processes.empty()) {
+            std::cout << "No background processes.\n";
+        } else {
+            for (const auto& proc : processes) {
+                std::cout << "ID: " << proc.id << "\n"
+                        << "File: " << proc.filename << "\n"
+                        << "Status: " << proc.status << "\n"
+                        << "Thread ID: " << proc.thread_id << "\n"
+                        << "Started: " << proc.start_time << "\n"
+                        << "Ended: " << (proc.status == "Finished" ? proc.end_time : "N/A") << "\n\n";
+            }
+        }
+
+        system("pause");
     } else {
         std::cout << "Unknown command: " << choice << "\n";
     }
