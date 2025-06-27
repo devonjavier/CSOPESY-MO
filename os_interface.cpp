@@ -13,29 +13,6 @@
 #include <fstream>
 #include <sstream>
 
-std::vector<Process> processes;
-std::mutex process_mutex;
-
-
-ScreenSession *head = nullptr; // linked list head
-
-
-
-
-//to remove
-// config configs("src/config.json");
-
-// int num_cores = configs.getCores();
-// int num_processes = configs.getProcesses();
-// std::atomic<int> file_count(0);
-// std::mutex file_mutex;
-
-
-
-
-
-
-
 
 //initialization of variables
 int num_cpu = 0;
@@ -52,7 +29,8 @@ bool scheduler_running = false;
 //initialization of queues
 std::deque<Process> ready_queue;
 
-
+//initialization of Screens and Processes Lists
+ScreenSession *head = nullptr; // linked list head
 ProcessManager* processManager = nullptr;
 
 
@@ -74,16 +52,16 @@ void run_fcfs_scheduler() {
             {
                 std::lock_guard<std::mutex> lock(process_mutex);
                 proc.setState(ProcessState::RUNNING);
-                proc.start_time = proc.getStartTime();
-                proc.thread_id = std::this_thread::get_id();
+                // proc.start_time = proc.getStartTime();
+                // proc.thread_id = std::this_thread::get_id();
             }
 
             std::this_thread::sleep_for(std::chrono::seconds(2)); // simulate processing
 
             {
                 std::lock_guard<std::mutex> lock(process_mutex);
-                proc.status = "Finished";
-                proc.end_time = get_timestamp();
+                proc.setState(ProcessState::RUNNING);
+                // proc.end_time = get_timestamp();
             }
 
         }).detach();
