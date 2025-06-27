@@ -27,7 +27,6 @@ class Process {
     private:
         int pid;
         std::string process_name;
-        int priority;
         int burst_time;
         int remaining_burst_time;
         int waiting_time;
@@ -39,8 +38,8 @@ class Process {
 
 
     public:
-        Process(int id, const std::string& name, int prio, int burst, int core)
-            : pid(id), process_name(name), priority(prio), burst_time(burst), 
+        Process(int id, const std::string& name, int burst)
+            : pid(id), process_name(name), burst_time(burst), 
               remaining_burst_time(burst), waiting_time(0), turnaround_time(0),
               current_core_id(-1), state(ProcessState::IDLE) {}
 
@@ -53,9 +52,6 @@ class Process {
         }
         std::string getProcessName() const {
             return process_name;
-        }
-        int getPriority() const {
-            return priority;
         }
         int getBurstTime() const {
             return burst_time;
