@@ -3,23 +3,20 @@
 #include <iostream>
 
 enum class ProcessState{
-    NONE,
+    IDLE,
     WAITING,
     RUNNING,
-    COMPLETED,
     FINISHED
 };
 
 std::string processStateToString(ProcessState state) { 
     switch(state) {
-        case ProcessState::NONE:
-            return "NONE";
+        case ProcessState::IDLE:
+            return "IDLE";
         case ProcessState::WAITING:
             return "WAITING";
         case ProcessState::RUNNING:
             return "RUNNING";
-        case ProcessState::COMPLETED:
-            return "COMPLETED";
         case ProcessState::FINISHED:
             return "FINISHED";
         default: return "UNKNOWN";
@@ -45,7 +42,7 @@ class Process {
         Process(int id, const std::string& name, int prio, int burst, int core)
             : pid(id), process_name(name), priority(prio), burst_time(burst), 
               remaining_burst_time(burst), waiting_time(0), turnaround_time(0),
-              current_core_id(core), state(ProcessState::WAITING) {}
+              current_core_id(core), state(ProcessState::IDLE) {}
 
 
         //TODO / To think about lmfao
