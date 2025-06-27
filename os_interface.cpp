@@ -5,26 +5,15 @@
 #include <ctime>
 #include "classes/screen.cpp"
 #include "header.h"
-#include "config.cpp"
 #include <vector>
 #include <thread>
 #include <mutex>
 #include <atomic>
-
+#include "ProcessManager.cpp"
 #include <fstream>
 #include <sstream>
 
-struct ProcessInfo {
-    int id;
-    std::string filename;
-    std::string status; // "Running" or "Finished"
-    std::thread::id thread_id;
-    int thread_index;
-    std::string start_time;
-    std::string end_time;
-};
-
-std::vector<ProcessInfo> processes;
+std::vector<Process> processes;
 std::mutex process_mutex;
 
 
@@ -56,6 +45,18 @@ int batchprocess_freq = 0;
 int min_ins = 0;
 int max_ins = 0;
 int delays_perexec = 0;
+
+ProcessManager* processManager = nullptr;
+
+
+std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
+    if (tp.time_since_epoch().count() == 0) return "N/A";
+    std::time_t tt = std::chrono::system_clock::to_time_t(tp);
+    char buffer[100];
+    std::strftime(buffer, sizeof(buffer), "%d/%m/%Y %I:%M:%S%p", std::localtime(&tt));
+    return std::string(buffer);
+}
+
 
 
 void initialize() {
@@ -127,7 +128,9 @@ void initialize() {
         } else if (key == "delays-perexec") {
             iss >> delays_perexec;
         }
-    }
+    }   
+
+    processManager = new ProcessManager(scheduler, quantumcycles);
 
     config.close();
 }
@@ -458,12 +461,13 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
             std::cout << "No background processes.\n";
         } else {
             for (const auto& proc : processes) {
-                std::cout << "ID: " << proc.id << "\n"
-                        << "File: " << proc.filename << "\n"
-                        << "Status: " << proc.status << "\n"
-                        << "Thread ID: " << proc.thread_id << "\n"
-                        << "Started: " << proc.start_time << "\n"
-                        << "Ended: " << (proc.status == "Finished" ? proc.end_time : "N/A") << "\n\n";
+                std::cout << "ID: " << proc.getPid() << "\n"
+                        << "Name: " << proc.getProcessName() << "\n"
+                        << "Priority: " << proc.getPriority() << "\n"
+                        << "Status: " << processStateToString(proc.getState()) << "\n"
+                        << "Thread/Core ID: " << proc.getCurrentCoreId() << "\n"
+                        << "Started: " << formatTime(proc.getStartTime()) << "\n"
+                        << "Ended: " << (proc.getState() == ProcessState::FINISHED ? formatTime(proc.getEndTime()) : "N/A") << "\n\n";
             }
         }
 
@@ -482,7 +486,7 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
 
 void menu(){
     std::string choice;
-    
+
     while(true){
         screen_init();
         std:getline(std::cin, choice);

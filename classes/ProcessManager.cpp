@@ -4,7 +4,7 @@
 #include <vector>
 #include <thread>
 
-class ProcessMangager { 
+class ProcessManager { 
 
     private:
     std::queue<Process> processQueue; 
@@ -14,7 +14,7 @@ class ProcessMangager {
     int quantumCycles; 
 
     public:
-    ProcessMangager(const std::string& scheduler, int quantum) 
+    ProcessManager(const std::string& scheduler, int quantum) 
         : schedulerType(scheduler), quantumCycles(quantum) {}
 
     void addProcess(const Process& process) {

@@ -37,8 +37,11 @@ class Process {
         int waiting_time;
         int turnaround_time;
         std::chrono::time_point<std::chrono::system_clock> start_time;
+        std::chrono::time_point<std::chrono::system_clock> end_time;
         int current_core_id;
         ProcessState state;
+
+
     
     public:
         Process(int id, const std::string& name, int prio, int burst)
@@ -46,6 +49,7 @@ class Process {
               remaining_burst_time(burst), waiting_time(0), turnaround_time(0),
               current_core_id(-1), state(ProcessState::NONE) {
             start_time = std::chrono::system_clock::now();
+            end_time = std::chrono::system_clock::time_point{};
         }
 
         int getPid() const {
@@ -71,6 +75,9 @@ class Process {
         }
         std::chrono::time_point<std::chrono::system_clock> getStartTime() const {
             return start_time;
+        }
+        std::chrono::time_point<std::chrono::system_clock> getEndTime() const {
+            return end_time;
         }
         int getCurrentCoreId() const {
             return current_core_id;
@@ -107,6 +114,14 @@ class Process {
                 this->start_time.time_since_epoch().count() == 0) { // Check if start_time is uninitialized
                 this->start_time = std::chrono::system_clock::now();
             }
+        }
+
+        std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
+            if (tp.time_since_epoch().count() == 0) return "N/A";
+            std::time_t tt = std::chrono::system_clock::to_time_t(tp);
+            char buffer[100];
+            std::strftime(buffer, sizeof(buffer), "%d/%m/%Y %I:%M:%S%p", std::localtime(&tt));
+            return std::string(buffer);
         }
 
         // void displayProcess() const {
