@@ -3,6 +3,9 @@
 #include <string>
 #include <vector>
 #include <thread>
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
 
 class ProcessManager { 
 
@@ -10,6 +13,10 @@ class ProcessManager {
     std::queue<Process> processQueue; 
     std::vector<Process> runningProcesses;
     std::vector<Process> completedProcesses;
+    std::vector<std::thread> workerThreads;
+    std::atomic<bool> schedulerRunning{false};
+    std::mutex queueMutex;
+    std::condition_variable queueCV;
     std::string schedulerType; 
     int quantumCycles; 
 
