@@ -152,7 +152,7 @@ void screen_init() {
     std::cout << "Please enter a command:\n";
 }
 
-// 3. scheduler_test()
+// 3. scheduler_start()
 //    - set up a test environment for the scheduler
 //    - create several test processes or threads
 //    - according to the zoom kanina, each test process/thread will do some simple task
@@ -295,7 +295,7 @@ std::string get_timestamp() {
 // }
 
 
-void scheduler_test() {
+void scheduler_start() {
     std::cout << "Starting scheduler test...\n";
     // file_count = 0;
     // std::thread background_task([](){
@@ -384,28 +384,39 @@ void find_screen(std::string name) {
 
 bool accept_input(std::string choice, ScreenSession *current_screen){
     bool exit = false;
-    if (choice == "^i") {
-        std::cout << "Initialize command recognized. Doing something.\n";
+    if (choice == "initialize") {
+        // initialize os env
+
+        std::cout << std::endl << std::endl;
+
+        std::cout << "Initialized configuration: \nCPU Cores: " << num_cpu << "\n";
+        std::cout << "Scheduler: " << scheduler << "\n";
+        std::cout << "Quantum Cycles: " << quantumcycles << "\n";
+        std::cout << "Batch Process Frequency: " << batchprocess_freq << "\n";
+        std::cout << "Min Instructions: " << min_ins << "\n";
+        std::cout << "Max Instructions: " << max_ins << "\n";
+        std::cout << "Delays per Execution: " << delays_perexec << "\n";
+        
         initialize();
         if (current_screen) current_screen->current_line++;
         system("pause");
-    } else if (choice == "^g") {
+    } else if (choice == "scheduler-start") {
         std::cout << "Scheduler-test command recognized. Doing something.\n";
-        scheduler_test();
+        scheduler_start();
         if (current_screen) current_screen->current_line++;
         system("pause");
-    } else if (choice == "^s") {
+    } else if (choice == "scheduler-stop") {
         std::cout << "Scheduler-stop command recognized. Doing something.\n";
       // debugging purposesl
         scheduler_stop();
         if (current_screen) current_screen->current_line++;
         system("pause");
-    } else if (choice == "^u") {
+    } else if (choice == "report-util") {
         std::cout << "Report-util command recognized. Doing something.\n";
         report_util();
         if (current_screen) current_screen->current_line++;
         system("pause");
-    } else if (choice == "^c") {
+    } else if (choice == "clear") {
         std::cout << "Clear command recognized. Doing something.\n";
         clear_screen();
         if (current_screen) current_screen->current_line++;
@@ -413,7 +424,7 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
     } else if (choice == "exit") {
         std::cout << "Exit command recognized. Exiting...\n";
         exit = true;
-    } else if (choice == "^h") {
+    } else if (choice == "help") {
         std::cout << "Help command recognized.\n";
         std::cout << "Available commands:\n";
         std::cout << "1. initialize - Initialize the OS environment.\n";
@@ -471,7 +482,7 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
 
 void menu(){
     std::string choice;
-
+    
     while(true){
         screen_init();
         std:getline(std::cin, choice);
