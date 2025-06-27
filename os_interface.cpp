@@ -46,6 +46,13 @@ int min_ins = 0;
 int max_ins = 0;
 int delays_perexec = 0;
 
+//initialization of flags
+bool scheduler_running = false;
+
+//initialization of queues
+std::deque<Process> ready_queue;
+
+
 ProcessManager* processManager = nullptr;
 
 
@@ -55,6 +62,72 @@ std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>&
     char buffer[100];
     std::strftime(buffer, sizeof(buffer), "%d/%m/%Y %I:%M:%S%p", std::localtime(&tt));
     return std::string(buffer);
+}
+
+
+void run_fcfs_scheduler() {
+    while (scheduler_running && !ready_queue.empty()) {
+        Process proc = ready_queue.front();
+        ready_queue.pop_front();
+
+        std::thread([proc]() mutable {
+            {
+                std::lock_guard<std::mutex> lock(process_mutex);
+                proc.setState(ProcessState::RUNNING);
+                proc.start_time = proc.getStartTime();
+                proc.thread_id = std::this_thread::get_id();
+            }
+
+            std::this_thread::sleep_for(std::chrono::seconds(2)); // simulate processing
+
+            {
+                std::lock_guard<std::mutex> lock(process_mutex);
+                proc.status = "Finished";
+                proc.end_time = get_timestamp();
+            }
+
+        }).detach();
+        std::this_thread::sleep_for(std::chrono::seconds(1)); // scheduler delay
+    }
+}
+
+
+void run_rr_scheduler() {
+    while (scheduler_running && !ready_queue.empty()) {
+        ProcessInfo proc = ready_queue.front();
+        ready_queue.pop_front();
+
+        std::thread([proc]() mutable {
+            {
+                std::lock_guard<std::mutex> lock(process_mutex);
+                proc.status = "Running";
+                proc.start_time = get_timestamp();
+                proc.thread_id = std::this_thread::get_id();
+            }
+
+            std::this_thread::sleep_for(std::chrono::seconds(quantumcycles));
+
+            {
+                std::lock_guard<std::mutex> lock(process_mutex);
+                proc.status = "Finished";
+                proc.end_time = get_timestamp();
+            }
+
+        }).detach();
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+}
+
+void generate_random_processes() {
+    static int next_id = 1;
+    for (int i = 0; i < batchprocess_freq; ++i) {
+        Process proc = Process(next_id++, "process" + std::to_string(next_id), int prio, int burst, int core)
+        // proc.id = next_id++;
+        // proc.filename = "process" + std::to_string(proc.id);
+        // proc.status = "Waiting";
+        ready_queue.push_back(proc);
+        processes.push_back(proc);
+    }
 }
 
 
@@ -161,7 +234,27 @@ void screen_init() {
 //    - according to the zoom kanina, each test process/thread will do some simple task
 //
 //    - starts the scheduler
-//
+void scheduler_start() {
+    std::cout << "Starting scheduler test...\n";
+    // file_count = 0;
+    // std::thread background_task([](){
+    //     start_file_generation();
+    // });
+
+    // background_task.detach();
+    // std::cout << "File generation started in background.\n";
+
+    scheduler_running = true;
+    while (scheduler_running) {
+        generate_random_processes();
+        if (scheduler == "fcfs") {
+            run_fcfs_scheduler();
+        } else if (scheduler == "rr") {
+            run_rr_scheduler();
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+    }
+}
 
 
 // 4. scheduler_stop()
@@ -170,6 +263,7 @@ void screen_init() {
 //        - disabling interrupts
 //        - setting the CPU to a known state
 void scheduler_stop() {
+    scheduler_running = false;
     std::cout << "Scheduler stopped.\n";
 }
 
@@ -180,11 +274,18 @@ void scheduler_stop() {
 //        - Running processes/threads
 //        - System uptime
 //        - Error logs
+
 void report_util() {
+    std::ofstream log("csopesy-log.txt", std::ios::app);
+    log << "===== Report (" << get_timestamp() << ") =====\n";
+
+    //write the same stats as screen-ls
     std::cout << "Memory Usage: __ / __ KB\n";
     std::cout << "CPU Usage: __%\n";
-}
 
+    log.close();
+    std::cout << "System report saved to csopesy-log.txt\n";
+}
 
 // 6. clear_screen()
 //    - clears the entire terminal screen
@@ -238,7 +339,6 @@ std::string get_timestamp() {
     std::strftime(buffer, sizeof(buffer), "%m/%d/%Y, %I:%M:%S %p", std::localtime(&now_time));
     return std::string(buffer);
 }
-
 
 // void generate_file(int core_id){
 //     int current_file = file_count.fetch_add(1);
@@ -296,21 +396,6 @@ std::string get_timestamp() {
 
 //     std::cout << "All files generated.\n";
 // }
-
-
-void scheduler_start() {
-    std::cout << "Starting scheduler test...\n";
-    // file_count = 0;
-    // std::thread background_task([](){
-    //     start_file_generation();
-    // });
-
-    // background_task.detach();
-    // std::cout << "File generation started in background.\n";
-}
-
-
-
 
 void screen_session(ScreenSession& session) {
     std::string command;
@@ -476,6 +561,8 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         system("pause");
 
         
+    } else if (choice == "^g") {
+        std::thread(scheduler_start).detach();
     } else {
         std::cout << "Unknown command: " << choice << "\n";
     }
