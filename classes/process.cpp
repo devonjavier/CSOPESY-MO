@@ -42,7 +42,7 @@ class Process {
         Process(int id, const std::string& name, int prio, int burst, int core)
             : pid(id), process_name(name), priority(prio), burst_time(burst), 
               remaining_burst_time(burst), waiting_time(0), turnaround_time(0),
-              current_core_id(core), state(ProcessState::IDLE) {}
+              current_core_id(-1), state(ProcessState::IDLE) {}
 
 
         //TODO / To think about lmfao
@@ -104,10 +104,11 @@ class Process {
         // }
 
         // void setState(ProcessState newState, int coreId = -1) {
-        void setState(ProcessState newState, int coreId) {
+        // void setState(ProcessState newState, int coreId) {
+        void setState(ProcessState newState) {
             this->state = newState;
-            this->current_core_id = coreId;
-            if (newState == ProcessState::RUNNING && coreId != -1 &&
+            // this->current_core_id = coreId;
+            if (newState == ProcessState::RUNNING && //coreId != -1 &&
                 this->start_time.time_since_epoch().count() == 0) { // Check if start_time is uninitialized
                 this->start_time = std::chrono::system_clock::now();
             }

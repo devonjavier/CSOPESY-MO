@@ -33,6 +33,9 @@ std::deque<Process> ready_queue;
 ScreenSession *head = nullptr; // linked list head
 ProcessManager* processManager = nullptr;
 
+std::vector<Process> processes;
+std::mutex process_mutex;
+
 
 std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
     if (tp.time_since_epoch().count() == 0) return "N/A";
@@ -60,7 +63,7 @@ void run_fcfs_scheduler() {
 
             {
                 std::lock_guard<std::mutex> lock(process_mutex);
-                proc.setState(ProcessState::RUNNING);
+                proc.setState(ProcessState::FINISHED);
                 // proc.end_time = get_timestamp();
             }
 
@@ -72,23 +75,24 @@ void run_fcfs_scheduler() {
 
 void run_rr_scheduler() {
     while (scheduler_running && !ready_queue.empty()) {
-        ProcessInfo proc = ready_queue.front();
+        Process proc = ready_queue.front();
         ready_queue.pop_front();
 
         std::thread([proc]() mutable {
             {
                 std::lock_guard<std::mutex> lock(process_mutex);
-                proc.status = "Running";
-                proc.start_time = get_timestamp();
-                proc.thread_id = std::this_thread::get_id();
+                proc.setState(ProcessState::RUNNING);
+                // proc.start_time = get_timestamp();
+                // proc.thread_id = std::this_thread::get_id();
             }
 
             std::this_thread::sleep_for(std::chrono::seconds(quantumcycles));
 
             {
                 std::lock_guard<std::mutex> lock(process_mutex);
-                proc.status = "Finished";
-                proc.end_time = get_timestamp();
+                proc.setState(ProcessState::FINISHED);
+                // proc.status = "Finished";
+                // proc.end_time = get_timestamp();
             }
 
         }).detach();
@@ -99,7 +103,7 @@ void run_rr_scheduler() {
 void generate_random_processes() {
     static int next_id = 1;
     for (int i = 0; i < batchprocess_freq; ++i) {
-        Process proc = Process(next_id++, "process" + std::to_string(next_id), int prio, int burst, int core)
+        Process proc = Process(next_id++, "process" + std::to_string(next_id), int prio, int burst)
         // proc.id = next_id++;
         // proc.filename = "process" + std::to_string(proc.id);
         // proc.status = "Waiting";
