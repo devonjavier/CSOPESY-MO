@@ -11,6 +11,9 @@
 #include <mutex>
 #include <atomic>
 
+#include <fstream>
+#include <sstream>
+
 struct ProcessInfo {
     int id;
     std::string filename;
@@ -27,12 +30,34 @@ std::mutex process_mutex;
 
 ScreenSession *head = nullptr; // linked list head
 
+
+
+
+//to remove
+
 config configs("src/config.json");
 
 int num_cores = configs.getCores();
 int num_processes = configs.getProcesses();
 std::atomic<int> file_count(0);
 std::mutex file_mutex;
+
+
+
+
+
+
+
+
+//initialization of variables
+int num_cpu = 0;
+std::string scheduler = "";
+int quantumcycles = 0;
+int batchprocess_freq = 0;
+int min_ins = 0;
+int max_ins = 0;
+int delays_perexec = 0;
+
 
 void initialize() {
         // Gemini example:
@@ -45,6 +70,67 @@ void initialize() {
 
         // Basic memory setup (e.g., identity mapping)
         // memory_init();
+
+    std::ifstream config("config.txt");
+    if (!config.is_open()) {
+        std::cerr << "Error: Could not open config.txt" << std::endl;
+        return;
+    }
+
+    std::string line;
+    while (std::getline(config, line)) {
+        std::istringstream iss(line);
+        std::string key;
+        if (!(iss >> key)) continue; // Skip empty lines
+
+        if (key == "num-cpu") {
+            iss >> num_cpu;
+            if (num_cpu < 1 || num_cpu > 128) {
+                std::cerr << "Invalid num-cpu value. Must be in [1,128]." << std::endl;
+            }
+        } else if (key == "scheduler") {
+            std::string rest;
+            std::getline(iss, rest);
+            std::istringstream rest_iss(rest);
+            rest_iss >> scheduler;
+
+            if (scheduler != "fcfs" && scheduler != "rr") {
+                std::cerr << "Invalid scheduler value. Must be 'fcfs' or 'rr'." << std::endl;
+            }
+
+            // Optional: print what's after "scheduler"
+            std::string remaining_args;
+            std::getline(rest_iss, remaining_args);
+            if (!remaining_args.empty()) {
+                std::cout << "Extra arguments after scheduler: " << remaining_args << std::endl;
+            }
+
+        } else if (key == "quantumcycles") {
+            iss >> quantumcycles;
+            if (quantumcycles < 1) {
+                std::cerr << "Invalid quantumcycles value. Must be >=1." << std::endl;
+            }
+        } else if (key == "batchprocess-freq") {
+            iss >> batchprocess_freq;
+            if (batchprocess_freq < 1) {
+                std::cerr << "Invalid batchprocess-freq value. Must be >=1." << std::endl;
+            }
+        } else if (key == "min-ins") {
+            iss >> min_ins;
+            if (min_ins < 1) {
+                std::cerr << "Invalid min-ins value. Must be >=1." << std::endl;
+            }
+        } else if (key == "max-ins") {
+            iss >> max_ins;
+            if (max_ins < 1) {
+                std::cerr << "Invalid max-ins value. Must be >=1." << std::endl;
+            }
+        } else if (key == "delays-perexec") {
+            iss >> delays_perexec;
+        }
+    }
+
+    config.close();
 }
 
 // 2. screen_init()
