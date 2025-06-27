@@ -11,6 +11,9 @@
 #include <mutex>
 #include <atomic>
 
+#include <fstream>
+#include <sstream>
+
 struct ProcessInfo {
     int id;
     std::string filename;
@@ -27,12 +30,33 @@ std::mutex process_mutex;
 
 ScreenSession *head = nullptr; // linked list head
 
-config configs("src/config.json");
 
-int num_cores = configs.getCores();
-int num_processes = configs.getProcesses();
-std::atomic<int> file_count(0);
-std::mutex file_mutex;
+
+
+//to remove
+// config configs("src/config.json");
+
+// int num_cores = configs.getCores();
+// int num_processes = configs.getProcesses();
+// std::atomic<int> file_count(0);
+// std::mutex file_mutex;
+
+
+
+
+
+
+
+
+//initialization of variables
+int num_cpu = 0;
+std::string scheduler = "";
+int quantumcycles = 0;
+int batchprocess_freq = 0;
+int min_ins = 0;
+int max_ins = 0;
+int delays_perexec = 0;
+
 
 void initialize() {
         // Gemini example:
@@ -45,6 +69,67 @@ void initialize() {
 
         // Basic memory setup (e.g., identity mapping)
         // memory_init();
+
+    std::ifstream config("config.txt");
+    if (!config.is_open()) {
+        std::cerr << "Error: Could not open config.txt" << std::endl;
+        return;
+    }
+
+    std::string line;
+    while (std::getline(config, line)) {
+        std::istringstream iss(line);
+        std::string key;
+        if (!(iss >> key)) continue; // Skip empty lines
+
+        if (key == "num-cpu") {
+            iss >> num_cpu;
+            if (num_cpu < 1 || num_cpu > 128) {
+                std::cerr << "Invalid num-cpu value. Must be in [1,128]." << std::endl;
+            }
+        } else if (key == "scheduler") {
+            std::string rest;
+            std::getline(iss, rest);
+            std::istringstream rest_iss(rest);
+            rest_iss >> scheduler;
+
+            if (scheduler != "fcfs" && scheduler != "rr") {
+                std::cerr << "Invalid scheduler value. Must be 'fcfs' or 'rr'." << std::endl;
+            }
+
+            // Optional: print what's after "scheduler"
+            std::string remaining_args;
+            std::getline(rest_iss, remaining_args);
+            if (!remaining_args.empty()) {
+                std::cout << "Extra arguments after scheduler: " << remaining_args << std::endl;
+            }
+
+        } else if (key == "quantumcycles") {
+            iss >> quantumcycles;
+            if (quantumcycles < 1) {
+                std::cerr << "Invalid quantumcycles value. Must be >=1." << std::endl;
+            }
+        } else if (key == "batchprocess-freq") {
+            iss >> batchprocess_freq;
+            if (batchprocess_freq < 1) {
+                std::cerr << "Invalid batchprocess-freq value. Must be >=1." << std::endl;
+            }
+        } else if (key == "min-ins") {
+            iss >> min_ins;
+            if (min_ins < 1) {
+                std::cerr << "Invalid min-ins value. Must be >=1." << std::endl;
+            }
+        } else if (key == "max-ins") {
+            iss >> max_ins;
+            if (max_ins < 1) {
+                std::cerr << "Invalid max-ins value. Must be >=1." << std::endl;
+            }
+        } else if (key == "delays-perexec") {
+            iss >> delays_perexec;
+        }
+    }
+
+    config.close();
 }
 
 // 2. screen_init()
@@ -152,73 +237,73 @@ std::string get_timestamp() {
 }
 
 
-void generate_file(int core_id){
-    int current_file = file_count.fetch_add(1);
-    if (current_file >= num_processes) return;
+// void generate_file(int core_id){
+//     int current_file = file_count.fetch_add(1);
+//     if (current_file >= num_processes) return;
 
-    std::string filename = "process_file_" + std::to_string(current_file) + "_id_" + std::to_string(core_id) + ".txt";
-    std::string start_time = get_timestamp();
+//     std::string filename = "process_file_" + std::to_string(current_file) + "_id_" + std::to_string(core_id) + ".txt";
+//     std::string start_time = get_timestamp();
 
-    {
-        std::lock_guard<std::mutex> lock(process_mutex);
-        processes.push_back({current_file, filename, "Running", std::this_thread::get_id(), core_id, start_time, ""});
+//     {
+//         std::lock_guard<std::mutex> lock(process_mutex);
+//         processes.push_back({current_file, filename, "Running", std::this_thread::get_id(), core_id, start_time, ""});
 
-    }
+//     }
 
-    std::ofstream outfile(filename);
-    for (int i = 0; i < 100; ++i) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Simulate work
-        std::string timestamp = get_timestamp();
-        outfile << "(" << timestamp << ") "
-                << "Core: " << core_id << " - "
-                << "\"Hello world from " << filename << "!\"\n";
-    }
-    outfile.close();
+//     std::ofstream outfile(filename);
+//     for (int i = 0; i < 100; ++i) {
+//         std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Simulate work
+//         std::string timestamp = get_timestamp();
+//         outfile << "(" << timestamp << ") "
+//                 << "Core: " << core_id << " - "
+//                 << "\"Hello world from " << filename << "!\"\n";
+//     }
+//     outfile.close();
 
-    {
-        std::lock_guard<std::mutex> lock(process_mutex);
-        for (auto& p : processes) {
-            if (p.filename == filename) {
-                p.status = "Finished";
-                p.end_time = get_timestamp();
-                break;
-            }
-        }
-    }
-}
+//     {
+//         std::lock_guard<std::mutex> lock(process_mutex);
+//         for (auto& p : processes) {
+//             if (p.filename == filename) {
+//                 p.status = "Finished";
+//                 p.end_time = get_timestamp();
+//                 break;
+//             }
+//         }
+//     }
+// }
 
 
-void start_file_generation() {
-    std::cout << "Generating files using " << num_cores << " cores...\n";
-    std::vector<std::thread> threads;
+// void start_file_generation() {
+//     std::cout << "Generating files using " << num_cores << " cores...\n";
+//     std::vector<std::thread> threads;
 
-    for (int i = 0; i < num_cores; ++i) {
-        threads.emplace_back([i]() {
-            while (true) {
-                int current_file = file_count.load();
-                if (current_file >= num_processes) break;
-                generate_file(i); // core ID remains same
-            }
-        });
-    }
+//     for (int i = 0; i < num_cores; ++i) {
+//         threads.emplace_back([i]() {
+//             while (true) {
+//                 int current_file = file_count.load();
+//                 if (current_file >= num_processes) break;
+//                 generate_file(i); // core ID remains same
+//             }
+//         });
+//     }
 
-    for (auto& t : threads) {
-        t.join();
-    }
+//     for (auto& t : threads) {
+//         t.join();
+//     }
 
-    std::cout << "All files generated.\n";
-}
+//     std::cout << "All files generated.\n";
+// }
 
 
 void scheduler_test() {
     std::cout << "Starting scheduler test...\n";
-    file_count = 0;  
-    std::thread background_task([](){
-        start_file_generation();
-    });
+    // file_count = 0;
+    // std::thread background_task([](){
+    //     start_file_generation();
+    // });
 
-    background_task.detach();
-    std::cout << "File generation started in background.\n";
+    // background_task.detach();
+    // std::cout << "File generation started in background.\n";
 }
 
 
