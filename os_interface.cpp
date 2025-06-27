@@ -12,6 +12,9 @@
 #include "ProcessManager.cpp"
 #include <fstream>
 #include <sstream>
+#include <random> // For random number generation
+#include <chrono> // For random number seeding with time
+#include <cmath> 
 
 
 //initialization of variables
@@ -102,8 +105,18 @@ void run_rr_scheduler() {
 
 void generate_random_processes() {
     static int next_id = 1;
+    int min_val = 0;
+    double max_val = std::pow(2.0, 32.0);
+
     for (int i = 0; i < batchprocess_freq; ++i) {
-        Process proc = Process(next_id++, "process" + std::to_string(next_id), int prio, int burst)
+        
+        //randomizer
+        std::default_random_engine generator(
+            std::chrono::system_clock::now().time_since_epoch().count()
+        );
+        std::uniform_int_distribution<int> distribution(min_val, max_val);
+
+        Process proc = Process(next_id++, "process" + std::to_string(next_id), distribution(generator));
         // proc.id = next_id++;
         // proc.filename = "process" + std::to_string(proc.id);
         // proc.status = "Waiting";
@@ -530,7 +543,7 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
             for (const auto& proc : processes) {
                 std::cout << "ID: " << proc.getPid() << "\n"
                         << "Name: " << proc.getProcessName() << "\n"
-                        << "Priority: " << proc.getPriority() << "\n"
+                        // << "Priority: " << proc.getPriority() << "\n"
                         << "Status: " << processStateToString(proc.getState()) << "\n"
                         << "Thread/Core ID: " << proc.getCurrentCoreId() << "\n"
                         << "Started: " << formatTime(proc.getStartTime()) << "\n"
