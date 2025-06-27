@@ -8,7 +8,6 @@ enum class ProcessState{
     RUNNING,
     COMPLETED,
     FINISHED
-
 };
 
 std::string processStateToString(ProcessState state) { 
@@ -42,15 +41,15 @@ class Process {
         ProcessState state;
 
 
-    
     public:
-        Process(int id, const std::string& name, int prio, int burst)
+        Process(int id, const std::string& name, int prio, int burst, int core)
             : pid(id), process_name(name), priority(prio), burst_time(burst), 
               remaining_burst_time(burst), waiting_time(0), turnaround_time(0),
-              current_core_id(-1), state(ProcessState::NONE) {
-            start_time = std::chrono::system_clock::now();
-            end_time = std::chrono::system_clock::time_point{};
-        }
+              current_core_id(core), state(ProcessState::WAITING) {}
+
+
+        //TODO / To think about lmfao
+            //1. need setStartTime / setEndTime? for
 
         int getPid() const {
             return pid;
@@ -107,7 +106,8 @@ class Process {
         //     return oss.str(); //return formatted date
         // }
 
-        void setState(ProcessState newState, int coreId = -1) {
+        // void setState(ProcessState newState, int coreId = -1) {
+        void setState(ProcessState newState, int coreId) {
             this->state = newState;
             this->current_core_id = coreId;
             if (newState == ProcessState::RUNNING && coreId != -1 &&
