@@ -347,10 +347,13 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
     else if (choice.rfind("screen -s ", 0) == 0) {
         std::string name = choice.substr(10);
         new_screen(name);
+        if (current_screen) current_screen->current_line++;
     }
     else if (choice.rfind("screen -r ", 0) == 0) {
         std::string name = choice.substr(10);  // get <name>
         find_screen(name);
+        if (current_screen) current_screen->current_line++;
+
     } else if(choice.rfind("screen -ls", 0) == 0) {
         std::cout << "\nBackground Processes:\n";
         std::lock_guard<std::mutex> lock(process_mutex);
@@ -368,7 +371,11 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
             }
         }
 
+        if (current_screen) current_screen->current_line++;
+
         system("pause");
+
+        
     } else {
         std::cout << "Unknown command: " << choice << "\n";
     }
