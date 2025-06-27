@@ -34,13 +34,12 @@ ScreenSession *head = nullptr; // linked list head
 
 
 //to remove
+// config configs("src/config.json");
 
-config configs("src/config.json");
-
-int num_cores = configs.getCores();
-int num_processes = configs.getProcesses();
-std::atomic<int> file_count(0);
-std::mutex file_mutex;
+// int num_cores = configs.getCores();
+// int num_processes = configs.getProcesses();
+// std::atomic<int> file_count(0);
+// std::mutex file_mutex;
 
 
 
@@ -238,73 +237,73 @@ std::string get_timestamp() {
 }
 
 
-void generate_file(int core_id){
-    int current_file = file_count.fetch_add(1);
-    if (current_file >= num_processes) return;
+// void generate_file(int core_id){
+//     int current_file = file_count.fetch_add(1);
+//     if (current_file >= num_processes) return;
 
-    std::string filename = "process_file_" + std::to_string(current_file) + "_id_" + std::to_string(core_id) + ".txt";
-    std::string start_time = get_timestamp();
+//     std::string filename = "process_file_" + std::to_string(current_file) + "_id_" + std::to_string(core_id) + ".txt";
+//     std::string start_time = get_timestamp();
 
-    {
-        std::lock_guard<std::mutex> lock(process_mutex);
-        processes.push_back({current_file, filename, "Running", std::this_thread::get_id(), core_id, start_time, ""});
+//     {
+//         std::lock_guard<std::mutex> lock(process_mutex);
+//         processes.push_back({current_file, filename, "Running", std::this_thread::get_id(), core_id, start_time, ""});
 
-    }
+//     }
 
-    std::ofstream outfile(filename);
-    for (int i = 0; i < 100; ++i) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Simulate work
-        std::string timestamp = get_timestamp();
-        outfile << "(" << timestamp << ") "
-                << "Core: " << core_id << " - "
-                << "\"Hello world from " << filename << "!\"\n";
-    }
-    outfile.close();
+//     std::ofstream outfile(filename);
+//     for (int i = 0; i < 100; ++i) {
+//         std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Simulate work
+//         std::string timestamp = get_timestamp();
+//         outfile << "(" << timestamp << ") "
+//                 << "Core: " << core_id << " - "
+//                 << "\"Hello world from " << filename << "!\"\n";
+//     }
+//     outfile.close();
 
-    {
-        std::lock_guard<std::mutex> lock(process_mutex);
-        for (auto& p : processes) {
-            if (p.filename == filename) {
-                p.status = "Finished";
-                p.end_time = get_timestamp();
-                break;
-            }
-        }
-    }
-}
+//     {
+//         std::lock_guard<std::mutex> lock(process_mutex);
+//         for (auto& p : processes) {
+//             if (p.filename == filename) {
+//                 p.status = "Finished";
+//                 p.end_time = get_timestamp();
+//                 break;
+//             }
+//         }
+//     }
+// }
 
 
-void start_file_generation() {
-    std::cout << "Generating files using " << num_cores << " cores...\n";
-    std::vector<std::thread> threads;
+// void start_file_generation() {
+//     std::cout << "Generating files using " << num_cores << " cores...\n";
+//     std::vector<std::thread> threads;
 
-    for (int i = 0; i < num_cores; ++i) {
-        threads.emplace_back([i]() {
-            while (true) {
-                int current_file = file_count.load();
-                if (current_file >= num_processes) break;
-                generate_file(i); // core ID remains same
-            }
-        });
-    }
+//     for (int i = 0; i < num_cores; ++i) {
+//         threads.emplace_back([i]() {
+//             while (true) {
+//                 int current_file = file_count.load();
+//                 if (current_file >= num_processes) break;
+//                 generate_file(i); // core ID remains same
+//             }
+//         });
+//     }
 
-    for (auto& t : threads) {
-        t.join();
-    }
+//     for (auto& t : threads) {
+//         t.join();
+//     }
 
-    std::cout << "All files generated.\n";
-}
+//     std::cout << "All files generated.\n";
+// }
 
 
 void scheduler_test() {
     std::cout << "Starting scheduler test...\n";
-    file_count = 0;  
-    std::thread background_task([](){
-        start_file_generation();
-    });
+    // file_count = 0;
+    // std::thread background_task([](){
+    //     start_file_generation();
+    // });
 
-    background_task.detach();
-    std::cout << "File generation started in background.\n";
+    // background_task.detach();
+    // std::cout << "File generation started in background.\n";
 }
 
 
