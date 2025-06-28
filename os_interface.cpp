@@ -46,7 +46,6 @@ void generate_random_processes() {
     static int next_id = 1;
 
     for (int i = 0; i < batchprocess_freq; ++i) {
-        // Randomizing number of instructions
         std::default_random_engine generator(
             std::chrono::system_clock::now().time_since_epoch().count() + i
         );
@@ -55,13 +54,6 @@ void generate_random_processes() {
         Process proc = Process(next_id, "process" + std::to_string(next_id), distribution(generator));
         next_id++;
 
-        // Add to global processes list for tracking
-        {
-            std::lock_guard<std::mutex> lock(process_mutex);
-            processes.push_back(proc);
-        }
-
-        // Add to scheduler
         os_scheduler->addProcess(proc);
     }
 }
@@ -118,7 +110,7 @@ void initialize() {
         }
     }
 
-    os_scheduler = new Scheduler(scheduler_type, quantumcycles);
+    os_scheduler = new Scheduler(scheduler_type, quantumcycles, num_cpu, delays_perexec);
     config.close();
 }
 
@@ -181,7 +173,7 @@ void scheduler_stop() {
 
 void report_util() {
     std::ofstream log("csopesy-log.txt", std::ios::app);
-    log << "===== Report (" << get_timestamp() << ") =====\n";
+    // log << "===== Report (" << get_timestamp() << ") =====\n";
     
     // Get current statistics from scheduler
     if (os_scheduler) {
