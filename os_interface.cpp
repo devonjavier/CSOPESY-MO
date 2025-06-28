@@ -1,20 +1,80 @@
 #include <iostream>
 #include <string>
-#include <cstdlib> // for system()
-#include <thread>  // for future thread-safe tasks
-#include <ctime>
-#include "classes/screen.cpp"
-#include "header.h"
 #include <vector>
-#include <thread>
-#include <mutex>
-#include <atomic>
-#include "ProcessManager.cpp"
-#include <fstream>
-#include <sstream>
+
+#include <cstdlib> // for system()
+#include <ctime>
+#include <cmath> 
+
 #include <random> // For random number generation
 #include <chrono> // For random number seeding with time
-#include <cmath> 
+
+#include <thread>  // for future thread-safe tasks
+#include <mutex>
+#include <atomic>
+
+#include <fstream>
+#include <sstream>
+
+#include "header.h"
+#include "classes/screen.cpp"
+#include "classes/ProcessManager.cpp"
+
+/* Table of Contents:
+
+Utility Functions
+| Function Name   | Purpose                                             |
+| --------------- | --------------------------------------------------- |
+| `formatTime`    | Formats a `time_point` into a human-readable string |
+| `get_timestamp` | Returns current time as a timestamp string          |
+
+Initialization
+| Function Name | Purpose                                            |
+| ------------- | -------------------------------------------------- |
+| `initialize`  | Loads config settings and sets up `ProcessManager` |
+
+Scheduling Logic
+| Function Name               | Purpose                                          |
+| --------------------------- | ------------------------------------------------ |
+| `run_fcfs_scheduler`        | Runs FCFS (First-Come First-Serve) scheduler     |
+| `run_rr_scheduler`          | Runs Round-Robin scheduler using `quantumcycles` |
+| `generate_random_processes` | Creates and queues randomized `Process` objects  |
+
+Scheduler Control
+| Function Name     | Purpose                                       |
+| ----------------- | --------------------------------------------- |
+| `scheduler_start` | Starts the scheduler loop and runs schedulers |
+| `scheduler_stop`  | Stops the scheduler loop                      |
+
+System Utilities
+| Function Name  | Purpose                                              |
+| -------------- | ---------------------------------------------------- |
+| `report_util`  | Outputs (planned) system statistics and process info |
+| `clear_screen` | Clears the terminal screen                           |
+| `exit_os`      | Shuts down the system and exits                      |
+
+Screen Management
+| Function Name    | Purpose                                      |
+| ---------------- | -------------------------------------------- |
+| `screen_init`    | Displays ASCII art welcome screen            |
+| `screen_session` | Handles user input inside a specific screen  |
+| `new_screen`     | Creates a new screen session                 |
+| `find_screen`    | Finds and resumes an existing screen session |
+
+Input Handling
+| Function Name  | Purpose                            |
+| -------------- | ---------------------------------- |
+| `accept_input` | Processes and routes user commands |
+
+
+Main Loop
+| Function Name | Purpose                                      |
+| ------------- | -------------------------------------------- |
+| `menu`        | Main command loop of the operating system UI |
+*/
+
+
+bool accept_input(std::string choice, ScreenSession *current_screen);
 
 
 //initialization of variables
@@ -40,6 +100,9 @@ std::vector<Process> processes;
 std::mutex process_mutex;
 
 
+// Utility Functions
+//formatting of time for start_time and end_time of processes
+
 std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
     if (tp.time_since_epoch().count() == 0) return "N/A";
     std::time_t tt = std::chrono::system_clock::to_time_t(tp);
@@ -48,85 +111,15 @@ std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>&
     return std::string(buffer);
 }
 
-
-void run_fcfs_scheduler() {
-    while (scheduler_running && !ready_queue.empty()) {
-        Process proc = ready_queue.front();
-        ready_queue.pop_front();
-
-        std::thread([proc]() mutable {
-            {
-                std::lock_guard<std::mutex> lock(process_mutex);
-                proc.setState(ProcessState::RUNNING);
-                // proc.start_time = proc.getStartTime();
-                // proc.thread_id = std::this_thread::get_id();
-            }
-
-            std::this_thread::sleep_for(std::chrono::seconds(2)); // simulate processing
-
-            {
-                std::lock_guard<std::mutex> lock(process_mutex);
-                proc.setState(ProcessState::FINISHED);
-                // proc.end_time = get_timestamp();
-            }
-
-        }).detach();
-        std::this_thread::sleep_for(std::chrono::seconds(1)); // scheduler delay
-    }
+std::string get_timestamp() {
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    char buffer[100];
+    std::strftime(buffer, sizeof(buffer), "%m/%d/%Y, %I:%M:%S %p", std::localtime(&now_time));
+    return std::string(buffer);
 }
 
-
-void run_rr_scheduler() {
-    while (scheduler_running && !ready_queue.empty()) {
-        Process proc = ready_queue.front();
-        ready_queue.pop_front();
-
-        std::thread([proc]() mutable {
-            {
-                std::lock_guard<std::mutex> lock(process_mutex);
-                proc.setState(ProcessState::RUNNING);
-                // proc.start_time = get_timestamp();
-                // proc.thread_id = std::this_thread::get_id();
-            }
-
-            std::this_thread::sleep_for(std::chrono::seconds(quantumcycles));
-
-            {
-                std::lock_guard<std::mutex> lock(process_mutex);
-                proc.setState(ProcessState::FINISHED);
-                // proc.status = "Finished";
-                // proc.end_time = get_timestamp();
-            }
-
-        }).detach();
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-}
-
-void generate_random_processes() {
-    static int next_id = 1;
-    int min_val = 0;
-    double max_val = std::pow(2.0, 32.0);
-
-    for (int i = 0; i < batchprocess_freq; ++i) {
-        
-        //randomizer
-        std::default_random_engine generator(
-            std::chrono::system_clock::now().time_since_epoch().count()
-        );
-        std::uniform_int_distribution<int> distribution(min_val, max_val);
-
-        Process proc = Process(next_id++, "process" + std::to_string(next_id), distribution(generator));
-        // proc.id = next_id++;
-        // proc.filename = "process" + std::to_string(proc.id);
-        // proc.status = "Waiting";
-        ready_queue.push_back(proc);
-        processes.push_back(proc);
-    }
-}
-
-
-
+// 1. initialize()
 void initialize() {
         // Gemini example:
         // Initialize GDT (or IDT) - architecture-specific!
@@ -203,24 +196,90 @@ void initialize() {
     config.close();
 }
 
-// 2. screen_init()
-void screen_init() {
+//scheduling
+void run_fcfs_scheduler() {
+    while (scheduler_running && !ready_queue.empty()) {
+        Process proc = ready_queue.front();
+        ready_queue.pop_front();
+
+        std::thread([proc]() mutable {
+            {
+                std::lock_guard<std::mutex> lock(process_mutex);
+                proc.setState(ProcessState::RUNNING);
+                // proc.start_time = proc.getStartTime();
+                // proc.thread_id = std::this_thread::get_id();
+            }
+
+            std::this_thread::sleep_for(std::chrono::seconds(2)); // simulate processing
+
+            {
+                std::lock_guard<std::mutex> lock(process_mutex);
+                proc.setState(ProcessState::FINISHED);
+                // proc.end_time = get_timestamp();
+            }
+
+        }).detach();
+        std::this_thread::sleep_for(std::chrono::seconds(1)); // scheduler delay
+    }
+}
+
+void run_rr_scheduler() {
+    while (scheduler_running && !ready_queue.empty()) {
+        Process proc = ready_queue.front();
+        ready_queue.pop_front();
+
+        std::thread([proc]() mutable {
+            {
+                std::lock_guard<std::mutex> lock(process_mutex);
+                proc.setState(ProcessState::RUNNING);
+                // proc.start_time = get_timestamp();
+                // proc.thread_id = std::this_thread::get_id();
+            }
+
+            std::this_thread::sleep_for(std::chrono::seconds(quantumcycles));
+
+            {
+                std::lock_guard<std::mutex> lock(process_mutex);
+                proc.setState(ProcessState::FINISHED);
+                // proc.status = "Finished";
+                // proc.end_time = get_timestamp();
+            }
+
+        }).detach();
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+}
+
+void generate_random_processes() {
+    static int next_id = 1;
+    int min_val = 1;
+    double max_val = std::pow(2.0, 32.0);
 
 
-    // credits to https://patorjk.com/software/taag/#p=display&f=Slant%20Relief&t=CSOPESY for the unmodified ASCII art
-    std::cout << "________/\\\\\\\\\\\\\\\\\\_____/\\\\\\\\\\\\\\\\\\\\\\_________/\\\\\\\\\\_______/\\\\\\\\\\\\\\\\\\\\\\\\\\____/\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_____/\\\\\\\\\\\\\\\\\\\\\\____/\\\\\\________/\\\\\\_\n";
-    std::cout << " _____/\\\\\\////////____/\\\\\\/////////\\\\\\_____/\\\\\\///\\\\\\____\\/\\\\\\/////////\\\\\\_\\/\\\\\\///////////____/\\\\\\/////////\\\\\\_\\///\\\\\\____/\\\\\\/__\n";
-    std::cout << "  ___/\\\\\\/____________\\//\\\\\\______\\///____/\\\\\\/__\\///\\\\\\__\\/\\\\\\_______\\/\\\\\\_\\/\\\\\\______________\\//\\\\\\______\\///____\\///\\\\\\/\\\\\\/____\n";
-    std::cout << "   __/\\\\\\_______________\\////\\\\\\__________/\\\\\\______\\//\\\\\\_\\/\\\\\\\\\\\\\\\\\\\\\\\\\\/__\\/\\\\\\\\\\\\\\\\\\\\\\_______\\////\\\\\\_____________\\///\\\\\\/______\n";
-    std::cout << "    _\\/\\\\\\__________________\\////\\\\\\______\\/\\\\\\_______\\/\\\\\\_\\/\\\\\\/////////____\\/\\\\\\///////___________\\////\\\\\\____________\\/\\\\\\_______\n";
-    std::cout << "     _\\//\\\\\\____________________\\////\\\\\\___\\//\\\\\\______/\\\\\\__\\/\\\\\\_____________\\/\\\\\\_____________________\\////\\\\\\_________\\/\\\\\\_______\n";
-    std::cout << "      __\\///\\\\\\___________/\\\\\\______\\//\\\\\\___\\///\\\\\\__/\\\\\\____\\/\\\\\\_____________\\/\\\\\\______________/\\\\\\______\\//\\\\\\________\\/\\\\\\_______\n";
-    std::cout << "       ____\\////\\\\\\\\\\\\\\\\\\_\\///\\\\\\\\\\\\\\\\\\\\\\/______\\///\\\\\\\\\\/_____\\/\\\\\\_____________\\/\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_\\///\\\\\\\\\\\\\\\\\\\\\\/_________\\/\\\\\\_______\n";
-    std::cout << "        _______\\/////////____\\///////////__________\\/////_______\\///______________\\///////////////____\\///////////___________\\///________\n";
-    std::cout << "\n\nHello! Welcome to the CSOPESY destroyers' command-line operating system!\n";
-    std::cout << "";
-    std::cout << "Type 'exit' to quit, 'clear' to clear the screen, or 'help' for a list of commands.\n";
-    std::cout << "Please enter a command:\n";
+    batchprocess_freq = 10;
+    for (int i = 0; i < batchprocess_freq; ++i) {
+        //TODO: instructions within each process
+
+        
+        //randomizing of number of instructions
+        std::default_random_engine generator(
+            std::chrono::system_clock::now().time_since_epoch().count()
+        );
+        std::uniform_int_distribution<int> distribution(min_val, max_val);
+
+        Process proc = Process(next_id, "process" + std::to_string(next_id), distribution(generator));
+        // proc.id = next_id++;
+        // proc.filename = "process" + std::to_string(proc.id);
+        // proc.status = "Waiting";
+        next_id++;
+        ready_queue.push_back(proc);
+        processes.push_back(proc);
+    }
+
+    std::for_each(processes.begin(), processes.end(),
+                  [](const Process& p) {
+                      std::cout << p.getProcessName() << "\t" << p.getBurstTime() << std::endl;
+                  });
 }
 
 // 3. scheduler_start()
@@ -269,17 +328,16 @@ void scheduler_stop() {
 //        - Running processes/threads
 //        - System uptime
 //        - Error logs
-
 void report_util() {
-    std::ofstream log("csopesy-log.txt", std::ios::app);
-    log << "===== Report (" << get_timestamp() << ") =====\n";
+    // std::ofstream log("csopesy-log.txt", std::ios::app);
+    // log << "===== Report (" << get_timestamp() << ") =====\n";
 
-    //write the same stats as screen-ls
-    std::cout << "Memory Usage: __ / __ KB\n";
-    std::cout << "CPU Usage: __%\n";
+    // //write the same stats as screen-ls
+    // std::cout << "Memory Usage: __ / __ KB\n";
+    // std::cout << "CPU Usage: __%\n";
 
-    log.close();
-    std::cout << "System report saved to csopesy-log.txt\n";
+    // log.close();
+    // std::cout << "System report saved to csopesy-log.txt\n";
 }
 
 // 6. clear_screen()
@@ -327,70 +385,26 @@ void exit_os(int status) {
 }
 
 
-std::string get_timestamp() {
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-    char buffer[100];
-    std::strftime(buffer, sizeof(buffer), "%m/%d/%Y, %I:%M:%S %p", std::localtime(&now_time));
-    return std::string(buffer);
+// 2. screen_init()
+void screen_init() {
+
+
+    // credits to https://patorjk.com/software/taag/#p=display&f=Slant%20Relief&t=CSOPESY for the unmodified ASCII art
+    std::cout << "________/\\\\\\\\\\\\\\\\\\_____/\\\\\\\\\\\\\\\\\\\\\\_________/\\\\\\\\\\_______/\\\\\\\\\\\\\\\\\\\\\\\\\\____/\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_____/\\\\\\\\\\\\\\\\\\\\\\____/\\\\\\________/\\\\\\_\n";
+    std::cout << " _____/\\\\\\////////____/\\\\\\/////////\\\\\\_____/\\\\\\///\\\\\\____\\/\\\\\\/////////\\\\\\_\\/\\\\\\///////////____/\\\\\\/////////\\\\\\_\\///\\\\\\____/\\\\\\/__\n";
+    std::cout << "  ___/\\\\\\/____________\\//\\\\\\______\\///____/\\\\\\/__\\///\\\\\\__\\/\\\\\\_______\\/\\\\\\_\\/\\\\\\______________\\//\\\\\\______\\///____\\///\\\\\\/\\\\\\/____\n";
+    std::cout << "   __/\\\\\\_______________\\////\\\\\\__________/\\\\\\______\\//\\\\\\_\\/\\\\\\\\\\\\\\\\\\\\\\\\\\/__\\/\\\\\\\\\\\\\\\\\\\\\\_______\\////\\\\\\_____________\\///\\\\\\/______\n";
+    std::cout << "    _\\/\\\\\\__________________\\////\\\\\\______\\/\\\\\\_______\\/\\\\\\_\\/\\\\\\/////////____\\/\\\\\\///////___________\\////\\\\\\____________\\/\\\\\\_______\n";
+    std::cout << "     _\\//\\\\\\____________________\\////\\\\\\___\\//\\\\\\______/\\\\\\__\\/\\\\\\_____________\\/\\\\\\_____________________\\////\\\\\\_________\\/\\\\\\_______\n";
+    std::cout << "      __\\///\\\\\\___________/\\\\\\______\\//\\\\\\___\\///\\\\\\__/\\\\\\____\\/\\\\\\_____________\\/\\\\\\______________/\\\\\\______\\//\\\\\\________\\/\\\\\\_______\n";
+    std::cout << "       ____\\////\\\\\\\\\\\\\\\\\\_\\///\\\\\\\\\\\\\\\\\\\\\\/______\\///\\\\\\\\\\/_____\\/\\\\\\_____________\\/\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_\\///\\\\\\\\\\\\\\\\\\\\\\/_________\\/\\\\\\_______\n";
+    std::cout << "        _______\\/////////____\\///////////__________\\/////_______\\///______________\\///////////////____\\///////////___________\\///________\n";
+    std::cout << "\n\nHello! Welcome to the CSOPESY destroyers' command-line operating system!\n";
+    std::cout << "";
+    std::cout << "Type 'exit' to quit, 'clear' to clear the screen, or 'help' for a list of commands.\n";
+    std::cout << "Please enter a command:\n";
 }
 
-// void generate_file(int core_id){
-//     int current_file = file_count.fetch_add(1);
-//     if (current_file >= num_processes) return;
-
-//     std::string filename = "process_file_" + std::to_string(current_file) + "_id_" + std::to_string(core_id) + ".txt";
-//     std::string start_time = get_timestamp();
-
-//     {
-//         std::lock_guard<std::mutex> lock(process_mutex);
-//         processes.push_back({current_file, filename, "Running", std::this_thread::get_id(), core_id, start_time, ""});
-
-//     }
-
-//     std::ofstream outfile(filename);
-//     for (int i = 0; i < 100; ++i) {
-//         std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Simulate work
-//         std::string timestamp = get_timestamp();
-//         outfile << "(" << timestamp << ") "
-//                 << "Core: " << core_id << " - "
-//                 << "\"Hello world from " << filename << "!\"\n";
-//     }
-//     outfile.close();
-
-//     {
-//         std::lock_guard<std::mutex> lock(process_mutex);
-//         for (auto& p : processes) {
-//             if (p.filename == filename) {
-//                 p.status = "Finished";
-//                 p.end_time = get_timestamp();
-//                 break;
-//             }
-//         }
-//     }
-// }
-
-
-// void start_file_generation() {
-//     std::cout << "Generating files using " << num_cores << " cores...\n";
-//     std::vector<std::thread> threads;
-
-//     for (int i = 0; i < num_cores; ++i) {
-//         threads.emplace_back([i]() {
-//             while (true) {
-//                 int current_file = file_count.load();
-//                 if (current_file >= num_processes) break;
-//                 generate_file(i); // core ID remains same
-//             }
-//         });
-//     }
-
-//     for (auto& t : threads) {
-//         t.join();
-//     }
-
-//     std::cout << "All files generated.\n";
-// }
 
 void screen_session(ScreenSession& session) {
     std::string command;
@@ -463,6 +477,64 @@ void find_screen(std::string name) {
     screen_session(*current_screen);
     
 }
+
+
+// void generate_file(int core_id){
+//     int current_file = file_count.fetch_add(1);
+//     if (current_file >= num_processes) return;
+
+//     std::string filename = "process_file_" + std::to_string(current_file) + "_id_" + std::to_string(core_id) + ".txt";
+//     std::string start_time = get_timestamp();
+
+//     {
+//         std::lock_guard<std::mutex> lock(process_mutex);
+//         processes.push_back({current_file, filename, "Running", std::this_thread::get_id(), core_id, start_time, ""});
+
+//     }
+
+//     std::ofstream outfile(filename);
+//     for (int i = 0; i < 100; ++i) {
+//         std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Simulate work
+//         std::string timestamp = get_timestamp();
+//         outfile << "(" << timestamp << ") "
+//                 << "Core: " << core_id << " - "
+//                 << "\"Hello world from " << filename << "!\"\n";
+//     }
+//     outfile.close();
+
+//     {
+//         std::lock_guard<std::mutex> lock(process_mutex);
+//         for (auto& p : processes) {
+//             if (p.filename == filename) {
+//                 p.status = "Finished";
+//                 p.end_time = get_timestamp();
+//                 break;
+//             }
+//         }
+//     }
+// }
+
+
+// void start_file_generation() {
+//     std::cout << "Generating files using " << num_cores << " cores...\n";
+//     std::vector<std::thread> threads;
+
+//     for (int i = 0; i < num_cores; ++i) {
+//         threads.emplace_back([i]() {
+//             while (true) {
+//                 int current_file = file_count.load();
+//                 if (current_file >= num_processes) break;
+//                 generate_file(i); // core ID remains same
+//             }
+//         });
+//     }
+
+//     for (auto& t : threads) {
+//         t.join();
+//     }
+
+//     std::cout << "All files generated.\n";
+// }
 
 
 bool accept_input(std::string choice, ScreenSession *current_screen){
@@ -564,7 +636,6 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
     clear_screen();
     return exit;
 }
-
 
 void menu(){
     std::string choice;
