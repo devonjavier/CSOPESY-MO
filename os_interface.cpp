@@ -9,7 +9,7 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
-#include "classes/Scheduler.cpp"
+
 #include <fstream>
 #include <sstream>
 #include <random> // For random number generation
@@ -19,16 +19,25 @@
 
 //initialization of variables
 int num_cpu = 0;
-std::string scheduler_type = "";
+std::string scheduler = "";
 int quantumcycles = 0;
 int batchprocess_freq = 0;
 int min_ins = 0;
 int max_ins = 0;
 int delays_perexec = 0;
 
+//initialization of flags
+bool scheduler_running = false;
+
+//initialization of queues
+std::deque<Process> ready_queue;
+
 //initialization of Screens and Processes Lists
 ScreenSession *head = nullptr; // linked list head
-Scheduler* os_scheduler = nullptr;
+ProcessManager* processManager = nullptr;
+
+std::vector<Process> processes;
+std::mutex process_mutex;
 
 
 std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
@@ -147,21 +156,21 @@ void initialize() {
             if (num_cpu < 1 || num_cpu > 128) {
                 std::cerr << "Invalid num-cpu value. Must be in [1,128]." << std::endl;
             }
-        } else if (key == "Scheduler") {
+        } else if (key == "scheduler") {
             std::string rest;
             std::getline(iss, rest);
             std::istringstream rest_iss(rest);
-            rest_iss >> scheduler_type;
+            rest_iss >> scheduler;
 
-            if (scheduler_type != "fcfs" && scheduler_type != "rr") {
-                std::cerr << "Invalid Scheduler value. Must be 'fcfs' or 'rr'." << std::endl;
+            if (scheduler != "fcfs" && scheduler != "rr") {
+                std::cerr << "Invalid scheduler value. Must be 'fcfs' or 'rr'." << std::endl;
             }
 
-            // Optional: print what's after "Scheduler"
+            // Optional: print what's after "scheduler"
             std::string remaining_args;
             std::getline(rest_iss, remaining_args);
             if (!remaining_args.empty()) {
-                std::cout << "Extra arguments after Scheduler: " << remaining_args << std::endl;
+                std::cout << "Extra arguments after scheduler: " << remaining_args << std::endl;
             }
 
         } else if (key == "quantumcycles") {
@@ -187,9 +196,9 @@ void initialize() {
         } else if (key == "delays-perexec") {
             iss >> delays_perexec;
         }
-    };
+    }   
 
-    os_scheduler = new Scheduler(scheduler_type, quantumcycles);
+    processManager = new ProcessManager(scheduler, quantumcycles);
 
     config.close();
 }
@@ -219,9 +228,9 @@ void screen_init() {
 //    - create several test processes or threads
 //    - according to the zoom kanina, each test process/thread will do some simple task
 //
-//    - starts the Scheduler
-void Scheduler_start() {
-    std::cout << "Starting Scheduler test...\n";
+//    - starts the scheduler
+void scheduler_start() {
+    std::cout << "Starting scheduler test...\n";
     // file_count = 0;
     // std::thread background_task([](){
     //     start_file_generation();
@@ -232,23 +241,23 @@ void Scheduler_start() {
     os_scheduler->startScheduler(num_cpu);
     while (os_scheduler->isSchedulerRunning()) {
         generate_random_processes();
-        if (scheduler_type == "fcfs") {
-            // run_fcfs_Scheduler();
-        } else if (scheduler_type == "rr") {
-            // run_rr_Scheduler();
+        if (scheduler == "fcfs") {
+            run_fcfs_scheduler();
+        } else if (scheduler == "rr") {
+            run_rr_scheduler();
         }
         std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 }
 
 
-// 4. Scheduler_stop()
-//    - stops Scheduler
+// 4. scheduler_stop()
+//    - stops scheduler
 //        - preventing context switches
 //        - disabling interrupts
 //        - setting the CPU to a known state
-void Scheduler_stop() {
-    // Scheduler_running = false;
+void scheduler_stop() {
+    scheduler_running = false;
     std::cout << "Scheduler stopped.\n";
 }
 
@@ -284,7 +293,7 @@ void clear_screen() {
 
 // 7. exit_os(int status)
 //    - shut down the operating system
-//        - stop Scheduler
+//        - stop scheduler
 //        - unmount file systems (??idk)
 //        - disable hardware devices (??idk)
 //        - free memory
@@ -312,7 +321,7 @@ void exit_os(int status) {
     // disable_interrupts(); // Disable interrupts
     // set_cpu_state(); // Set CPU to a known state
     // return_control_to_bootloader(); // Return control to bootloader or 
-    Scheduler_stop();
+    scheduler_stop();
     std::exit(status);
 }
 
@@ -463,7 +472,7 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         std::cout << std::endl << std::endl;
 
         std::cout << "Initialized configuration: \nCPU Cores: " << num_cpu << "\n";
-        std::cout << "Scheduler: " << scheduler_type << "\n";
+        std::cout << "Scheduler: " << scheduler << "\n";
         std::cout << "Quantum Cycles: " << quantumcycles << "\n";
         std::cout << "Batch Process Frequency: " << batchprocess_freq << "\n";
         std::cout << "Min Instructions: " << min_ins << "\n";
@@ -473,15 +482,15 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         initialize();
         if (current_screen) current_screen->current_line++;
         system("pause");
-    } else if (choice == "Scheduler-start") {
+    } else if (choice == "scheduler-start") {
         std::cout << "Scheduler-test command recognized. Doing something.\n";
-        Scheduler_start();
+        scheduler_start();
         if (current_screen) current_screen->current_line++;
         system("pause");
-    } else if (choice == "Scheduler-stop") {
+    } else if (choice == "scheduler-stop") {
         std::cout << "Scheduler-stop command recognized. Doing something.\n";
       // debugging purposesl
-        Scheduler_stop();
+        scheduler_stop();
         if (current_screen) current_screen->current_line++;
         system("pause");
     } else if (choice == "report-util") {
@@ -502,8 +511,8 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         std::cout << "Available commands:\n";
         std::cout << "1. initialize - Initialize the OS environment.\n";
         std::cout << "2. screen - Initialize the screen.\n";
-        std::cout << "3. Scheduler-test - Start the Scheduler test.\n";
-        std::cout << "4. Scheduler-stop - Stop the Scheduler.\n";
+        std::cout << "3. scheduler-test - Start the scheduler test.\n";
+        std::cout << "4. scheduler-stop - Stop the scheduler.\n";
         std::cout << "5. report-util - Report system information and statistics.\n";
         std::cout << "6. clear - Clear the screen.\n";
         std::cout << "7. exit - Exit the OS.\n";
@@ -547,7 +556,7 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
 
         
     } else if (choice == "^g") {
-        std::thread(Scheduler_start).detach();
+        std::thread(scheduler_start).detach();
     } else {
         std::cout << "Unknown command: " << choice << "\n";
     }
