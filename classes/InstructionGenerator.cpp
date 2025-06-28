@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <limits>
-#include "ICommand.cpp"
+#include "classes/ICommand.cpp"
 
 class InstructionGenerator {
 private:
