@@ -27,8 +27,7 @@ class Process {
     private:
         int pid;
         std::string process_name;
-        int burst_time;
-        int remaining_burst_time;
+        int num_instructions;
         int waiting_time;
         int turnaround_time;
         std::chrono::time_point<std::chrono::system_clock> start_time;
@@ -38,9 +37,9 @@ class Process {
 
 
     public:
-        Process(int id, const std::string& name, int burst)
-            : pid(id), process_name(name), burst_time(burst), 
-              remaining_burst_time(burst), waiting_time(0), turnaround_time(0),
+        Process(int id, const std::string& name, int instructions)
+            : pid(id), process_name(name), num_instructions(instructions),
+              waiting_time(0), turnaround_time(0),
               current_core_id(-1), state(ProcessState::IDLE) {}
 
 
@@ -54,11 +53,11 @@ class Process {
             return process_name;
         }
         int getBurstTime() const {
-            return burst_time;
+            return num_instructions;
         }
-        int getRemainingBurstTime() const {
-            return remaining_burst_time;
-        }
+        // int getRemainingBurstTime() const {
+        //     return remaining_burst_time;
+        // }
         int getWaitingTime() const {
             return waiting_time;
         }
