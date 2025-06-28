@@ -2,7 +2,7 @@
 #include <chrono>
 #include <iostream>
 #include <vector>
-#include "classes/ICommand.cpp"
+#include "ICommand.cpp"
 
 enum class ProcessState{
     IDLE,
@@ -33,37 +33,43 @@ class Process {
         std::chrono::time_point<std::chrono::system_clock> start_time;
         std::chrono::time_point<std::chrono::system_clock> end_time;
         int current_core_id;
-        std::vector<ICommand*> instructions;
         ProcessState state;
+        std::unordered_map<std::string, uint16_t> variables;
 
 
     public:
-        Process(int id, const std::string& name, int burst)
-            : pid(id), process_name(name), 
-            // burst_time(burst), 
-            //   remaining_burst_time(burst), waiting_time(0), turnaround_time(0),
-              current_core_id(-1), state(ProcessState::IDLE) {}
+        // null
+        Process() 
+            : pid(-1), process_name("null"),
+            current_core_id(-1), state(ProcessState::IDLE) {}
+
+        Process(int id, const std::string& name)
+            : pid(id), process_name(name),
+            current_core_id(-1), state(ProcessState::IDLE) {}
 
 
-        //TODO / To think about lmfao
-            //1. need setStartTime / setEndTime? for
 
         void addInstruction(ICommand* instruction) {
             instructions.push_back(instruction);
         }
 
+        void runInstructions() {
+            for (ICommand* cmd : instructions) {
+                cmd->execute(*this);  // Pass the current process to each instruction
+            }
+            end_time = std::chrono::system_clock::now(); // Mark end of execution
+        }
+
+
         const std::vector<ICommand*>& getInstructions() const {
             return instructions;
         }
 
-        void runInstructions() {
-            for (ICommand* cmd : instructions) {
-                cmd->execute();
-            }
-        }
-
-
-
+        // void runInstructions() {
+        //     for (ICommand* cmd : instructions) {
+        //         cmd->execute();
+        //     }
+        // }
 
         int getPid() const {
             return pid;
@@ -71,18 +77,7 @@ class Process {
         std::string getProcessName() const {
             return process_name;
         }
-        // int getBurstTime() const {
-        //     return burst_time;
-        // }
-        // int getRemainingBurstTime() const {
-        //     return remaining_burst_time;
-        // }
-        // int getWaitingTime() const {
-        //     return waiting_time;
-        // }
-        // int getTurnaroundTime() const {
-        //     return turnaround_time;
-        // }
+
         std::chrono::time_point<std::chrono::system_clock> getStartTime() const {
             return start_time;
         }
@@ -92,8 +87,20 @@ class Process {
         int getCurrentCoreId() const {
             return current_core_id;
         }
+
+        void setCurrentCoreId(int coreId) {
+            current_core_id = coreId;
+        }
         ProcessState getState() const {
             return state;
+        }
+        
+        uint16_t getVariable(const std::string& name) {
+            return variables.find(name) != variables.end() ? variables[name] : 0; // Defaults to 0 if not declared
+        }
+
+        void setVariable(const std::string& name, uint16_t value) {
+            variables[name] = value;
         }
 
         // std::string getFormattedStartDate() const {

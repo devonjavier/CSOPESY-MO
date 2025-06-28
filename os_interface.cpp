@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <cstdlib> // for system()
-#include <thread>  // for future thread-safe tasks
 #include <ctime>
 #include "classes/screen.cpp"
 #include "header.h"
@@ -30,7 +29,6 @@ int delays_perexec = 0;
 ScreenSession *head = nullptr; // linked list head
 Scheduler* os_scheduler = nullptr;
 
-
 std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
     if (tp.time_since_epoch().count() == 0) return "N/A";
     std::time_t tt = std::chrono::system_clock::to_time_t(tp);
@@ -39,60 +37,34 @@ std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>&
     return std::string(buffer);
 }
 
+ICommand* generateRandomInstruction() {
+    // Randomly choose an instruction type
+    int instruction_type = rand() % 6; // 0 to 4 for 5 different types
 
-// void run_fcfs_Scheduler() {
-//     while (Scheduler_running && !ready_queue.empty()) {
-//         Process proc = ready_queue.front();
-//         ready_queue.pop_front();
+    switch (instruction_type) {
+        case 0: // PRINT
+            return new PRINT(); 
+        case 1: // DECLARE
+            return new DECLARE("var" + std::to_string(rand() % 100), rand() % 100);
+        case 2: // SLEEP
+            return new SLEEP(rand() % 50 + 1);
+        case 3: {
+            int loop_count = rand() % 3 + 1; 
+            std::vector<std::unique_ptr<ICommand>> body;
 
-//         std::thread([proc]() mutable {
-//             {
-//                 std::lock_guard<std::mutex> lock(process_mutex);
-//                 proc.setState(ProcessState::RUNNING);
-//                 // proc.start_time = proc.getStartTime();
-//                 // proc.thread_id = std::this_thread::get_id();
-//             }
+            int body_instr_count = rand() % 3 + 1;
+            for (int i = 0; i < body_instr_count; ++i) {
+                body.push_back(std::unique_ptr<ICommand>(generateRandomInstruction()));
+            }
 
-//             std::this_thread::sleep_for(std::chrono::seconds(2)); // simulate processing
-
-//             {
-//                 std::lock_guard<std::mutex> lock(process_mutex);
-//                 proc.setState(ProcessState::FINISHED);
-//                 // proc.end_time = get_timestamp();
-//             }
-
-//         }).detach();
-//         std::this_thread::sleep_for(std::chrono::seconds(1)); // Scheduler delay
-//     }
-// }
-
-
-// void run_rr_Scheduler() {
-//     while (Scheduler_running && !ready_queue.empty()) {
-//         Process proc = ready_queue.front();
-//         ready_queue.pop_front();
-
-//         std::thread([proc]() mutable {
-//             {
-//                 std::lock_guard<std::mutex> lock(process_mutex);
-//                 proc.setState(ProcessState::RUNNING);
-//                 // proc.start_time = get_timestamp();
-//                 // proc.thread_id = std::this_thread::get_id();
-//             }
-
-//             std::this_thread::sleep_for(std::chrono::seconds(quantumcycles));
-
-//             {
-//                 std::lock_guard<std::mutex> lock(process_mutex);
-//                 proc.setState(ProcessState::FINISHED);
-//                 // proc.status = "Finished";
-//                 // proc.end_time = get_timestamp();
-//             }
-
-//         }).detach();
-//         std::this_thread::sleep_for(std::chrono::seconds(1));
-//     }
-// }
+            return new FOR(std::move(body), loop_count);
+        }
+        case 4: // SUBTRACT with random variables or values
+            return new SUBTRACT("result", "var" + std::to_string(rand() % 100), "var" + std::to_string(rand() % 100));
+        case 5:
+            return new ADD("result", "var" + std::to_string(rand() % 100), "var" + std::to_string(rand() % 100));
+    }
+}
 
 void generate_random_processes() {
     static int next_id = 1;
@@ -106,11 +78,20 @@ void generate_random_processes() {
         );
         std::uniform_int_distribution<int> distribution(min_ins, max_ins);
 
-        Process proc = Process(next_id, "process" + std::to_string(next_id), distribution(generator));
-        // proc.id = next_id++;
-        // proc.filename = "process" + std::to_string(proc.id);
-        // proc.status = "Waiting";
+        // Adjust the arguments below to match the actual Process constructor signature
+        Process proc(next_id, "process" + std::to_string(next_id));
+
+
         next_id++;
+
+        std::uniform_int_distribution<uint64_t> distribution(1, (1ULL << 32));
+        uint64_t num_instructions = distribution(generator);
+
+        for (uint64_t i = 0; i < num_instructions; ++i) {
+            ICommand* cmd = generateRandomInstruction(); // Your custom logic here
+            proc.addInstruction(cmd);
+        }
+
 
 
         os_scheduler->addProcess(proc);
@@ -230,15 +211,17 @@ void Scheduler_start() {
     // background_task.detach();
     // std::cout << "File generation started in background.\n";
     os_scheduler->startScheduler(num_cpu);
-    while (os_scheduler->isSchedulerRunning()) {
-        generate_random_processes();
-        if (scheduler_type == "fcfs") {
-            // run_fcfs_Scheduler();
-        } else if (scheduler_type == "rr") {
-            // run_rr_Scheduler();
+    std::thread process_generator([]() {
+        while (os_scheduler->isGeneratingProcesses()) {
+            generate_random_processes();
+            os_scheduler->queueProcesses();
+            std::this_thread::sleep_for(std::chrono::seconds(5));
         }
-        std::this_thread::sleep_for(std::chrono::seconds(5));
-    }
+    });
+
+    os_scheduler->checkIfComplete();
+
+    process_generator.detach();  
 }
 
 
@@ -523,27 +506,27 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         find_screen(name);
         if (current_screen) current_screen->current_line++;
 
-    } else if(choice.rfind("screen -ls", 0) == 0) {
-        std::cout << "\nBackground Processes:\n";
-        std::lock_guard<std::mutex> lock(process_mutex);
+    // } else if(choice.rfind("screen -ls", 0) == 0) {
+    //     std::cout << "\nBackground Processes:\n";
+    //     std::lock_guard<std::mutex> lock(process_mutex);
 
-        if (processes.empty()) {
-            std::cout << "No background processes.\n";
-        } else {
-            for (const auto& proc : processes) {
-                std::cout << "ID: " << proc.getPid() << "\n"
-                        << "Name: " << proc.getProcessName() << "\n"
-                        // << "Priority: " << proc.getPriority() << "\n"
-                        << "Status: " << processStateToString(proc.getState()) << "\n"
-                        << "Thread/Core ID: " << proc.getCurrentCoreId() << "\n"
-                        << "Started: " << formatTime(proc.getStartTime()) << "\n"
-                        << "Ended: " << (proc.getState() == ProcessState::FINISHED ? formatTime(proc.getEndTime()) : "N/A") << "\n\n";
-            }
-        }
+    //     if (processes.empty()) {
+    //         std::cout << "No background processes.\n";
+    //     } else {
+    //         for (const auto& proc : processes) {
+    //             std::cout << "ID: " << proc.getPid() << "\n"
+    //                     << "Name: " << proc.getProcessName() << "\n"
+    //                     // << "Priority: " << proc.getPriority() << "\n"
+    //                     << "Status: " << processStateToString(proc.getState()) << "\n"
+    //                     << "Thread/Core ID: " << proc.getCurrentCoreId() << "\n"
+    //                     << "Started: " << formatTime(proc.getStartTime()) << "\n"
+    //                     << "Ended: " << (proc.getState() == ProcessState::FINISHED ? formatTime(proc.getEndTime()) : "N/A") << "\n\n";
+    //         }
+    //     }
 
-        if (current_screen) current_screen->current_line++;
+    //     if (current_screen) current_screen->current_line++;
 
-        system("pause");
+    //     system("pause");
 
         
     } else if (choice == "^g") {
