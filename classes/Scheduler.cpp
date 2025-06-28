@@ -1,4 +1,4 @@
-#include "process.cpp"
+#include "classes/Process.cpp"
 #include <queue>
 #include <string>
 #include <vector>
@@ -20,6 +20,21 @@ class Scheduler {
     std::condition_variable queueCV;
     std::string SchedulerType; 
     int quantumCycles; 
+
+    void SchedulerLoop() {
+    while (SchedulerRunning) {
+        std::unique_lock<std::mutex> lock(queueMutex);
+        queueCV.wait(lock, [this]{ return !ready_queue.empty() || !SchedulerRunning; });
+        
+        if (!ready_queue.empty()) {
+            Process proc = ready_queue.front();
+            ready_queue.pop();
+            lock.unlock();
+            
+            // proc.execute()
+        }
+    }
+}
 
     public:
     Scheduler(const std::string& Scheduler, int quantum) 
@@ -57,18 +72,5 @@ class Scheduler {
     }
 
 
-    // void FCFS() {
-    //     while (!processQueue.empty()) {
-    //         Process currentProcess = processQueue.front();
-    //         processQueue.pop();
-    //         currentProcess.setState(ProcessState::RUNNING);
-    //         runningProcesses.push_back(currentProcess);
-
-    //         // Simulate process execution
-    //         std::this_thread::sleep_for(std::chrono::milliseconds(currentProcess.getBurstTime()));
-    //         currentProcess.setState(ProcessState::COMPLETED);
-    //         completedProcesses.push_back(currentProcess);
-    //     }
-    // }
 };
 

@@ -1,15 +1,16 @@
+#include "classes/Screen.cpp"
+#include "classes/Scheduler.cpp"
+#include "header.h"
+
 #include <iostream>
 #include <string>
 #include <cstdlib> // for system()
 #include <thread>  // for future thread-safe tasks
 #include <ctime>
-#include "classes/screen.cpp"
-#include "header.h"
 #include <vector>
 #include <thread>
 #include <mutex>
 #include <atomic>
-#include "classes/Scheduler.cpp"
 #include <fstream>
 #include <sstream>
 #include <random> // For random number generation
@@ -232,6 +233,8 @@ void Scheduler_start() {
     os_scheduler->startScheduler(num_cpu);
     while (os_scheduler->isSchedulerRunning()) {
         generate_random_processes();
+        os_scheduler->queueProcesses();
+
         if (scheduler_type == "fcfs") {
             // run_fcfs_Scheduler();
         } else if (scheduler_type == "rr") {
