@@ -45,7 +45,7 @@ class Scheduler {
     void startScheduler(int num_cpu) {
         SchedulerRunning = true;
 
-        // Create worker threads based on the number of CPU cores
+    
         for (int i = 0; i < num_cpu ; ++i) {
             workerThreads.emplace_back(&Scheduler::SchedulerLoop, this);
         }

@@ -229,8 +229,6 @@ void Scheduler_start() {
 
     // background_task.detach();
     // std::cout << "File generation started in background.\n";
-
-
     os_scheduler->startScheduler(num_cpu);
     while (os_scheduler->isSchedulerRunning()) {
         generate_random_processes();
