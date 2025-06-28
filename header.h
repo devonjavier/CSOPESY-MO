@@ -5,7 +5,7 @@
 
 void initialize();
 void screen_init();
-void scheduler_test();
+void scheduler_start();
 void scheduler_stop();
 void report_util();
 void clear_screen();

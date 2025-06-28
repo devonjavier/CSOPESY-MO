@@ -1,6 +1,8 @@
 #include <string>
 #include <chrono>
 #include <iostream>
+#include <vector>
+#include "classes/ICommand.cpp"
 
 enum class ProcessState{
     IDLE,
@@ -27,25 +29,42 @@ class Process {
     private:
         int pid;
         std::string process_name;
-        int burst_time;
-        int remaining_burst_time;
-        int waiting_time;
-        int turnaround_time;
+        // int waiting_time;
+        // int turnaround_time;
         std::chrono::time_point<std::chrono::system_clock> start_time;
         std::chrono::time_point<std::chrono::system_clock> end_time;
         int current_core_id;
+        std::vector<ICommand*> instructions;
         ProcessState state;
 
 
     public:
         Process(int id, const std::string& name, int burst)
-            : pid(id), process_name(name), burst_time(burst), 
-              remaining_burst_time(burst), waiting_time(0), turnaround_time(0),
+            : pid(id), process_name(name), 
+            //     burst_time(burst), 
+            //   remaining_burst_time(burst), waiting_time(0), turnaround_time(0),
               current_core_id(-1), state(ProcessState::IDLE) {}
 
 
         //TODO / To think about lmfao
             //1. need setStartTime / setEndTime? for
+
+        void addInstruction(ICommand* instruction) {
+            instructions.push_back(instruction);
+        }
+
+        const std::vector<ICommand*>& getInstructions() const {
+            return instructions;
+        }
+
+        void runInstructions() {
+            for (ICommand* cmd : instructions) {
+                cmd->execute();
+            }
+        }
+
+
+
 
         int getPid() const {
             return pid;
@@ -53,18 +72,18 @@ class Process {
         std::string getProcessName() const {
             return process_name;
         }
-        int getBurstTime() const {
-            return burst_time;
-        }
-        int getRemainingBurstTime() const {
-            return remaining_burst_time;
-        }
-        int getWaitingTime() const {
-            return waiting_time;
-        }
-        int getTurnaroundTime() const {
-            return turnaround_time;
-        }
+        // int getBurstTime() const {
+        //     return burst_time;
+        // }
+        // int getRemainingBurstTime() const {
+        //     return remaining_burst_time;
+        // }
+        // int getWaitingTime() const {
+        //     return waiting_time;
+        // }
+        // int getTurnaroundTime() const {
+        //     return turnaround_time;
+        // }
         std::chrono::time_point<std::chrono::system_clock> getStartTime() const {
             return start_time;
         }
@@ -140,4 +159,13 @@ class Process {
         //               << "State: " << static_cast<int>(state) // Convert enum to int for display
         //               << std::endl;
         // } 
+
+
+        // clean up step
+
+        ~Process() {
+            for (ICommand* instruction : instructions) {
+                delete instruction;
+            }
+        }
 };

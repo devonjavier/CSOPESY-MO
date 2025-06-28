@@ -9,7 +9,7 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
-#include "ProcessManager.cpp"
+#include "classes/ProcessManager.cpp"
 #include <fstream>
 #include <sstream>
 #include <random> // For random number generation
@@ -36,10 +36,6 @@ std::deque<Process> ready_queue;
 ScreenSession *head = nullptr; // linked list head
 ProcessManager* processManager = nullptr;
 
-std::vector<Process> processes;
-std::mutex process_mutex;
-
-
 std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
     if (tp.time_since_epoch().count() == 0) return "N/A";
     std::time_t tt = std::chrono::system_clock::to_time_t(tp);
@@ -49,82 +45,77 @@ std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>&
 }
 
 
-void run_fcfs_scheduler() {
-    while (scheduler_running && !ready_queue.empty()) {
-        Process proc = ready_queue.front();
-        ready_queue.pop_front();
+// void run_fcfs_scheduler() {
+//     while (scheduler_running && !ready_queue.empty()) {
+//         Process proc = ready_queue.front();
+//         ready_queue.pop_front();
 
-        std::thread([proc]() mutable {
-            {
-                std::lock_guard<std::mutex> lock(process_mutex);
-                proc.setState(ProcessState::RUNNING);
-                // proc.start_time = proc.getStartTime();
-                // proc.thread_id = std::this_thread::get_id();
-            }
+//         std::thread([proc]() mutable {
+//             {
+//                 std::lock_guard<std::mutex> lock(process_mutex);
+//                 proc.setState(ProcessState::RUNNING);
+//                 // proc.start_time = proc.getStartTime();
+//                 // proc.thread_id = std::this_thread::get_id();
+//             }
 
-            std::this_thread::sleep_for(std::chrono::seconds(2)); // simulate processing
+//             std::this_thread::sleep_for(std::chrono::seconds(2)); // simulate processing
 
-            {
-                std::lock_guard<std::mutex> lock(process_mutex);
-                proc.setState(ProcessState::FINISHED);
-                // proc.end_time = get_timestamp();
-            }
+//             {
+//                 std::lock_guard<std::mutex> lock(process_mutex);
+//                 proc.setState(ProcessState::FINISHED);
+//                 // proc.end_time = get_timestamp();
+//             }
 
-        }).detach();
-        std::this_thread::sleep_for(std::chrono::seconds(1)); // scheduler delay
-    }
-}
+//         }).detach();
+//         std::this_thread::sleep_for(std::chrono::seconds(1)); // scheduler delay
+//     }
+// }
 
 
-void run_rr_scheduler() {
-    while (scheduler_running && !ready_queue.empty()) {
-        Process proc = ready_queue.front();
-        ready_queue.pop_front();
+// void run_rr_scheduler() {
+//     while (scheduler_running && !ready_queue.empty()) {
+//         Process proc = ready_queue.front();
+//         ready_queue.pop_front();
 
-        std::thread([proc]() mutable {
-            {
-                std::lock_guard<std::mutex> lock(process_mutex);
-                proc.setState(ProcessState::RUNNING);
-                // proc.start_time = get_timestamp();
-                // proc.thread_id = std::this_thread::get_id();
-            }
+//         std::thread([proc]() mutable {
+//             {
+//                 std::lock_guard<std::mutex> lock(process_mutex);
+//                 proc.setState(ProcessState::RUNNING);
+//                 // proc.start_time = get_timestamp();
+//                 // proc.thread_id = std::this_thread::get_id();
+//             }
 
-            std::this_thread::sleep_for(std::chrono::seconds(quantumcycles));
+//             std::this_thread::sleep_for(std::chrono::seconds(quantumcycles));
 
-            {
-                std::lock_guard<std::mutex> lock(process_mutex);
-                proc.setState(ProcessState::FINISHED);
-                // proc.status = "Finished";
-                // proc.end_time = get_timestamp();
-            }
+//             {
+//                 std::lock_guard<std::mutex> lock(process_mutex);
+//                 proc.setState(ProcessState::FINISHED);
+//                 // proc.status = "Finished";
+//                 // proc.end_time = get_timestamp();
+//             }
 
-        }).detach();
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-}
+//         }).detach();
+//         std::this_thread::sleep_for(std::chrono::seconds(1));
+//     }
+// }
 
 void generate_random_processes() {
     static int next_id = 1;
-    int min_val = 0;
-    double max_val = std::pow(2.0, 32.0);
+
+    static std::default_random_engine generator(
+        std::chrono::system_clock::now().time_since_epoch().count()
+    );
+    std::uniform_int_distribution<int> instruction_dist(min_ins, max_ins);
 
     for (int i = 0; i < batchprocess_freq; ++i) {
-        
-        //randomizer
-        std::default_random_engine generator(
-            std::chrono::system_clock::now().time_since_epoch().count()
-        );
-        std::uniform_int_distribution<int> distribution(min_val, max_val);
+        int burst_time = instruction_dist(generator);
 
-        Process proc = Process(next_id++, "process" + std::to_string(next_id), distribution(generator));
-        // proc.id = next_id++;
-        // proc.filename = "process" + std::to_string(proc.id);
-        // proc.status = "Waiting";
-        ready_queue.push_back(proc);
-        processes.push_back(proc);
+        Process proc(next_id++, "process" + std::to_string(next_id), burst_time);
+        proc.setState(ProcessState::WAITING);
+
+        processManager->addProcess(proc);
     }
 }
-
 
 
 void initialize() {
@@ -231,6 +222,11 @@ void screen_init() {
 //    - starts the scheduler
 void scheduler_start() {
     std::cout << "Starting scheduler test...\n";
+
+
+    // PROCESS GENERATION
+
+
     // file_count = 0;
     // std::thread background_task([](){
     //     start_file_generation();
@@ -239,16 +235,16 @@ void scheduler_start() {
     // background_task.detach();
     // std::cout << "File generation started in background.\n";
 
-    scheduler_running = true;
-    while (scheduler_running) {
-        generate_random_processes();
-        if (scheduler == "fcfs") {
-            run_fcfs_scheduler();
-        } else if (scheduler == "rr") {
-            run_rr_scheduler();
-        }
-        std::this_thread::sleep_for(std::chrono::seconds(5));
-    }
+    // scheduler_running = true;
+    // while (scheduler_running) {
+    //     generate_random_processes();
+    //     if (scheduler == "fcfs") {
+    //         run_fcfs_scheduler();
+    //     } else if (scheduler == "rr") {
+    //         run_rr_scheduler();
+    //     }
+    //     std::this_thread::sleep_for(std::chrono::seconds(5));
+    // }
 }
 
 
@@ -271,15 +267,15 @@ void scheduler_stop() {
 //        - Error logs
 
 void report_util() {
-    std::ofstream log("csopesy-log.txt", std::ios::app);
-    log << "===== Report (" << get_timestamp() << ") =====\n";
+//     std::ofstream log("csopesy-log.txt", std::ios::app);
+//     log << "===== Report (" << get_timestamp() << ") =====\n";
 
-    //write the same stats as screen-ls
-    std::cout << "Memory Usage: __ / __ KB\n";
-    std::cout << "CPU Usage: __%\n";
+//     //write the same stats as screen-ls
+//     std::cout << "Memory Usage: __ / __ KB\n";
+//     std::cout << "CPU Usage: __%\n";
 
-    log.close();
-    std::cout << "System report saved to csopesy-log.txt\n";
+//     log.close();
+//     std::cout << "System report saved to csopesy-log.txt\n";
 }
 
 // 6. clear_screen()
@@ -534,26 +530,26 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         if (current_screen) current_screen->current_line++;
 
     } else if(choice.rfind("screen -ls", 0) == 0) {
-        std::cout << "\nBackground Processes:\n";
-        std::lock_guard<std::mutex> lock(process_mutex);
+        // std::cout << "\nBackground Processes:\n";
+        // std::lock_guard<std::mutex> lock(process_mutex);
 
-        if (processes.empty()) {
-            std::cout << "No background processes.\n";
-        } else {
-            for (const auto& proc : processes) {
-                std::cout << "ID: " << proc.getPid() << "\n"
-                        << "Name: " << proc.getProcessName() << "\n"
-                        // << "Priority: " << proc.getPriority() << "\n"
-                        << "Status: " << processStateToString(proc.getState()) << "\n"
-                        << "Thread/Core ID: " << proc.getCurrentCoreId() << "\n"
-                        << "Started: " << formatTime(proc.getStartTime()) << "\n"
-                        << "Ended: " << (proc.getState() == ProcessState::FINISHED ? formatTime(proc.getEndTime()) : "N/A") << "\n\n";
-            }
-        }
+        // if (processes.empty()) {
+        //     std::cout << "No background processes.\n";
+        // } else {
+        //     for (const auto& proc : processes) {
+        //         std::cout << "ID: " << proc.getPid() << "\n"
+        //                 << "Name: " << proc.getProcessName() << "\n"
+        //                 // << "Priority: " << proc.getPriority() << "\n"
+        //                 << "Status: " << processStateToString(proc.getState()) << "\n"
+        //                 << "Thread/Core ID: " << proc.getCurrentCoreId() << "\n"
+        //                 << "Started: " << formatTime(proc.getStartTime()) << "\n"
+        //                 << "Ended: " << (proc.getState() == ProcessState::FINISHED ? formatTime(proc.getEndTime()) : "N/A") << "\n\n";
+        //     }
+        // }
 
-        if (current_screen) current_screen->current_line++;
+        // if (current_screen) current_screen->current_line++;
 
-        system("pause");
+        // system("pause");
 
         
     } else if (choice == "^g") {
