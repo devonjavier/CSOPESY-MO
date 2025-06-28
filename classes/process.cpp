@@ -29,8 +29,7 @@ class Process {
     private:
         int pid;
         std::string process_name;
-        // int waiting_time;
-        // int turnaround_time;
+        std::vector<ICommand*> instructions;
         std::chrono::time_point<std::chrono::system_clock> start_time;
         std::chrono::time_point<std::chrono::system_clock> end_time;
         int current_core_id;
@@ -41,7 +40,7 @@ class Process {
     public:
         Process(int id, const std::string& name, int burst)
             : pid(id), process_name(name), 
-            //     burst_time(burst), 
+            // burst_time(burst), 
             //   remaining_burst_time(burst), waiting_time(0), turnaround_time(0),
               current_core_id(-1), state(ProcessState::IDLE) {}
 
