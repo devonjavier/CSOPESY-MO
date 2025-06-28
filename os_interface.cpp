@@ -37,6 +37,14 @@ std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>&
     return std::string(buffer);
 }
 
+std::string get_timestamp() {
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    char buffer[100];
+    std::strftime(buffer, sizeof(buffer), "%m/%d/%Y, %I:%M:%S %p", std::localtime(&now_time));
+    return std::string(buffer);
+}
+
 ICommand* generateRandomInstruction() {
     // Randomly choose an instruction type
     int instruction_type = rand() % 6; // 0 to 4 for 5 different types
@@ -63,6 +71,8 @@ ICommand* generateRandomInstruction() {
             return new SUBTRACT("result", "var" + std::to_string(rand() % 100), "var" + std::to_string(rand() % 100));
         case 5:
             return new ADD("result", "var" + std::to_string(rand() % 100), "var" + std::to_string(rand() % 100));
+        default:
+            return new UNKNOWN;
     }
 }
 
@@ -76,7 +86,7 @@ void generate_random_processes() {
         std::default_random_engine generator(
             std::chrono::system_clock::now().time_since_epoch().count()
         );
-        std::uniform_int_distribution<int> distribution(min_ins, max_ins);
+        std::uniform_int_distribution<int> instructionDist(min_ins, max_ins);
 
         // Adjust the arguments below to match the actual Process constructor signature
         Process proc(next_id, "process" + std::to_string(next_id));
@@ -84,8 +94,8 @@ void generate_random_processes() {
 
         next_id++;
 
-        std::uniform_int_distribution<uint64_t> distribution(1, (1ULL << 32));
-        uint64_t num_instructions = distribution(generator);
+        std::uniform_int_distribution<uint64_t> otherDist(1, (1ULL << 32));
+        uint64_t num_instructions = otherDist(generator);
 
         for (uint64_t i = 0; i < num_instructions; ++i) {
             ICommand* cmd = generateRandomInstruction(); // Your custom logic here
@@ -300,13 +310,7 @@ void exit_os(int status) {
 }
 
 
-std::string get_timestamp() {
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-    char buffer[100];
-    std::strftime(buffer, sizeof(buffer), "%m/%d/%Y, %I:%M:%S %p", std::localtime(&now_time));
-    return std::string(buffer);
-}
+
 
 // void generate_file(int core_id){
 //     int current_file = file_count.fetch_add(1);
