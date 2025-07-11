@@ -87,14 +87,18 @@ class Scheduler {
         std::cout << "Worker thread for core " << coreId << " exiting.\n";
     }
 
-    
+
+
+
     void startScheduler(int num_cpu) {
         SchedulerRunning = true;
         GeneratingProcesses = true;
-        for (int i = 0; i < num_cpu; ++i) {
-            workerThreads.emplace_back([this, i]() {
-                this->schedulerAlgo(i);
-            });
+        for (int i = 0; i < num_cpu ; ++i) {
+            //TODO: what coreID does the workerThread put the scheduler algorithm in????
+            //-andrei
+            //for now imma put it as the index of for loop
+            std::cout << "to fix: startScheduler(), fix what coreID to put scheduler algorithm to" << std::endl;
+            workerThreads.emplace_back(&Scheduler::schedulerAlgo, this, i); //i variable here needs to be changed
         }
     }
 
@@ -155,4 +159,3 @@ class Scheduler {
     //     }
     // }
 };
-
