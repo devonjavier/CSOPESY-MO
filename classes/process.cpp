@@ -178,6 +178,7 @@
 
 // classes/Process.cpp
 #include "process.h"
+#include "ICommand.cpp"
 #include <iostream>
 
 std::string processStateToString(ProcessState state) {

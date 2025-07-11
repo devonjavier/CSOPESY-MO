@@ -112,6 +112,7 @@
     "forward_list": "cpp",
     "map": "cpp",
     "mutex": "cpp",
-    "valarray": "cpp"
+    "valarray": "cpp",
+    "__locale": "cpp"
   }
 }
