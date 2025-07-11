@@ -15,6 +15,8 @@
 #include <chrono> // For random number seeding with time
 #include <cmath> 
 
+using namespace std;
+
 
 //initialization of variables
 int num_cpu = 0;
@@ -444,28 +446,34 @@ void find_screen(std::string name) {
 
 bool accept_input(std::string choice, ScreenSession *current_screen){
     bool exit = false;
+
+    //convert choice to lowercase for case-insensitive comparison
+    for (char &c : choice) {
+        c = std::tolower(static_cast<unsigned char>(c));
+    }
+
     if (choice == "initialize") {
         // initialize os env
 
-        std::cout << std::endl << std::endl;
+        initialize();
 
+        std::cout << std::endl << std::endl;
         std::cout << "Initialized configuration: \nCPU Cores: " << num_cpu << "\n";
         std::cout << "Scheduler: " << scheduler_type << "\n";
         std::cout << "Quantum Cycles: " << quantumcycles << "\n";
         std::cout << "Batch Process Frequency: " << batchprocess_freq << "\n";
         std::cout << "Min Instructions: " << min_ins << "\n";
         std::cout << "Max Instructions: " << max_ins << "\n";
-        std::cout << "Delays per Execution: " << delays_perexec << "\n";
+        std::cout << "Delays per Execution: " << delays_perexec << "\n\n\n";
         
-        initialize();
         if (current_screen) current_screen->current_line++;
         system("pause");
-    } else if (choice == "Scheduler-start") {
+    } else if (choice == "scheduler-start") {
         std::cout << "Scheduler-test command recognized. Doing something.\n";
         Scheduler_start();
         if (current_screen) current_screen->current_line++;
         system("pause");
-    } else if (choice == "Scheduler-stop") {
+    } else if (choice == "scheduler-stop") {
         std::cout << "Scheduler-stop command recognized. Doing something.\n";
       // debugging purposesl
         Scheduler_stop();
@@ -544,6 +552,8 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
 
 
 void menu(){
+    clear_screen();
+
     std::string choice;
 
     while(true){
