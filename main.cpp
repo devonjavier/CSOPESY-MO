@@ -3,8 +3,7 @@
 /*
     BALINGIT, JAVIER, RAMOS
 
- * Task: MCO1
- */
+*/
 
 
 int main() {
