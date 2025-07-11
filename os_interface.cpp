@@ -27,6 +27,11 @@ int min_ins = 0;
 int max_ins = 0;
 int delays_perexec = 0;
 
+// new parameters for OS emulator memory manager
+int max_overall_mem = 0;
+int mem_per_frame = 0;
+int mem_per_proc = 0;
+
 //initialization of Screens and Processes Lists
 ScreenSession *head = nullptr; // linked list head
 Scheduler* os_scheduler = nullptr;
