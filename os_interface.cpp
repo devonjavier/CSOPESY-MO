@@ -82,31 +82,25 @@ void generate_random_processes() {
     static int next_id = 1;
 
     for (int i = 0; i < batchprocess_freq; ++i) {
-        //TODO: instructions within each process
-
-        //randomizing of number of instructions
         std::default_random_engine generator(
             std::chrono::system_clock::now().time_since_epoch().count()
         );
         std::uniform_int_distribution<int> instructionDist(min_ins, max_ins);
-
-        // Adjust the arguments below to match the actual Process constructor signature
-        Process proc(next_id, "process" + std::to_string(next_id));
-
-
-        next_id++;
-
         std::uniform_int_distribution<uint64_t> otherDist(1, (1ULL << 32));
         uint64_t num_instructions = otherDist(generator);
+
+        Process proc(next_id, "process" + std::to_string(next_id));
+
+        std::cout << "  -> Creating Process ID " << next_id
+                  << " with " << num_instructions << " instructions.\n";
 
         for (uint64_t i = 0; i < num_instructions; ++i) {
             ICommand* cmd = generateRandomInstruction(); // Your custom logic here
             proc.addInstruction(cmd);
         }
 
-
-
         os_scheduler->addProcess(proc);
+        next_id++;
     }
 }
 
@@ -215,16 +209,12 @@ void screen_init() {
 //    - starts the Scheduler
 void Scheduler_start() {
     std::cout << "Starting Scheduler test...\n";
-    // file_count = 0;
-    // std::thread background_task([](){
-    //     start_file_generation();
-    // });
 
-    // background_task.detach();
-    // std::cout << "File generation started in background.\n";
     os_scheduler->startScheduler(num_cpu);
+
     std::thread process_generator([]() {
         while (os_scheduler->isGeneratingProcesses()) {
+            std::cout << "[Process Generator] Generating new batch of processes...\n";
             generate_random_processes();
             os_scheduler->queueProcesses();
             std::this_thread::sleep_for(std::chrono::seconds(5));
@@ -472,7 +462,7 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         std::cout << "Scheduler-test command recognized. Doing something.\n";
         Scheduler_start();
         if (current_screen) current_screen->current_line++;
-        system("pause");
+        sleep(60);
     } else if (choice == "scheduler-stop") {
         std::cout << "Scheduler-stop command recognized. Doing something.\n";
       // debugging purposesl
