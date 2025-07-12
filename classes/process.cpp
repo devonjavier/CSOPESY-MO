@@ -3,7 +3,7 @@
 #include "ICommand.cpp"
 #include <iostream>
 
-const int MAX_TIMERS = 1024;
+const int MAX = 1024;               //arbitrary size for start_time and end_time arrays
 
 std::string processStateToString(ProcessState state) {
     switch (state) {
@@ -63,14 +63,14 @@ uint16_t Process::getWaitingTime() const {
 }
 
 uint64_t Process::getStartTime(int index) const {
-    if (index >= 0 && index < MAX_TIMERS) {
+    if (index >= 0 && index < MAX) {
         return start_time[index];
     }
     return 0;
 }
 
 uint64_t Process::getEndTime(int index) const {
-    if (index >= 0 && index < MAX_TIMERS) {
+    if (index >= 0 && index < MAX) {
         return end_time[index];
     }
     return 0;
@@ -94,6 +94,38 @@ std::unordered_map<std::string, uint16_t> Process::getVariables() const {
 
 uint16_t Process::getVariableValue(const std::string& name) {
     return variables.find(name) != variables.end() ? variables[name] : 0;
+}
+
+void Process::setBurstTime() {
+    burst_time = instructions.size();
+}
+
+void Process::setBurstTime(uint64_t burst) {
+    burst_time = burst;
+}
+
+void Process::setStartTime(uint64_t start) {
+    if (run_count >= MAX) {
+        fprintf(stderr, "Error: Index out of bounds with run_count=%zu\n", run_count);
+        return;
+    }
+    start_time[run_count] = start;
+}
+
+void Process::setEndTime(uint64_t end) {
+    if (run_count >= MAX) {
+        fprintf(stderr, "Error: Index out of bounds with run_count=%zu\n", run_count);
+        return;
+    }
+    end_time[run_count] = end;
+    run_count++;
+}
+
+void Process::setRemainingBurst(uint64_t remaining) {
+    remaining_burst = remaining;
+}
+void Process::setWaitingTime(uint64_t waiting) {
+    waiting_time = waiting;
 }
 
 void Process::setCurrentCoreId(int coreId) {
@@ -132,6 +164,7 @@ void Process::addInstruction(ICommand* instruction) {
 
 void Process::runInstructions() {
     for (ICommand* cmd : instructions) {
+
         cmd->execute(*this);
     }
     // end_time = std::chrono::system_clock::now();
@@ -155,3 +188,6 @@ void Process::displayInstructionList() {
     }
 }
 
+double updateRunningAverage(double previous_average, uint64_t new_wait, size_t index) {
+    return (previous_average * (double)index + new_wait) / (index + 1);
+}
