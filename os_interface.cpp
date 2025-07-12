@@ -36,6 +36,9 @@ int mem_per_proc = 0;
 ScreenSession *head = nullptr; // linked list head
 Scheduler* os_scheduler = nullptr;
 
+//protect link list of session instance/screen list
+std::mutex screenListMutex;
+
 std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
     if (tp.time_since_epoch().count() == 0) return "N/A";
     std::time_t tt = std::chrono::system_clock::to_time_t(tp);
@@ -106,6 +109,11 @@ void generate_random_processes() {
         }
 
         os_scheduler->addProcess(proc);
+        
+        // so that “screen -ls” will show this new process
+        create_process_screen(proc.getProcessName(),
+        // total_lines = proc.getInstructionCount());
+
         next_id++;
     }
     
@@ -455,6 +463,31 @@ void find_screen(std::string name) {
     screen_session(*current_screen);
     
 }
+
+/// Create (but don’t attach) a screen session for this process.
+void create_process_screen(const std::string& name,
+                           int total_lines = 1)
+{
+    std::lock_guard<std::mutex> lock(screenListMutex);
+
+    // if empty, make head
+    if (!head) {
+        head = new ScreenSession(name, 0, total_lines, get_timestamp());
+        return;
+    }
+    // else walk to end (avoid duplicates)
+    ScreenSession *cur = head;
+    while (cur) {
+        if (cur->name == name) {
+            // already have a session for this name
+            return;
+        }
+        if (!cur->next) break;
+        cur = cur->next;
+    }
+    cur->next = new ScreenSession(name, 0, total_lines, get_timestamp());
+}
+
 
 
 bool accept_input(std::string choice, ScreenSession *current_screen){
