@@ -7,7 +7,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <algorithm>
-#include <Windows.h>
+#include <windows.h>
 
 class Scheduler { 
 
@@ -17,28 +17,29 @@ class Scheduler {
     std::vector<Process> runningProcesses;
     std::vector<Process> completedProcesses;
     std::vector<std::thread> workerThreads;
-    std::atomic<bool> SchedulerRunning{false};
-    std::atomic<bool> GeneratingProcesses{false};            //i think we only need one flag right??
+    std::atomic<bool> schedulerRunning{false};
+    std::atomic<bool> generatingProcesses{false};            //i think we only need one flag right??
     std::mutex queueMutex;
     std::condition_variable queueCV;
     std::string SchedulerType;
     int quantumCycles; 
     uint16_t programcounter = 0;
 
-    void checkIfComplete() {
-        std::lock_guard<std::mutex> lock(queueMutex);
-        if (!GeneratingProcesses && ready_queue.empty() && runningThreadsDone()) {
-            SchedulerRunning = false;
-            queueCV.notify_all();
-            std::cout << "All processes completed. Scheduler is shutting down.\n";
-        }
-    }
-
 
     public:
     Scheduler(const std::string& Scheduler, int quantum) 
         : SchedulerType(Scheduler), quantumCycles(quantum) {}
 
+
+    void checkIfComplete() {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        if (!generatingProcesses && ready_queue.empty() && runningThreadsDone()) {
+            schedulerRunning = false;
+            queueCV.notify_all();
+            std::cout << "All processes completed. Scheduler is shutting down.\n";
+        }
+    }
+    
     void addProcess(const Process& process) {
         std::lock_guard<std::mutex> lock(queueMutex);
         processes.push_back(process);
@@ -133,7 +134,7 @@ class Scheduler {
                 quantumCycles);
             // e.g. execute slice instructions (or cycles)
             for (unsigned i = 0; i < slice; ++i) {
-            current.runNextInstruction();
+            current.runInstructions();
             }
             current.setRemainingBurst(
             current.getRemainingBurst() - slice
@@ -160,11 +161,13 @@ class Scheduler {
     // void Scheduler::startScheduler(int num_cpu) {
     void startScheduler(int num_cpu) {
         generatingProcesses = true;
-        cout << "Starting Scheduler with " << num_cpu << " cores.\n";
-        cout << "Scheduler Type: " << SchedulerType << "\n";
-        cout << "Quantum Cycles: " << quantumCycles << "\n";
-        cout << "Scheduler Running: " << (SchedulerRunning ? "Yes" : "No") << "\n";
-        cout << "Generating Processes: " << (GeneratingProcesses ? "Yes" : "No") << "\n";
+
+        std::cout << endl;
+        std::cout << "Starting Scheduler with " << num_cpu << " cores.\n";
+        std::cout << "Scheduler Type: " << SchedulerType << "\n";
+        std::cout << "Quantum Cycles: " << quantumCycles << "\n";
+        std::cout << "Scheduler Running: " << (schedulerRunning ? "Yes" : "No") << "\n";
+        std::cout << "Generating Processes: " << (generatingProcesses ? "Yes" : "No") << "\n";
 
         //version 1
         // // SchedulerRunning = true;
@@ -195,7 +198,7 @@ class Scheduler {
         // }
 
         //version 3
-        SchedulerRunning = true;
+        schedulerRunning = true;
         generatingProcesses = true;
         
         for (int coreId = 0; coreId < num_cpu; ++coreId) {
@@ -230,7 +233,7 @@ class Scheduler {
         //         t.join();
         // workerThreads.clear();
 
-        SchedulerRunning = false;
+        schedulerRunning = false;
         generatingProcesses = false;
         queueCV.notify_all();
         for (auto &t : workerThreads)
@@ -241,21 +244,21 @@ class Scheduler {
     }
 
     void finalizeScheduler() {
-    SchedulerRunning = false;
-        for (auto& t : workerThreads) {
-            if (t.joinable())
-                t.join();
-        }
-        std::cout << "Scheduler fully shut down. All processes completed.\n";
+        schedulerRunning = false;
+            for (auto& t : workerThreads) {
+                if (t.joinable())
+                    t.join();
+            }
+            std::cout << "Scheduler fully shut down. All processes completed.\n";
     }
 
 
     bool isSchedulerRunning() const {
-        return SchedulerRunning;
+        return schedulerRunning;
     }
 
     bool isGeneratingProcesses() const {
-        return GeneratingProcesses;
+        return generatingProcesses;
     }
 
     bool runningThreadsDone() {
