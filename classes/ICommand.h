@@ -10,6 +10,7 @@ class ICommand {
 public:
     virtual ~ICommand() = default;
     virtual void execute(Process& process) = 0;
+    virtual std::string toString() const = 0;
 };
 
 // ========== Concrete Commands ========== //
@@ -26,6 +27,7 @@ public:
     PRINT(const std::string& msg, bool isMsg); // print custom message
 
     void execute(Process& process) override;
+    std::string PRINT::toString() const;
 };
 
 class DECLARE : public ICommand {
@@ -36,6 +38,7 @@ private:
 public:
     DECLARE(const std::string& varName, uint16_t val);
     void execute(Process& process) override;
+    std::string DECLARE::toString() const;
 };
 
 class ADD : public ICommand {
@@ -54,6 +57,7 @@ public:
     ADD(const std::string& var1, uint16_t value, const std::string& var3);
     ADD(const std::string& var1, uint16_t value1, uint16_t value2);
     void execute(Process& process) override;
+    std::string ADD::toString() const;
 };
 
 class SUBTRACT : public ICommand {
@@ -72,6 +76,7 @@ public:
     SUBTRACT(const std::string& var1, uint16_t value, const std::string& var3);
     SUBTRACT(const std::string& var1, uint16_t value1, uint16_t value2);
     void execute(Process& process) override;
+    std::string SUBTRACT::toString() const;
 };
 
 class SLEEP : public ICommand {
@@ -81,6 +86,7 @@ private:
 public:
     SLEEP(uint8_t ticks);
     void execute(Process& process) override;
+    std::string SLEEP::toString() const;
 };
 
 class FOR : public ICommand {
@@ -91,6 +97,7 @@ private:
 public:
     FOR(std::vector<std::unique_ptr<ICommand>>&& instrs, uint8_t repeats);
     void execute(Process& process) override;
+    std::string FOR::toString() const;
 };
 
 class UNKNOWN : public ICommand {
@@ -101,4 +108,5 @@ public:
     UNKNOWN(); // Default constructor
     UNKNOWN(const std::string& reasonMessage);
     void execute(Process& process) override;
+    std::string UNKNOWN::toString() const;
 };
