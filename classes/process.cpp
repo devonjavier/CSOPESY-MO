@@ -162,7 +162,6 @@ void Process::addInstruction(ICommand* instruction) {
 
 void Process::runInstructions() {
     for (ICommand* cmd : instructions) {
-
         cmd->execute(*this);
     }
     // end_time = std::chrono::system_clock::now();
