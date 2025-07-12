@@ -100,7 +100,7 @@ void generate_random_processes() {
                   << " with " << num_instructions << " instructions.\n";
 
         for (uint64_t i = 0; i < num_instructions; ++i) {
-            ICommand* cmd = generateRandomInstruction(); // Your custom logic here
+            ICommand* cmd = generateRandomInstruction();
             proc.addInstruction(cmd);
         }
 
@@ -467,7 +467,7 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         std::cout << "Scheduler-test command recognized. Doing something.\n";
         Scheduler_start();
         if (current_screen) current_screen->current_line++;
-        sleep(60);
+        // sleep(60);
     } else if (choice == "scheduler-stop") {
         std::cout << "Scheduler-stop command recognized. Doing something.\n";
       // debugging purposesl
