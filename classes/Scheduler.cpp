@@ -162,12 +162,12 @@ class Scheduler {
     void startScheduler(int num_cpu) {
         generatingProcesses = true;
 
-        std::cout << endl;
+        std::cout << std::endl;
         std::cout << "Starting Scheduler with " << num_cpu << " cores.\n";
         std::cout << "Scheduler Type: " << SchedulerType << "\n";
         std::cout << "Quantum Cycles: " << quantumCycles << "\n";
         std::cout << "Scheduler Running: " << (schedulerRunning ? "Yes" : "No") << "\n";
-        std::cout << "Generating Processes: " << (generatingProcesses ? "Yes" : "No") << "\n\n\n";
+        std::cout << "Generating Processes: " << (generatingProcesses ? "Yes" : "No") << "\n\n\nƒ";
 
         //version 1
         // // SchedulerRunning = true;
