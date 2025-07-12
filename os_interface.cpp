@@ -180,6 +180,24 @@ void initialize() {
             }
         } else if (key == "delays-perexec") {
             iss >> delays_perexec;
+        } else if (key == "max-overall-mem") {
+            iss >> max_overall_mem;
+            if (max_overall_mem < 1) {
+                std::cerr << "Invalid max-overall-mem value. Must be >=1." << std::endl;
+            }
+        } else if (key == "mem-per-frame") {
+            iss >> mem_per_frame;
+            if (mem_per_frame < 1) {
+                std::cerr << "Invalid mem-per-frame value. Must be >=1." << std::endl;
+            }
+        } else if (key == "mem-per-proc") {
+            iss >> mem_per_proc;
+            if (mem_per_proc < 1) {
+                std::cerr << "Invalid mem-per-proc value. Must be >=1." << std::endl;
+            }
+        } else {
+            std::cerr << "Unknown configuration key: " << key << std::endl;
+
         }
     };
 
@@ -215,8 +233,6 @@ void screen_init() {
 //
 //    - starts the Scheduler
 void Scheduler_start() {
-    std::cout << "Starting Scheduler test...\n";
-
     os_scheduler->startScheduler(num_cpu);
 
     std::thread process_generator([]() {
@@ -469,11 +485,10 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         if (current_screen) current_screen->current_line++;
         system("pause");
     } else if (choice == "scheduler-start") {
-        std::cout << "Scheduler-test command recognized. Doing something.\n";
         Scheduler_start();
         if (current_screen) current_screen->current_line++;
         std::cout << "ending scheduler_start() function\n";
-        sleep(60);
+        Sleep(60);
         system("pause");
     } else if (choice == "scheduler-stop") {
         std::cout << "Scheduler-stop command recognized. Doing something.\n";
@@ -513,39 +528,39 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         if (current_screen) current_screen->current_line++;
         system("pause");
 
-    } 
-
-    else if (choice.rfind("screen -s ", 0) == 0) {
+    } else if (choice.rfind("screen -s ", 0) == 0) {
         std::string name = choice.substr(10);
         new_screen(name);
         if (current_screen) current_screen->current_line++;
-    }
-    else if (choice.rfind("screen -r ", 0) == 0) {
+    } else if (choice.rfind("screen -r ", 0) == 0) {
         std::string name = choice.substr(10);  // get <name>
         find_screen(name);
         if (current_screen) current_screen->current_line++;
 
-    // } else if(choice.rfind("screen -ls", 0) == 0) {
-    //     std::cout << "\nBackground Processes:\n";
-    //     std::lock_guard<std::mutex> lock(process_mutex);
+    } else if (choice == "screen -ls") {
+    std::cout << "\nActive screen sessions:\n";
 
-    //     if (processes.empty()) {
-    //         std::cout << "No background processes.\n";
-    //     } else {
-    //         for (const auto& proc : processes) {
-    //             std::cout << "ID: " << proc.getPid() << "\n"
-    //                     << "Name: " << proc.getProcessName() << "\n"
-    //                     // << "Priority: " << proc.getPriority() << "\n"
-    //                     << "Status: " << processStateToString(proc.getState()) << "\n"
-    //                     << "Thread/Core ID: " << proc.getCurrentCoreId() << "\n"
-    //                     << "Started: " << formatTime(proc.getStartTime()) << "\n"
-    //                     << "Ended: " << (proc.getState() == ProcessState::FINISHED ? formatTime(proc.getEndTime()) : "N/A") << "\n\n";
-    //         }
-    //     }
+    // If you ever spawn sessions from multiple threads, 
+    // protect head with a mutex:
+    // std::lock_guard<std::mutex> lock(screenListMutex);
 
-    //     if (current_screen) current_screen->current_line++;
+    ScreenSession* curr = head;
+    if (!curr) {
+        std::cout << "  (none)\n";
+    } else {
+        while (curr) {
+            std::cout
+                << "  Name:   "  << curr->name  
+                << "    Line:   " << curr->current_line 
+                << "/"        << curr->total_lines
+                << "    Created: " << curr->timestamp
+                << "\n";
+            curr = curr->next;
+        }
+    }
 
-    //     system("pause");
+    system("pause");
+    if (current_screen) current_screen->current_line++;
         
     } else if (choice == "^g") {
         std::thread(Scheduler_start).detach();
