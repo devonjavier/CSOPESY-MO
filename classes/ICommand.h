@@ -97,7 +97,7 @@ private:
 public:
     FOR(std::vector<std::unique_ptr<ICommand>>&& instrs, uint8_t repeats);
     void execute(Process& process) override;
-    std::string FOR::toString() const override;
+    std::string toString() const override;
 };
 
 class UNKNOWN : public ICommand {
