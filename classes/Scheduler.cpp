@@ -7,6 +7,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <algorithm>
+#include <Windows.h>
 
 class Scheduler { 
 
@@ -17,19 +18,21 @@ class Scheduler {
     std::vector<Process> completedProcesses;
     std::vector<std::thread> workerThreads;
     std::atomic<bool> SchedulerRunning{false};
-    std::atomic<bool> GeneratingProcesses{false};
+    std::atomic<bool> GeneratingProcesses{false};            //i think we only need one flag right??
     std::mutex queueMutex;
     std::condition_variable queueCV;
-    std::string SchedulerType; 
+    std::string SchedulerType;
     int quantumCycles; 
+    uint16_t programcounter = 0;
 
-    std::atomic<bool>       SchedulerRunning;
-    std::mutex              queueMutex;
-    std::condition_variable queueCV;
-    std::queue<Process>     ready_queue;
-    std::vector<Process>    runningProcesses;
-    std::vector<Process>    completedProcesses;
-    std::vector<std::thread> workerThreads;
+    void checkIfComplete() {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        if (!GeneratingProcesses && ready_queue.empty() && runningThreadsDone()) {
+            SchedulerRunning = false;
+            queueCV.notify_all();
+            std::cout << "All processes completed. Scheduler is shutting down.\n";
+        }
+    }
 
 
     public:
@@ -53,53 +56,117 @@ class Scheduler {
         }
     }
 
-    void schedulerAlgo() { //int coreId) {
-        while (true) {
-            Process current;
+    // //version 1
+    // void schedulerAlgo(int coreId) {
+    //     while (true) {
+    //         Process current;
+    //         {
+    //             //dequeue
+    //             std::unique_lock<std::mutex> lock(queueMutex);
 
-            {
-                std::unique_lock<std::mutex> lock(queueMutex);
-                queueCV.wait(lock, [this] {
-                    return !ready_queue.empty() || !SchedulerRunning;
-                });
+    //             //wake on new work or shutdown
+    //             queueCV.wait(lock, [this] {
+    //                 return !ready_queue.empty() || !SchedulerRunning;
+    //             });
 
-                //no more work *and* we’re shutting down --> exit
-                if (!SchedulerRunning && ready_queue.empty()) break;
+    //             //no more work AND we shutting down --> exit
+    //             if (!SchedulerRunning && ready_queue.empty()) break;
 
-                //spurious wake or still no work? loop again
-                if (ready_queue.empty()) continue;
+    //             //bobong fake awake or still no work? --> loop again
+    //             if (ready_queue.empty()) continue;
 
-                current = ready_queue.front();
-                ready_queue.pop();
+    //             current = ready_queue.front();
+    //             ready_queue.pop();
+    //             // current.setCurrentCoreId(coreId); 
+    //             runningProcesses.push_back(current);
+    //         }
 
-                current.setState(ProcessState::RUNNING);
-                // current.setCurrentCoreId(coreId); // ✅ Set here
+    //         current.setCurrentCoreId(coreId);
+    //         current.setState(ProcessState::RUNNING);
 
-                runningProcesses.push_back(current);
+    //         cout << "Running process ID: " << current.getPid() 
+    //              << " on core ID: " << current.getCurrentCoreId() << "\n";
+    //         //run the process instructions
+    //         // current.runInstructions();
+
+    //         //set state of process to FINISHED
+    //         current.setState(ProcessState::FINISHED);
+    //         cout << "Process ID: " << current.getPid() 
+    //              << " has finished running on core ID: " << current.getCurrentCoreId() << "\n";
+
+    //         {
+    //             std::lock_guard<std::mutex> lock(queueMutex);
+
+    //             //remove from running, push to completed
+    //             auto it = std::find_if(runningProcesses.begin(), runningProcesses.end(),
+    //                                 [&](const Process& p) { return p.getPid() == current.getPid(); });
+    //             if (it != runningProcesses.end()) {
+    //                 runningProcesses.erase(it);
+    //             }
+    //             completedProcesses.push_back(current);
+    //         }
+    //         checkIfComplete();
+    //     }
+    //     std::cout << "Worker thread for core " << coreId << " exiting.\n";
+    // }
+    //version 2
+    void schedulerAlgo(int coreId) {
+        while (generatingProcesses.load() || !ready_queue.empty()) {
+            std::unique_lock<std::mutex> lock(queueMutex);
+            queueCV.wait(lock, [this]{
+            return !ready_queue.empty()
+                || !generatingProcesses.load();
+            });
+
+            if (ready_queue.empty() && !generatingProcesses.load())
+            break;
+
+            // dequeue next process
+            Process current = ready_queue.front();
+            ready_queue.pop();
+            lock.unlock();
+
+            // ─── RUN YOUR ROUND-ROBIN TIME SLICE ───
+            current.setState(ProcessState::RUNNING);
+            unsigned slice = std::min<unsigned>(
+                current.getRemainingBurst(),
+                quantumCycles);
+            // e.g. execute slice instructions (or cycles)
+            for (unsigned i = 0; i < slice; ++i) {
+            current.runNextInstruction();
             }
+            current.setRemainingBurst(
+            current.getRemainingBurst() - slice
+            );
 
-            // current.runInstructions();
+            if (current.getRemainingBurst() > 0) {
+            // not done, re-enqueue
+            current.setState(ProcessState::WAITING);
+            std::lock_guard<std::mutex> reqlock(queueMutex);
+            ready_queue.push(current);
+            queueCV.notify_one();
+            } else {
+            // finished
             current.setState(ProcessState::FINISHED);
-
-            {
-                std::lock_guard<std::mutex> lock(queueMutex);
-
-                auto it = std::find_if(runningProcesses.begin(), runningProcesses.end(),
-                                    [&](const Process& p) { return p.getPid() == current.getPid(); });
-                if (it != runningProcesses.end()) {
-                    runningProcesses.erase(it);
-                }
-
-                completedProcesses.push_back(current);
+            std::lock_guard<std::mutex> complock(queueMutex);
+            completedProcesses.push_back(current);
             }
-
-            checkIfComplete();
         }
-
-        // std::cout << "Worker thread for core " << coreId << " exiting.\n";
+        std::cout << "Worker thread for core "
+                    << coreId << " exiting.\n";
     }
 
+
+    // void Scheduler::startScheduler(int num_cpu) {
     void startScheduler(int num_cpu) {
+        generatingProcesses = true;
+        cout << "Starting Scheduler with " << num_cpu << " cores.\n";
+        cout << "Scheduler Type: " << SchedulerType << "\n";
+        cout << "Quantum Cycles: " << quantumCycles << "\n";
+        cout << "Scheduler Running: " << (SchedulerRunning ? "Yes" : "No") << "\n";
+        cout << "Generating Processes: " << (GeneratingProcesses ? "Yes" : "No") << "\n";
+
+        //version 1
         // // SchedulerRunning = true;
         // GeneratingProcesses = true;
         // while (SchedulerRunning) {
@@ -109,34 +176,68 @@ class Scheduler {
         //     std::cout << "to fix: startScheduler(), fix what coreID to put scheduler algorithm intto" << std::endl;
         //     workerThreads.emplace_back(&Scheduler::schedulerAlgo, this); //i variable here needs to be changed
         // }
-        SchedulerRunning.store(true);
 
+        //version 2
+        // SchedulerRunning.store(true);
+
+        // for (int coreId = 0; coreId < num_cpu; ++coreId) {
+        //     workerThreads.emplace_back([this, coreId]() {
+        //         [this, coreId]() { this->schedulerAlgo(coreId); }
+        //         std::cout << "Worker thread for core " << coreId << " started.\n";
+
+        //         // // bind this thread to logical coreId
+        //         // DWORD_PTR mask = (1ULL << coreId);
+        //         // SetThreadAffinityMask(GetCurrentThread(), mask);
+
+        //         // // now enter your scheduling loop
+        //         // this->schedulerAlgo();
+        //     });
+        // }
+
+        //version 3
+        SchedulerRunning = true;
+        generatingProcesses = true;
+        
         for (int coreId = 0; coreId < num_cpu; ++coreId) {
-            workerThreads.emplace_back([this, coreId]() {
-                // bind this thread to logical coreId
-                DWORD_PTR mask = (1ULL << coreId);
-                SetThreadAffinityMask(GetCurrentThread(), mask);
+            //directly bind to member function
+            // workerThreads.emplace_back(&Scheduler::schedulerAlgo, this, coreId);
 
-                // now enter your scheduling loop
-                this->schedulerAlgo();
+            workerThreads.emplace_back([this,coreId](){
+                std::cout << "Worker thread for core " << coreId << " started.\n";
+                this->schedulerAlgo(coreId);
             });
         }
-
     }
+
+    void stopGenerating() {
+        generatingProcesses = false;
+        queueCV.notify_all();   // wake up any workers waiting
+    }
+
 
     void stopScheduler() {
         // GeneratingProcesses = false;
         // std::cout << "Scheduler stop signal received. Waiting for all processes to finish...\n";
-        {
-            std::lock_guard<std::mutex> lock(queueMutex);
-            SchedulerRunning.store(false);
-        }
-        queueCV.notify_all();
 
+        // {
+        //     std::lock_guard<std::mutex> lock(queueMutex);
+        //     SchedulerRunning.store(false);
+        // }
+        // queueCV.notify_all();
+
+        // for (auto &t : workerThreads)
+        //     if (t.joinable())
+        //         t.join();
+        // workerThreads.clear();
+
+        SchedulerRunning = false;
+        generatingProcesses = false;
+        queueCV.notify_all();
         for (auto &t : workerThreads)
-            if (t.joinable())
-                t.join();
+            if (t.joinable()) t.join();
         workerThreads.clear();
+
+
     }
 
     void finalizeScheduler() {
@@ -162,16 +263,6 @@ class Scheduler {
         return std::all_of(runningProcesses.begin(), runningProcesses.end(), [](const Process& p) {
             return p.getState() == ProcessState::FINISHED;
         });
-    }
-
-
-    void checkIfComplete() {
-        std::lock_guard<std::mutex> lock(queueMutex);
-        if (!GeneratingProcesses && ready_queue.empty() && runningThreadsDone()) {
-            SchedulerRunning = false;
-            queueCV.notify_all();
-            std::cout << "All processes completed. Scheduler is shutting down.\n";
-        }
     }
 
     void displayProcessList() {

@@ -460,35 +460,30 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         std::cout << "Quantum Cycles: " << quantumcycles << "\n";
         std::cout << "Batch Process Frequency: " << batchprocess_freq << "\n";
         std::cout << "Min Instructions: " << min_ins << "\n";
-<<<<<<< HEAD
         std::cout << "Max Instructions: " << (1ULL << max_ins) << "\n";
         std::cout << "Delays per Execution: " << delays_perexec << "\n\n";
         std::cout << "Max Overall Memory: " << max_overall_mem << "\n";
         std::cout << "Memory per Frame: " << mem_per_frame << "\n";
         std::cout << "Memory per Process: " << mem_per_proc << "\n\n\n\n";
-
-=======
-        std::cout << "Max Instructions: " << max_ins << "\n";
-        std::cout << "Delays per Execution: " << delays_perexec << "\n\n\n";
->>>>>>> 1de3a9529098009810675c4fdd40f0a93d370dc0
-        
+    
         if (current_screen) current_screen->current_line++;
         system("pause");
     } else if (choice == "scheduler-start") {
         std::cout << "Scheduler-test command recognized. Doing something.\n";
         Scheduler_start();
         if (current_screen) current_screen->current_line++;
-<<<<<<< HEAD
         std::cout << "ending scheduler_start() function\n";
-        // sleep(60);
-        system("pause");
-=======
         sleep(60);
->>>>>>> 1de3a9529098009810675c4fdd40f0a93d370dc0
+        system("pause");
     } else if (choice == "scheduler-stop") {
         std::cout << "Scheduler-stop command recognized. Doing something.\n";
-      // debugging purposesl
-        Scheduler_stop();
+        
+        //instead of forcibly joining all worker threads
+        // Scheduler_stop();
+
+        //stop the process generation, but let it finish draining the queue
+        os_scheduler->stopGenerating();
+
         if (current_screen) current_screen->current_line++;
         system("pause");
     } else if (choice == "report-util") {
