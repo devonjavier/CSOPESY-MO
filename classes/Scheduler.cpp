@@ -142,20 +142,21 @@ class Scheduler {
         }
     }
 
-
-
-
-    // void FCFS() {
-    //     while (!processQueue.empty()) {
-    //         Process currentProcess = processQueue.front();
-    //         processQueue.pop();
-    //         currentProcess.setState(ProcessState::RUNNING);
-    //         runningProcesses.push_back(currentProcess);
-
-    //         // Simulate process execution
-    //         std::this_thread::sleep_for(std::chrono::milliseconds(currentProcess.getBurstTime()));
-    //         currentProcess.setState(ProcessState::COMPLETED);
-    //         completedProcesses.push_back(currentProcess);
-    //     }
-    // }
+    void displayProcessList() {
+        for (Process proc : processes) {
+            std::cout << "Process ID: " << proc.getPid() << "\n"
+                << "Process Name: " << proc.getProcessName() << "\n"
+                << "Current Core ID: " << proc.getCurrentCoreId() << "\n"
+                << "Arrival Time: " << proc.getArrivalTime() << "\n"
+                << "Burst Time: " << proc.getBurstTime() << "\n"
+                << "Remaining Burst: " << proc.getRemainingBurst() << "\n"
+                << "Waiting Time: " << proc.getWaitingTime() << "\n"
+                << "Run Count: " << proc.getRunCount() << "\n"
+                << "State: " << processStateToString(proc.getState()) << "\n"
+                << "\n"
+                << std::endl;
+            
+            proc.displayInstructionList();
+        }
+    }
 };
