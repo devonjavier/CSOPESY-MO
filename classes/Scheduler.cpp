@@ -24,6 +24,15 @@ class Scheduler {
     std::string SchedulerType; 
     int quantumCycles; 
 
+    std::atomic<bool>       SchedulerRunning;
+    std::mutex              queueMutex;
+    std::condition_variable queueCV;
+    std::queue<Process>     ready_queue;
+    std::vector<Process>    runningProcesses;
+    std::vector<Process>    completedProcesses;
+    std::vector<std::thread> workerThreads;
+
+
     public:
     Scheduler(const std::string& Scheduler, int quantum) 
         : SchedulerType(Scheduler), quantumCycles(quantum) {}
@@ -45,24 +54,27 @@ class Scheduler {
         }
     }
 
-    void schedulerAlgo(int coreId) {
+    void schedulerAlgo() { //int coreId) {
         while (true) {
             Process current;
 
             {
                 std::unique_lock<std::mutex> lock(queueMutex);
                 queueCV.wait(lock, [this] {
-                    return !ready_queue.empty() || !SchedulerRunning || !GeneratingProcesses;
+                    return !ready_queue.empty() || !SchedulerRunning;
                 });
 
+                //no more work *and* we’re shutting down --> exit
                 if (!SchedulerRunning && ready_queue.empty()) break;
+
+                //spurious wake or still no work? loop again
                 if (ready_queue.empty()) continue;
 
                 current = ready_queue.front();
                 ready_queue.pop();
 
                 current.setState(ProcessState::RUNNING);
-                current.setCurrentCoreId(coreId); // ✅ Set here
+                // current.setCurrentCoreId(coreId); // ✅ Set here
 
                 runningProcesses.push_back(current);
             }
@@ -85,27 +97,47 @@ class Scheduler {
             checkIfComplete();
         }
 
-        std::cout << "Worker thread for core " << coreId << " exiting.\n";
+        // std::cout << "Worker thread for core " << coreId << " exiting.\n";
     }
 
-
-
-
     void startScheduler(int num_cpu) {
-        SchedulerRunning = true;
-        GeneratingProcesses = true;
-        for (int i = 0; i < num_cpu ; ++i) {
-            //TODO: what coreID does the workerThread put the scheduler algorithm in????
-            //-andrei
-            //for now imma put it as the index of for loop
-            std::cout << "to fix: startScheduler(), fix what coreID to put scheduler algorithm to" << std::endl;
-            workerThreads.emplace_back(&Scheduler::schedulerAlgo, this, i); //i variable here needs to be changed
+        // // SchedulerRunning = true;
+        // GeneratingProcesses = true;
+        // while (SchedulerRunning) {
+        //     //TODO: what coreID does the workerThread put the scheduler algorithm in????
+        //     //-andrei
+        //     //for now imma put it as the index of for loop
+        //     std::cout << "to fix: startScheduler(), fix what coreID to put scheduler algorithm intto" << std::endl;
+        //     workerThreads.emplace_back(&Scheduler::schedulerAlgo, this); //i variable here needs to be changed
+        // }
+        SchedulerRunning.store(true);
+
+        for (int coreId = 0; coreId < num_cpu; ++coreId) {
+            workerThreads.emplace_back([this, coreId]() {
+                // bind this thread to logical coreId
+                DWORD_PTR mask = (1ULL << coreId);
+                SetThreadAffinityMask(GetCurrentThread(), mask);
+
+                // now enter your scheduling loop
+                this->schedulerAlgo();
+            });
         }
+
     }
 
     void stopScheduler() {
-        GeneratingProcesses = false;
-        std::cout << "Scheduler stop signal received. Waiting for all processes to finish...\n";
+        // GeneratingProcesses = false;
+        // std::cout << "Scheduler stop signal received. Waiting for all processes to finish...\n";
+        {
+            std::lock_guard<std::mutex> lock(queueMutex);
+            SchedulerRunning.store(false);
+        }
+        queueCV.notify_all();
+
+        for (auto &t : workerThreads)
+            if (t.joinable())
+                t.join();
+        workerThreads.clear();
     }
 
     void finalizeScheduler() {
@@ -178,7 +210,7 @@ class Scheduler {
         }
     };
 
-    double FCFS(std::vector<Process>& processes) {
+    double FCFS() {
         if (processes.empty()) 
             return 0.0;
 

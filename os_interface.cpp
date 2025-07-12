@@ -87,11 +87,12 @@ void generate_random_processes() {
     static int next_id = 1;
 
     for (int i = 0; i < batchprocess_freq; ++i) {
+        cout << (i+1) << " out of " << batchprocess_freq << " processes being generated.\n";
         std::default_random_engine generator(
             std::chrono::system_clock::now().time_since_epoch().count()
         );
-        std::uniform_int_distribution<int> instructionDist(min_ins, max_ins);
-        std::uniform_int_distribution<uint64_t> otherDist(1, (1ULL << 32));
+        // std::uniform_int_distribution<int> instructionDist(min_ins, max_ins);
+        std::uniform_int_distribution<uint64_t> otherDist(min_ins, (1ULL << max_ins));
         uint64_t num_instructions = otherDist(generator);
 
         Process proc(next_id, "process" + std::to_string(next_id));
@@ -108,6 +109,7 @@ void generate_random_processes() {
         os_scheduler->addProcess(proc);
         next_id++;
     }
+    
 }
 
 
@@ -474,7 +476,7 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         std::cout << "Quantum Cycles: " << quantumcycles << "\n";
         std::cout << "Batch Process Frequency: " << batchprocess_freq << "\n";
         std::cout << "Min Instructions: " << min_ins << "\n";
-        std::cout << "Max Instructions: " << max_ins << "\n";
+        std::cout << "Max Instructions: " << (1ULL << max_ins) << "\n";
         std::cout << "Delays per Execution: " << delays_perexec << "\n\n";
         std::cout << "Max Overall Memory: " << max_overall_mem << "\n";
         std::cout << "Memory per Frame: " << mem_per_frame << "\n";
@@ -487,7 +489,9 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         std::cout << "Scheduler-test command recognized. Doing something.\n";
         Scheduler_start();
         if (current_screen) current_screen->current_line++;
+        std::cout << "ending scheduler_start() function\n";
         // sleep(60);
+        system("pause");
     } else if (choice == "scheduler-stop") {
         std::cout << "Scheduler-stop command recognized. Doing something.\n";
       // debugging purposesl
@@ -554,13 +558,13 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
     //     if (current_screen) current_screen->current_line++;
 
     //     system("pause");
-
         
     } else if (choice == "^g") {
         std::thread(Scheduler_start).detach();
     } else {
         std::cout << "Unknown command: " << choice << "\n";
     }
+    
     clear_screen();
     return exit;
 }
