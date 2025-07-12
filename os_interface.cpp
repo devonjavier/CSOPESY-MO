@@ -100,11 +100,10 @@ void generate_random_processes() {
                   << " with " << num_instructions << " instructions.\n";
 
         for (uint64_t i = 0; i < num_instructions; ++i) {
-            ICommand* cmd = generateRandomInstruction();
+            ICommand* cmd = generateRandomInstruction(); // Your custom logic here
             proc.addInstruction(cmd);
         }
-        proc.setBurstTime();            //set burst time based on number of instructions
-                                        //after random generation of instructions
+
         os_scheduler->addProcess(proc);
         next_id++;
     }
@@ -176,21 +175,6 @@ void initialize() {
             iss >> max_ins;
             if (max_ins < 1) {
                 std::cerr << "Invalid max-ins value. Must be >=1." << std::endl;
-            }
-        } else if(key == "max-overall-mem") {
-            iss >> max_overall_mem;
-            if (max_overall_mem < 1) {
-                std::cerr << "Invalid max-overall-mem value. Must be >=1." << std::endl;
-            }
-        } else if (key == "mem-per-frame") {
-            iss >> mem_per_frame;
-            if (mem_per_frame < 1) {
-                std::cerr << "Invalid mem-per-frame value. Must be >=1." << std::endl;
-            }
-        } else if (key == "mem-per-proc") {
-            iss >> mem_per_proc;
-            if (mem_per_proc < 1) {
-                std::cerr << "Invalid mem-per-proc value. Must be >=1." << std::endl;
             }
         } else if (key == "delays-perexec") {
             iss >> delays_perexec;
@@ -475,11 +459,7 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         std::cout << "Batch Process Frequency: " << batchprocess_freq << "\n";
         std::cout << "Min Instructions: " << min_ins << "\n";
         std::cout << "Max Instructions: " << max_ins << "\n";
-        std::cout << "Delays per Execution: " << delays_perexec << "\n\n";
-        std::cout << "Max Overall Memory: " << max_overall_mem << "\n";
-        std::cout << "Memory per Frame: " << mem_per_frame << "\n";
-        std::cout << "Memory per Process: " << mem_per_proc << "\n\n\n\n";
-
+        std::cout << "Delays per Execution: " << delays_perexec << "\n\n\n";
         
         if (current_screen) current_screen->current_line++;
         system("pause");
@@ -487,7 +467,7 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         std::cout << "Scheduler-test command recognized. Doing something.\n";
         Scheduler_start();
         if (current_screen) current_screen->current_line++;
-        // sleep(60);
+        sleep(60);
     } else if (choice == "scheduler-stop") {
         std::cout << "Scheduler-stop command recognized. Doing something.\n";
       // debugging purposesl

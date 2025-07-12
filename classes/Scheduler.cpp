@@ -7,7 +7,6 @@
 #include <mutex>
 #include <condition_variable>
 #include <algorithm>
-#include <cstddef>
 
 class Scheduler { 
 
@@ -143,94 +142,20 @@ class Scheduler {
         }
     }
 
-    void displayProcessList() {
-        for (Process proc : processes) {
-            std::cout << "Process ID: " << proc.getPid() << "\n"
-                << "Process Name: " << proc.getProcessName() << "\n"
-                << "Current Core ID: " << proc.getCurrentCoreId() << "\n"
-                << "Arrival Time: " << proc.getArrivalTime() << "\n"
-                << "Burst Time: " << proc.getBurstTime() << "\n"
-                << "Remaining Burst: " << proc.getRemainingBurst() << "\n"
-                << "Waiting Time: " << proc.getWaitingTime() << "\n"
-                << "Run Count: " << proc.getRunCount() << "\n"
-                << "State: " << processStateToString(proc.getState()) << "\n"
-                << "\n"
-                << std::endl;
-            
-            proc.displayInstructionList();
-        }
-    }
 
-    // Runs FCFS on the given list of processes.
-    //
-    // For each process, this will:
-    // 1) record its start/end times via appendStartTime/appendEndTime
-    // 2) set remaining_burst to 0
-    // 3) set waiting_time
-    // and finally return the overall average waiting time.
-    struct CompareArrival {
-        bool operator()(Process* a, Process* b) const {
-            auto at_a = a->getArrivalTime();
-            auto at_b = b->getArrivalTime();
-            if (at_a == at_b)
-                return a->getPid() > b->getPid();   // later PID => lower priority
-            return at_a > at_b;                     // larger arrival_time => lower priority
-        }
-    };
 
-    double FCFS(std::vector<Process>& processes) {
-        if (processes.empty()) 
-            return 0.0;
 
-        // Build a min‐heap of Process* by arrival time
-        std::priority_queue<
-            Process*,
-            std::vector<Process*>,
-            CompareArrival
-        > arrivalQ;
+    // void FCFS() {
+    //     while (!processQueue.empty()) {
+    //         Process currentProcess = processQueue.front();
+    //         processQueue.pop();
+    //         currentProcess.setState(ProcessState::RUNNING);
+    //         runningProcesses.push_back(currentProcess);
 
-        for (auto& proc : processes) {
-            arrivalQ.push(&proc);
-        }
-
-        // Pop the very first process
-        Process* prev = arrivalQ.top();
-        arrivalQ.pop();
-
-        // First process: starts at its arrival, no waiting
-        prev->setStartTime(prev->getArrivalTime());
-        prev->setEndTime(prev->getStartTime(0) + prev->getBurstTime());
-        prev->setRemainingBurst(0);
-        prev->setWaitingTime    (0);
-
-        double aveWait = 0.0;
-        size_t count  = 1;  // we’ll use this as the “i” in computeStreamAve
-
-        // Now handle the rest in arrival order
-        while (!arrivalQ.empty()) {
-            Process* curr = arrivalQ.top();
-            arrivalQ.pop();
-
-            uint64_t start = prev->getEndTime(0);
-            curr->setStartTime(start);
-
-            uint64_t finish = start + curr->getBurstTime();
-            curr->setEndTime(finish);
-
-            curr->setRemainingBurst(0);
-
-            uint64_t wait = finish
-                        - curr->getArrivalTime()
-                        - curr->getBurstTime();
-            curr->setWaitingTime(wait);
-
-            // update running average
-            aveWait = updateRunningAverage(aveWait, wait, count);
-            ++count;
-
-            prev = curr;
-        }
-
-        return aveWait;
-    }
+    //         // Simulate process execution
+    //         std::this_thread::sleep_for(std::chrono::milliseconds(currentProcess.getBurstTime()));
+    //         currentProcess.setState(ProcessState::COMPLETED);
+    //         completedProcesses.push_back(currentProcess);
+    //     }
+    // }
 };
