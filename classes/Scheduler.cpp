@@ -167,7 +167,7 @@ class Scheduler {
         std::cout << "Scheduler Type: " << SchedulerType << "\n";
         std::cout << "Quantum Cycles: " << quantumCycles << "\n";
         std::cout << "Scheduler Running: " << (schedulerRunning ? "Yes" : "No") << "\n";
-        std::cout << "Generating Processes: " << (generatingProcesses ? "Yes" : "No") << "\n";
+        std::cout << "Generating Processes: " << (generatingProcesses ? "Yes" : "No") << "\n\n\n";
 
         //version 1
         // // SchedulerRunning = true;
