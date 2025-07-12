@@ -3,8 +3,6 @@
 #include "ICommand.cpp"
 #include <iostream>
 
-const int MAX = 1024;               //arbitrary size for start_time and end_time arrays
-
 std::string processStateToString(ProcessState state) {
     switch (state) {
         case ProcessState::IDLE: return "IDLE";

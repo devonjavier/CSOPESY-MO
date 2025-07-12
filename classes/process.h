@@ -16,6 +16,7 @@ enum class ProcessState {
 };
 
 std::string processStateToString(ProcessState state);
+const int MAX = 1024;               //arbitrary size for start_time and end_time arrays
 
 class Process {
 private:
@@ -28,8 +29,8 @@ private:
     uint64_t burst_time;            //this one as well
     uint64_t remaining_burst;       //i feel like this is necessary kasi
     uint64_t waiting_time;          //no need i think
-    uint64_t start_time[MAX];      //arbitrary size of 1024
-    uint64_t end_time[MAX];        //arbitrary size of 1024
+    uint64_t start_time[MAX];       //arbitrary size of 1024
+    uint64_t end_time[MAX];         //arbitrary size of 1024
     size_t run_count;
 
     int current_core_id;            //need -1 for unassigned core
@@ -49,13 +50,13 @@ public:
     std::string getProcessName() const;
     // std::chrono::time_point<std::chrono::system_clock> getStartTime() const;
     // std::chrono::time_point<std::chrono::system_clock> getEndTime() const;
-    uint16_t Process::getArrivalTime() const;
-    uint16_t Process::getBurstTime() const;
-    uint16_t Process::getRemainingBurst() const;
-    uint16_t Process::getWaitingTime() const;
-    uint64_t Process::getStartTime(int index) const;
-    uint64_t Process::getEndTime(int index) const;
-    uint16_t Process::getRunCount() const;
+    uint16_t getArrivalTime() const;
+    uint16_t getBurstTime() const;
+    uint16_t getRemainingBurst() const;
+    uint16_t getWaitingTime() const;
+    uint64_t getStartTime(int index) const;
+    uint64_t getEndTime(int index) const;
+    uint16_t getRunCount() const;
     int getCurrentCoreId() const;
     ProcessState getState() const;
     std::unordered_map<std::string, uint16_t> getVariables() const;
