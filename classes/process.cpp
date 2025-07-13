@@ -36,6 +36,10 @@ const std::vector<ICommand*>& Process::getInstructions() const {
     return instructions;
 }
 
+int Process::getInstructionCount() const {
+    return instructions.size();
+}
+
 // uint64_t Process::getStartTime() const {
 //     return start_time;
 // }

@@ -46,6 +46,7 @@ public:
     void runInstructions();
 
     const std::vector<ICommand*>& getInstructions() const;
+    int getInstructionCount() const;
     uint16_t getPid() const;
     std::string getProcessName() const;
     // std::chrono::time_point<std::chrono::system_clock> getStartTime() const;
