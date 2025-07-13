@@ -39,6 +39,9 @@ Scheduler* os_scheduler = nullptr;
 //protect link list of session instance/screen list
 std::mutex screenListMutex;
 
+//initial declaration (maybe transfer to a header file)
+void create_process_screen(const std::string& name, int total_lines = 1)
+
 std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
     if (tp.time_since_epoch().count() == 0) return "N/A";
     std::time_t tt = std::chrono::system_clock::to_time_t(tp);
@@ -111,9 +114,7 @@ void generate_random_processes() {
         os_scheduler->addProcess(proc);
         
         // so that “screen -ls” will show this new process
-        create_process_screen(proc.getProcessName(),
-        // total_lines = proc.getInstructionCount());
-
+        create_process_screen(proc.getProcessName(), proc.getInstructionCount());
         next_id++;
     }
     
@@ -465,9 +466,7 @@ void find_screen(std::string name) {
 }
 
 /// Create (but don’t attach) a screen session for this process.
-void create_process_screen(const std::string& name,
-                           int total_lines = 1)
-{
+void create_process_screen(const std::string& name, int total_lines = 1){
     std::lock_guard<std::mutex> lock(screenListMutex);
 
     // if empty, make head
