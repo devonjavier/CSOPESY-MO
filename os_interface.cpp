@@ -40,15 +40,15 @@ Scheduler* os_scheduler = nullptr;
 std::mutex screenListMutex;
 
 //initial declaration (maybe transfer to a header file)
-void create_process_screen(const std::string& name, int total_lines = 1)
+void create_process_screen(const std::string& name, int total_lines);
 
-std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
-    if (tp.time_since_epoch().count() == 0) return "N/A";
-    std::time_t tt = std::chrono::system_clock::to_time_t(tp);
-    char buffer[100];
-    std::strftime(buffer, sizeof(buffer), "%d/%m/%Y %I:%M:%S%p", std::localtime(&tt));
-    return std::string(buffer);
-}
+// std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
+//     if (tp.time_since_epoch().count() == 0) return "N/A";
+//     std::time_t tt = std::chrono::system_clock::to_time_t(tp);
+//     char buffer[100];
+//     std::strftime(buffer, sizeof(buffer), "%d/%m/%Y %I:%M:%S%p", std::localtime(&tt));
+//     return std::string(buffer);
+// }
 
 std::string get_timestamp() {
     auto now = std::chrono::system_clock::now();
@@ -111,10 +111,13 @@ void generate_random_processes() {
             proc.addInstruction(cmd);
         }
 
-        os_scheduler->addProcess(proc);
+        
         
         // so that “screen -ls” will show this new process
         create_process_screen(proc.getProcessName(), proc.getInstructionCount());
+
+        os_scheduler->addProcess(proc);
+        
         next_id++;
     }
     
@@ -145,12 +148,17 @@ void initialize() {
         std::string key;
         if (!(iss >> key)) continue; // Skip empty lines
 
+        //convert choice to lowercase for case-insensitive comparison
+        for (char &c : key) {
+            c = std::tolower(static_cast<unsigned char>(c));
+        }
+
         if (key == "num-cpu") {
             iss >> num_cpu;
             if (num_cpu < 1 || num_cpu > 128) {
                 std::cerr << "Invalid num-cpu value. Must be in [1,128]." << std::endl;
             }
-        } else if (key == "Scheduler") {
+        } else if (key == "scheduler") {
             std::string rest;
             std::getline(iss, rest);
             std::istringstream rest_iss(rest);
