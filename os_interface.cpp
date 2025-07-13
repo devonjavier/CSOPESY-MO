@@ -41,6 +41,7 @@ std::mutex screenListMutex;
 
 //initial declaration (maybe transfer to a header file)
 void create_process_screen(const std::string& name, int total_lines);
+void new_screen(std::string name);
 
 // std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
 //     if (tp.time_since_epoch().count() == 0) return "N/A";
@@ -114,10 +115,11 @@ void generate_random_processes() {
         
         
         // so that “screen -ls” will show this new process
-        create_process_screen(proc.getProcessName(), proc.getInstructionCount());
-
+        new_screen(proc.getProcessName());
+        std::cout << "  -> Process ID " << proc.getProcessName() << " created with Screen\n";
+        system("pause");
+        // create_process_screen(proc.getProcessName(), proc.getInstructionCount());
         os_scheduler->addProcess(proc);
-        
         next_id++;
     }
     
@@ -475,6 +477,8 @@ void find_screen(std::string name) {
 
 /// Create (but don’t attach) a screen session for this process.
 void create_process_screen(const std::string& name, int total_lines = 1){
+    std::cout << "  -> Process ID " << name << " created";
+
     std::lock_guard<std::mutex> lock(screenListMutex);
 
     // if empty, make head
@@ -493,6 +497,7 @@ void create_process_screen(const std::string& name, int total_lines = 1){
         cur = cur->next;
     }
     cur->next = new ScreenSession(name, 0, total_lines, get_timestamp());
+    std::cout << "  -> Process ID " << name << " created with Screen\n";
 }
 
 
