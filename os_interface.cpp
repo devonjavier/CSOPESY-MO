@@ -2,13 +2,13 @@
 #include <string>
 #include <cstdlib> // for system()
 #include <ctime>
-#include "classes/screen.cpp"
+#include "classes/screen.h"
+#include "classes/Scheduler.h"
 #include "header.h"
 #include <vector>
 #include <thread>
 #include <mutex>
 #include <atomic>
-#include "classes/Scheduler.cpp"
 #include <fstream>
 #include <sstream>
 #include <random> // For random number generation
@@ -32,6 +32,10 @@ int max_overall_mem = 0;
 int mem_per_frame = 0;
 int mem_per_proc = 0;
 
+static bool is_initialized = false;
+int current_mem_usage = 0;
+
+
 //initialization of Screens and Processes Lists
 ScreenSession *head = nullptr; // linked list head
 Scheduler* os_scheduler = nullptr;
@@ -40,15 +44,15 @@ Scheduler* os_scheduler = nullptr;
 std::mutex screenListMutex;
 
 //initial declaration (maybe transfer to a header file)
-void create_process_screen(const std::string& name, int total_lines);
+void create_process_screen(const std::string& name, int total_lines = 1);
 
-// std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
-//     if (tp.time_since_epoch().count() == 0) return "N/A";
-//     std::time_t tt = std::chrono::system_clock::to_time_t(tp);
-//     char buffer[100];
-//     std::strftime(buffer, sizeof(buffer), "%d/%m/%Y %I:%M:%S%p", std::localtime(&tt));
-//     return std::string(buffer);
-// }
+std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
+    if (tp.time_since_epoch().count() == 0) return "N/A";
+    std::time_t tt = std::chrono::system_clock::to_time_t(tp);
+    char buffer[100];
+    std::strftime(buffer, sizeof(buffer), "%d/%m/%Y %I:%M:%S%p", std::localtime(&tt));
+    return std::string(buffer);
+}
 
 std::string get_timestamp() {
     auto now = std::chrono::system_clock::now();
@@ -97,9 +101,8 @@ void generate_random_processes() {
         std::default_random_engine generator(
             std::chrono::system_clock::now().time_since_epoch().count()
         );
-        // std::uniform_int_distribution<int> instructionDist(min_ins, max_ins);
-        std::uniform_int_distribution<uint64_t> otherDist(min_ins, (1ULL << max_ins));
-        uint64_t num_instructions = otherDist(generator);
+        std::uniform_int_distribution<uint32_t> instrDist(min_ins, max_ins);
+        uint64_t num_instructions = instrDist(generator);
 
         Process proc(next_id, "process" + std::to_string(next_id));
 
@@ -111,13 +114,11 @@ void generate_random_processes() {
             proc.addInstruction(cmd);
         }
 
-        
-        
-        // so that “screen -ls” will show this new process
-        create_process_screen(proc.getProcessName(), proc.getInstructionCount());
-
         os_scheduler->addProcess(proc);
         
+        // so that “screen -ls” will show this new process
+        new_screen(proc.getProcessName());
+        // create_process_screen(proc.getProcessName(), proc.getInstructionCount());
         next_id++;
     }
     
@@ -147,11 +148,6 @@ void initialize() {
         std::istringstream iss(line);
         std::string key;
         if (!(iss >> key)) continue; // Skip empty lines
-
-        //convert choice to lowercase for case-insensitive comparison
-        for (char &c : key) {
-            c = std::tolower(static_cast<unsigned char>(c));
-        }
 
         if (key == "num-cpu") {
             iss >> num_cpu;
@@ -257,7 +253,9 @@ void Scheduler_start() {
             std::cout << "[Process Generator] Generating new batch of processes...\n";
             generate_random_processes();
             os_scheduler->queueProcesses();
-            std::this_thread::sleep_for(std::chrono::seconds(5));
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(delays_perexec * CPU_TICK_MS)
+            );
         }
     });
 
@@ -286,15 +284,16 @@ void Scheduler_stop() {
 //        - Error logs
 
 void report_util() {
+    auto st = os_scheduler->getStatus();
     std::ofstream log("csopesy-log.txt", std::ios::app);
-    log << "===== Report (" << get_timestamp() << ") =====\n";
-
-    //write the same stats as screen-ls
-    std::cout << "Memory Usage: __ / __ KB\n";
-    std::cout << "CPU Usage: __%\n";
-
+    log << "===== Report ("<<get_timestamp()<<") =====\n";
+    log << "Total cores: "<<st.totalCores<<" Busy: "<<st.busyCores
+        <<" Free: "<<st.freeCores<<" CPU%: "<<st.cpuUtil<<"\n";
+    log << "READY:   "; for(auto& n: st.readyList)    log<<n<<" "; log<<"\n";
+    log << "RUNNING: "; for(auto& n: st.runningList)  log<<n<<" "; log<<"\n";
+    log << "FINISHED:"; for(auto& n: st.finishedList) log<<n<<" "; log<<"\n\n";
     log.close();
-    std::cout << "System report saved to csopesy-log.txt\n";
+    std::cout<<"System report saved to csopesy-log.txt\n";
 }
 
 // 6. clear_screen()
@@ -413,7 +412,7 @@ void screen_session(ScreenSession& session) {
         std::cout << "Instruction: " << session.current_line << " / " << session.total_lines << "\n";
         std::cout << "Created: " << session.timestamp << "\n";
         std::cout << "\nType 'exit' to return to main menu\n> ";
-        std::getline(std::cin, command);
+        std::getline(std::cin, choice);
         bool exit = accept_input(command, &session);
 
         if(exit == true){
@@ -505,10 +504,18 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         c = std::tolower(static_cast<unsigned char>(c));
     }
 
+    if (!is_initialized && choice != "initialize" && choice != "exit") {
+        std::cout << "Error: please run `initialize` first.\n";
+        return false;
+    }
+
+
     if (choice == "initialize") {
         // initialize os env
 
         initialize();
+
+        is_initialized = true;
 
         std::cout << std::endl << std::endl;
         std::cout << "Initialized configuration: \nCPU Cores: " << num_cpu << "\n";
@@ -538,6 +545,7 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
 
         //stop the process generation, but let it finish draining the queue
         os_scheduler->stopGenerating();
+        os_scheduler->stopScheduler();  // join worker threads and fully shut down
 
         if (current_screen) current_screen->current_line++;
         system("pause");
@@ -568,6 +576,12 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         if (current_screen) current_screen->current_line++;
         system("pause");
 
+    } else if (choice == "screen") {
+        std::cout<<"Usage:\n"
+            <<"  screen -s <name>  # attach/create session\n"
+            <<"  screen -ls        # list sessions\n"
+            <<"  screen -r <name>  # re-attach session\n";
+        return false;
     } else if (choice.rfind("screen -s ", 0) == 0) {
         std::string name = choice.substr(10);
         new_screen(name);
@@ -578,15 +592,16 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         if (current_screen) current_screen->current_line++;
 
     } else if (choice == "screen -ls") {
-    std::cout << "\nActive screen sessions:\n";
-
-    // If you ever spawn sessions from multiple threads, 
-    // protect head with a mutex:
-    // std::lock_guard<std::mutex> lock(screenListMutex);
-
-    ScreenSession* curr = head;
-    if (!curr) {
-        std::cout << "  (none)\n";
+        auto st = os_scheduler->getStatus();
+        std::cout << "Total cores: " << st.totalCores
+                    << "  Busy: "       << st.busyCores
+                    << "  Free: "       << st.freeCores
+                    << "  CPU%: "       << st.cpuUtil << "\n";
+        std::cout << "READY:   "; for (auto& n: st.readyList)    std::cout<<n<<" "; std::cout<<"\n";
+        std::cout << "RUNNING: "; for (auto& n: st.runningList)  std::cout<<n<<" "; std::cout<<"\n";
+        std::cout << "FINISHED:"; for (auto& n: st.finishedList) std::cout<<n<<" "; std::cout<<"\n";
+        system("pause");
+        if (current_screen) current_screen->current_line++;
     } else {
         while (curr) {
             std::cout
@@ -604,6 +619,21 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         
     } else if (choice == "^g") {
         std::thread(Scheduler_start).detach();
+    } else if (choice == "process-smi") {
+        auto proc = os_scheduler->findProcessByName(current_screen->name);
+        if (!proc) {
+        std::cout << "Process " << current_screen->name << " not found.\n";
+        } else {
+        std::cout << "Name: " << proc->getProcessName()
+                    << "  PID: " << proc->getPid()
+                    << "  State: " << processStateToString(proc->getState())
+                    << "\n";
+        for (auto& entry : proc->getLogBuffer())
+            std::cout << entry << "\n";
+        if (proc->getState() == ProcessState::FINISHED)
+            std::cout << "Finished!\n";
+        }
+        return false;  // stay in screen-session
     } else {
         std::cout << "Unknown command: " << choice << "\n";
     }
