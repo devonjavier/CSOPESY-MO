@@ -37,6 +37,8 @@ private:
     ProcessState state;
     std::unordered_map<std::string, uint16_t> variables;
 
+    std::vector<std::string> log_buffer;
+
 public:
     Process();
     Process(int id, const std::string& name);
@@ -78,4 +80,7 @@ public:
     void displayVariables() const;
 
     double updateRunningAverage(double previous_average, uint64_t new_wait, size_t index);
+
+    void log(const std::string& s);
+    const std::vector<std::string>& getLogBuffer() const;
 };
