@@ -44,6 +44,10 @@ Scheduler* os_scheduler = nullptr;
 
 // p_id
 int g_next_pid = 1;
+// process generator thread
+std::thread g_process_generator_thread;
+// process generator thread flag
+bool g_is_generating = false;
 
 
 //protect link list of session instance/screen list
@@ -109,6 +113,9 @@ Process* create_new_process(std::string name) {
     int num_instructions = instructionDist(generator);
 
     auto proc = std::make_unique<Process>(g_next_pid, name); 
+
+    //TEMP 
+    Process* raw_ptr = proc.get();
     
     std::cout << "  -> Creating Process ID " << proc->getPid() 
               << " with " << num_instructions << " instructions.\n";
@@ -119,14 +126,15 @@ Process* create_new_process(std::string name) {
     
     std::lock_guard<std::mutex> lock(screenListMutex);
     if (head == nullptr) {
-        head = proc.get(); 
+        head = raw_ptr; 
     } else {
         Process* current = head;
         while (current->getNext() != nullptr) {
             current = current->getNext();
         }
-        current->setNext(proc.get()); 
+        current->setNext(raw_ptr); 
     }
+
     os_scheduler->addProcess(std::move(proc));
     g_next_pid++;
     
@@ -268,20 +276,22 @@ void screen_init() {
 //
 //    - starts the Scheduler
 void scheduler_start() {
+    if (!os_scheduler) {
+        std::cout << "Scheduler not initialized.\n";
+        return;
+    }
     os_scheduler->startScheduler(num_cpu);
+    g_is_generating = true; // Set the flag to start the loop
 
-    std::thread process_generator([]() {
-        while (os_scheduler->isGeneratingProcesses()) {
-            std::cout << "[Process Generator] Generating new batch of processes...\n";
-            generate_random_processes();
-            os_scheduler->queueProcesses();
+    g_process_generator_thread = std::thread([]() {
+        while (g_is_generating) { // Loop is controlled by our flag
+            for (int i = 0; i < batchprocess_freq; ++i) {
+                create_new_process("Process" + std::to_string(g_next_pid));
+            }
+            os_scheduler->queueProcesses(); 
             std::this_thread::sleep_for(std::chrono::seconds(5));
         }
     });
-
-    os_scheduler->checkIfComplete();
-
-    process_generator.detach();  
 }
 
 
@@ -734,23 +744,11 @@ void menu(){
 
     if(os_scheduler != nullptr) {
         os_scheduler -> stopGenerating();
-
+        g_is_generating = false;
+        if (g_process_generator_thread.joinable()) {
+            g_process_generator_thread.join(); 
+        }
         delete os_scheduler;
 
-        Process* current = head;
-        while (current != nullptr) {
-            Process* next = current->getNext();
-            delete current; // Free the memory for the process
-            current = next;
-        }
     }
-
-    // while(true){
-    //     screen_init();
-    //     std:getline(std::cin, choice);
-    //     bool exit = accept_input(choice, nullptr);
-    //     if(exit == true){
-    //         break;
-    //     }
-    // }
 }

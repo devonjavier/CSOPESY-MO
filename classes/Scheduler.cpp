@@ -207,12 +207,10 @@ class Scheduler {
         generatingProcesses = true;
         
         for (int coreId = 0; coreId < num_cpu; ++coreId) {
-            // directly bind to member function
-            // workerThreads.emplace_back(&Scheduler::schedulerAlgo, this, coreId);
+            
 
             workerThreads.emplace_back([this,coreId](){
-                std::cout << "Worker thread for core " << coreId << " started.\n";
-                // this->schedulerAlgo(coreId); remove comment later
+                
             });
         }
     }
