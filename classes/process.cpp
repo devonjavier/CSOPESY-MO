@@ -192,3 +192,10 @@ void Process::displayInstructionList() {
 double updateRunningAverage(double previous_average, uint64_t new_wait, size_t index) {
     return (previous_average * (double)index + new_wait) / (index + 1);
 }
+
+void Process::log(const std::string& s) {
+  log_buffer.push_back(s);
+}
+const std::vector<std::string>& Process::getLogBuffer() const {
+  return log_buffer;
+}
