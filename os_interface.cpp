@@ -123,6 +123,9 @@ Process* create_new_process(std::string name) {
     for (int i = 0; i < num_instructions; ++i) {
         proc->addInstruction(std::unique_ptr<ICommand>(generateRandomInstruction())); 
     }
+
+    raw_ptr->setBurstTime(); // calc burst time
+    raw_ptr->setRemainingBurst(raw_ptr->getBurstTime());
     
     std::lock_guard<std::mutex> lock(screenListMutex);
     if (head == nullptr) {
