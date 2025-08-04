@@ -5,6 +5,7 @@
 #include "header.h"
 #include <vector>
 #include <thread>
+#include <memory>
 #include <mutex>
 #include <atomic>
 #include "classes/Scheduler.cpp"
@@ -107,29 +108,29 @@ Process* create_new_process(std::string name) {
     std::uniform_int_distribution<int> instructionDist(min_ins, max_ins);
     int num_instructions = instructionDist(generator);
 
-    Process* proc = new Process(g_next_pid, name); 
-
+    auto proc = std::make_unique<Process>(g_next_pid, name); 
+    
     std::cout << "  -> Creating Process ID " << proc->getPid() 
               << " with " << num_instructions << " instructions.\n";
-
+    
     for (int i = 0; i < num_instructions; ++i) {
         proc->addInstruction(std::unique_ptr<ICommand>(generateRandomInstruction())); 
     }
-
+    
     std::lock_guard<std::mutex> lock(screenListMutex);
     if (head == nullptr) {
-        head = proc; 
+        head = proc.get(); 
     } else {
         Process* current = head;
         while (current->getNext() != nullptr) {
             current = current->getNext();
         }
-        current->setNext(proc); 
+        current->setNext(proc.get()); 
     }
-    os_scheduler->addProcess(*proc);
+    os_scheduler->addProcess(std::move(proc));
     g_next_pid++;
-
-    return proc; 
+    
+    return head; 
 }
 
 
@@ -544,6 +545,8 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
 //     system("pause");
     } else if (choice == "exit") {
         *current = OSState::EXITING;
+        std::cout << "Exiting the OS...\n";
+        system("pause");
     } else if (choice == "clear") { 
         clear_screen();
         screen_init();
@@ -559,6 +562,8 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
 
 void accept_screen_session_input(std::string choice, OSState* current, Process** active_session){
         if (choice == "process-smi") {
+
+        // only function in the screen session
         // Logic to display process info for *active_session
         // std::cout << "--- Process: " << (*active_session)->name << " ---\n";
         // std::cout << "Instruction: " << (*active_session)->current_line << " / " << (*active_session)->total_lines << "\n";
@@ -702,6 +707,15 @@ void menu(){
 
     while(current != OSState::EXITING){
 
+        clear_screen();
+        
+        if (current == OSState::MAIN_MENU) {
+            screen_init();
+        } else if (current == OSState::SCREEN_SESSION) {
+            process_screen_init(active_process); // needs function 
+        }   
+
+
          if (!std::getline(std::cin, choice)) {
             break;
         }
@@ -720,8 +734,6 @@ void menu(){
 
     if(os_scheduler != nullptr) {
         os_scheduler -> stopGenerating();
-
-        sleep(60);
 
         delete os_scheduler;
 

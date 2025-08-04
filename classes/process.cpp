@@ -24,6 +24,8 @@ Process::Process(int id, const std::string& name)
     run_count = 0;                  //init to 0
 }
 
+Process::~Process() {}
+
 uint16_t Process::getPid() const {
     return pid;
 }
