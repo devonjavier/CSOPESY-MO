@@ -15,6 +15,8 @@
 #include <chrono> // For random number seeding with time
 #include <cmath> 
 
+#define CPU_TICK_MS 10
+
 using namespace std;
 
 
@@ -45,6 +47,7 @@ std::mutex screenListMutex;
 
 //initial declaration (maybe transfer to a header file)
 void create_process_screen(const std::string& name, int total_lines = 1);
+void new_screen(const std::string& name);
 
 std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
     if (tp.time_since_epoch().count() == 0) return "N/A";
@@ -412,7 +415,7 @@ void screen_session(ScreenSession& session) {
         std::cout << "Instruction: " << session.current_line << " / " << session.total_lines << "\n";
         std::cout << "Created: " << session.timestamp << "\n";
         std::cout << "\nType 'exit' to return to main menu\n> ";
-        std::getline(std::cin, choice);
+        std::getline(std::cin, command);
         bool exit = accept_input(command, &session);
 
         if(exit == true){
@@ -473,7 +476,7 @@ void find_screen(std::string name) {
 }
 
 /// Create (but don’t attach) a screen session for this process.
-void create_process_screen(const std::string& name, int total_lines = 1){
+void create_process_screen(const std::string& name, int total_lines){
     std::lock_guard<std::mutex> lock(screenListMutex);
 
     // if empty, make head
@@ -535,7 +538,7 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         Scheduler_start();
         if (current_screen) current_screen->current_line++;
         std::cout << "ending scheduler_start() function\n";
-        Sleep(60);
+        std::this_thread::sleep_for(std::chrono::milliseconds(60));
         system("pause");
     } else if (choice == "scheduler-stop") {
         std::cout << "Scheduler-stop command recognized. Doing something.\n";
@@ -592,16 +595,20 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
         if (current_screen) current_screen->current_line++;
 
     } else if (choice == "screen -ls") {
-        auto st = os_scheduler->getStatus();
-        std::cout << "Total cores: " << st.totalCores
-                    << "  Busy: "       << st.busyCores
-                    << "  Free: "       << st.freeCores
-                    << "  CPU%: "       << st.cpuUtil << "\n";
-        std::cout << "READY:   "; for (auto& n: st.readyList)    std::cout<<n<<" "; std::cout<<"\n";
-        std::cout << "RUNNING: "; for (auto& n: st.runningList)  std::cout<<n<<" "; std::cout<<"\n";
-        std::cout << "FINISHED:"; for (auto& n: st.finishedList) std::cout<<n<<" "; std::cout<<"\n";
-        system("pause");
-        if (current_screen) current_screen->current_line++;
+        ScreenSession* curr = head;
+        while (curr) {
+            auto st = os_scheduler->getStatus();
+            std::cout << "Total cores: " << st.totalCores
+                        << "  Busy: "       << st.busyCores
+                        << "  Free: "       << st.freeCores
+                        << "  CPU%: "       << st.cpuUtil << "\n";
+            std::cout << "READY:   "; for (auto& n: st.readyList)    std::cout<<n<<" "; std::cout<<"\n";
+            std::cout << "RUNNING: "; for (auto& n: st.runningList)  std::cout<<n<<" "; std::cout<<"\n";
+            std::cout << "FINISHED:"; for (auto& n: st.finishedList) std::cout<<n<<" "; std::cout<<"\n";
+            system("pause");
+            if (current_screen) current_screen->current_line++;
+            curr = curr->next;
+        }
     } else {
         while (curr) {
             std::cout
@@ -612,10 +619,9 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
                 << "\n";
             curr = curr->next;
         }
-    }
 
-    system("pause");
-    if (current_screen) current_screen->current_line++;
+        system("pause");
+        if (current_screen) current_screen->current_line++;
         
     } else if (choice == "^g") {
         std::thread(Scheduler_start).detach();

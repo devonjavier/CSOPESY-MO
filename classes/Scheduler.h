@@ -20,8 +20,6 @@ struct Status {
                            runningList,
                            finishedList;
 };
-Status getStatus() const;
-
 
 class Scheduler {
 private:
@@ -37,8 +35,7 @@ private:
     std::string SchedulerType;
     int quantumCycles; 
     uint16_t programcounter = 0;
-
-    void checkIfComplete();
+    
     void schedulerAlgo(int coreId);
 
 public:
@@ -59,6 +56,8 @@ public:
 
     double FCFS();
 
+    Status getStatus() const;
     Process* findProcessByName(const std::string& name);
+    void checkIfComplete();
 };
 #endif // SCHEDULER_H

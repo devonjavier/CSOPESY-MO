@@ -262,7 +262,7 @@ Process* Scheduler::findProcessByName(const std::string& name) {
 Scheduler::Status Scheduler::getStatus() const {
   Status s;
   s.totalCores = workerThreads.size();
-  s.busyCores = /* count threads currently executing */;
+  s.busyCores = // count threads currently executing 
   s.freeCores = s.totalCores - s.busyCores;
   s.cpuUtil   = 100.0 * s.busyCores / s.totalCores;
 
