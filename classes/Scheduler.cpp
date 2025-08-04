@@ -30,44 +30,32 @@ class Scheduler {
         while (this->schedulerRunning) {
             std::unique_ptr<Process> current_process;
 
-            // --- Safely Dequeue a Process ---
+            // process dequed from ready queue
             {
                 std::unique_lock<std::mutex> lock(this->queueMutex);
-
-                // Wait until the queue has a process OR the scheduler is stopping.
                 this->queueCV.wait(lock, [this] {
                     return !this->ready_queue.empty() || !this->schedulerRunning;
                 });
-
-                // If woken up to stop and the queue is empty, the thread can exit.
                 if (!this->schedulerRunning && this->ready_queue.empty()) {
-                    break; // Exit the while loop
+                    break; 
                 }
-
-                // If woken up but queue is somehow empty (spurious wakeup), just loop again.
                 if (this->ready_queue.empty()) {
                     continue;
                 }
-                
-                // Move ownership of the process from the queue to our local variable.
                 current_process = std::move(this->ready_queue.front());
                 this->ready_queue.pop();
-            } // Mutex is unlocked here.
-
-            // --- Execute the Process ---
+            } 
+            // process execution
             if (current_process) {
                 current_process->setState(ProcessState::RUNNING);
                 current_process->setCurrentCoreId(coreId);
-
-                std::cout << "Core " << coreId << " [FCFS]: Running process " << current_process->getPid() << " to completion." << std::endl;
                 
-                // For FCFS, we run all instructions until the process is done.
+                // fcfs run all instructions
                 current_process->runInstructions(); 
                 
                 std::cout << "Core " << coreId << " [FCFS]: Finished process " << current_process->getPid() << "." << std::endl;
                 current_process->setState(ProcessState::FINISHED);
 
-                // --- Move to Completed List ---
                 {
                     std::lock_guard<std::mutex> lock(this->queueMutex);
                     this->completedProcesses.push_back(std::move(current_process));
@@ -81,7 +69,7 @@ class Scheduler {
           while (this->schedulerRunning) {
             std::unique_ptr<Process> current_process;
 
-            // --- Safely Dequeue a Process (Identical to FCFS) ---
+            // process dequed from ready queue
             {
                 std::unique_lock<std::mutex> lock(this->queueMutex);
                 this->queueCV.wait(lock, [this] {
@@ -98,23 +86,20 @@ class Scheduler {
                 this->ready_queue.pop();
             }
 
-            // --- Execute a Time Slice ---
+            // time slice execution, rr
             if (current_process) {
                 current_process->setState(ProcessState::RUNNING);
                 current_process->setCurrentCoreId(coreId);
 
-                // Determine the number of instructions to run in this slice.
+
                 unsigned int slice = std::min<unsigned>(
                     current_process->getRemainingBurst(),
                     this->quantumCycles
-                );
+                ); // range 
 
-                std::cout << "Core " << coreId << " [RR]: Running process " << current_process->getPid() 
-                          << " for " << slice << " cycles." << std::endl;
 
-                // Execute only the instructions for this time slice.
-                // NOTE: This requires Process to have a method that can run a specific
-                // number of instructions, not just all of them.
+
+
                 current_process->runInstructionSlice(slice);
 
                 // Update the remaining burst time.
@@ -122,19 +107,18 @@ class Scheduler {
                     current_process->getRemainingBurst() - slice
                 );
 
-                // --- Decide What's Next for the Process ---
+ 
                 if (current_process->getRemainingBurst() > 0) {
-                    // Process is not finished, move it back to the ready queue (preemption).
                     std::cout << "Core " << coreId << " [RR]: Time slice ended for process " 
                               << current_process->getPid() << ". Re-queueing." << std::endl;
                     current_process->setState(ProcessState::WAITING);
                     {
                         std::lock_guard<std::mutex> lock(this->queueMutex);
                         this->ready_queue.push(std::move(current_process));
-                        this->queueCV.notify_one(); // Notify another thread that work is available
+                        this->queueCV.notify_one(); 
                     }
                 } else {
-                    // Process is finished.
+
                     std::cout << "Core " << coreId << " [RR]: Finished process " << current_process->getPid() << "." << std::endl;
                     current_process->setState(ProcessState::FINISHED);
                     {
