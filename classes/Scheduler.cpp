@@ -2,7 +2,7 @@
 #include <iostream>      // for std::cout, etc.
 
 Scheduler::Scheduler(const std::string& schedulerType, int quantum)
-  : SchedulerType(schedulerType), quantumCycles(quantum) {}
+: SchedulerType(schedulerType), quantumCycles(quantum) {}
 
 void Scheduler::addProcess(const Process& p) {
     std::lock_guard<std::mutex> lock(queueMutex);
@@ -10,7 +10,7 @@ void Scheduler::addProcess(const Process& p) {
 }
 
 
-void checkIfComplete() {
+void Scheduler::checkIfComplete() {
     std::lock_guard<std::mutex> lock(queueMutex);
     if (!generatingProcesses && ready_queue.empty() && runningThreadsDone()) {
         schedulerRunning = false;
@@ -19,12 +19,12 @@ void checkIfComplete() {
     }
 }
 
-void addProcess(const Process& process) {
+void Scheduler::addProcess(const Process& process) {
     std::lock_guard<std::mutex> lock(queueMutex);
     processes.push_back(process);
 }
 
-void queueProcesses() {
+void Scheduler::queueProcesses() {
     std::lock_guard<std::mutex> lock(queueMutex);
     
     for (auto& process : processes) {
@@ -36,7 +36,7 @@ void queueProcesses() {
     }
 }
 
-void schedulerAlgo(int coreId) {
+void Scheduler::schedulerAlgo(int coreId) {
     while (generatingProcesses.load() || !ready_queue.empty()) {
         std::unique_lock<std::mutex> lock(queueMutex);
         queueCV.wait(lock, [this]{
@@ -110,31 +110,31 @@ void schedulerAlgo(int coreId) {
 // }
 
 void Scheduler::startScheduler(int num_cpu) {
-  generatingProcesses = true;
+    generatingProcesses = true;
 
-  if (SchedulerType == "fcfs") {
-    double avgWait = FCFS();
-    std::cout << "FCFS average waiting time: " << avgWait << "\n";
-    finalizeScheduler();
-    return;
-  }
+    if (SchedulerType == "fcfs") {
+        double avgWait = FCFS();
+        std::cout << "FCFS average waiting time: " << avgWait << "\n";
+        finalizeScheduler();
+        return;
+    }
 
-  // else RR:
-  schedulerRunning = true;
-  for (int coreId = 0; coreId < num_cpu; ++coreId) {
-    workerThreads.emplace_back(
-      [this,coreId](){ this->schedulerAlgo(coreId); });
-  }
+    // else RR:
+    schedulerRunning = true;
+    for (int coreId = 0; coreId < num_cpu; ++coreId) {
+        workerThreads.emplace_back(
+        [this,coreId](){ this->schedulerAlgo(coreId); });
+    }
 }
 
 
-void stopGenerating() {
+void Scheduler::stopGenerating() {
     generatingProcesses = false;
     queueCV.notify_all();   // wake up any workers waiting
 }
 
 
-void stopScheduler() {
+void Scheduler::stopScheduler() {
     schedulerRunning = false;
     generatingProcesses = false;
     queueCV.notify_all();
@@ -143,32 +143,32 @@ void stopScheduler() {
     workerThreads.clear();
 }
 
-void finalizeScheduler() {
+void Scheduler::finalizeScheduler() {
     schedulerRunning = false;
-        for (auto& t : workerThreads) {
-            if (t.joinable())
-                t.join();
-        }
-        std::cout << "Scheduler fully shut down. All processes completed.\n";
+    for (auto& t : workerThreads) {
+        if (t.joinable())
+            t.join();
+    }
+    std::cout << "Scheduler fully shut down. All processes completed.\n";
 }
 
 
-bool isSchedulerRunning() const {
+bool Scheduler::isSchedulerRunning() const {
     return schedulerRunning;
 }
 
-bool isGeneratingProcesses() const {
+bool Scheduler::isGeneratingProcesses() const {
     return generatingProcesses;
 }
 
-bool runningThreadsDone() {
+bool Scheduler::runningThreadsDone() {
     std::lock_guard<std::mutex> lock(queueMutex);
     return std::all_of(runningProcesses.begin(), runningProcesses.end(), [](const Process& p) {
         return p.getState() == ProcessState::FINISHED;
     });
 }
 
-void displayProcessList() {
+void Scheduler::displayProcessList() {
     for (Process proc : processes) {
         std::cout << "Process ID: " << proc.getPid() << "\n"
             << "Process Name: " << proc.getProcessName() << "\n"
@@ -196,7 +196,7 @@ struct CompareArrival {
     }
 };
 
-double FCFS() {
+double Scheduler::FCFS() {
     if (processes.empty()) 
         return 0.0;
 
@@ -253,25 +253,25 @@ double FCFS() {
 }
 
 Process* Scheduler::findProcessByName(const std::string& name) {
-  for (auto& p : processes) {
-    if (p.getProcessName() == name) return &p;
-  }
-  return nullptr;
+    for (auto& p : processes) {
+        if (p.getProcessName() == name) return &p;
+    }
+    return nullptr;
 }
 
 Scheduler::Status Scheduler::getStatus() const {
-  Status s;
-  s.totalCores = workerThreads.size();
-  s.busyCores = // count threads currently executing 
-  s.freeCores = s.totalCores - s.busyCores;
-  s.cpuUtil   = 100.0 * s.busyCores / s.totalCores;
+    Status s;
+    s.totalCores = workerThreads.size();
+    s.busyCores = // count threads currently executing 
+    s.freeCores = s.totalCores - s.busyCores;
+    s.cpuUtil   = 100.0 * s.busyCores / s.totalCores;
 
-  // gather lists
-  {
-    std::lock_guard<std::mutex> lock(queueMutex);
-    for (auto& p : ready_queue)    s.readyList.push_back(p.getProcessName());
-    for (auto& p : runningProcesses) s.runningList.push_back(p.getProcessName());
-    for (auto& p : completedProcesses) s.finishedList.push_back(p.getProcessName());
-  }
-  return s;
+    // gather lists
+    {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        for (auto& p : ready_queue)    s.readyList.push_back(p.getProcessName());
+        for (auto& p : runningProcesses) s.runningList.push_back(p.getProcessName());
+        for (auto& p : completedProcesses) s.finishedList.push_back(p.getProcessName());
+    }
+    return s;
 }
