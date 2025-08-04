@@ -13,7 +13,7 @@ std::string processStateToString(ProcessState state) {
     }
 }
 
-Process::Process() : pid(-1), process_name("null"), current_core_id(-1), state(ProcessState::IDLE) {}
+Process::Process() : pid(-1), process_name("null"), current_core_id(-1), state(ProcessState::IDLE), next(nullptr), program_counter(0) {}
 
 Process::Process(int id, const std::string& name)
     : pid(id), process_name(name), current_core_id(-1), state(ProcessState::IDLE) {
@@ -32,7 +32,7 @@ std::string Process::getProcessName() const {
     return process_name;
 }
 
-const std::vector<ICommand*>& Process::getInstructions() const {
+const std::vector<std::unique_ptr<ICommand>>& Process::getInstructions() const {
     return instructions;
 }
 
@@ -154,19 +154,15 @@ std::string Process::formatTime(const std::chrono::time_point<std::chrono::syste
     return std::string(buffer);
 }
 
-Process::~Process() {
-    for (ICommand* instruction : instructions) {
-        delete instruction;
-    }
-}
-
-void Process::addInstruction(ICommand* instruction) {
-    instructions.push_back(instruction);
+void Process::addInstruction(std::unique_ptr<ICommand> instruction) {
+    instructions.push_back(std::move(instruction));
 }
 
 void Process::runInstructions() {
-    for (ICommand* cmd : instructions) {
-        cmd->execute(*this);
+    for (const auto& cmdPtr : instructions) {
+        if (cmdPtr) {
+            cmdPtr->execute(*this);
+        }
     }
     // end_time = std::chrono::system_clock::now();
 }

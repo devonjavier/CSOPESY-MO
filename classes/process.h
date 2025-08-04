@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <chrono>
 #include <vector>
+#include <memory> 
 #include <inttypes.h>
 #include "ICommand.h"
 
@@ -12,17 +13,18 @@ enum class ProcessState {
     IDLE,
     WAITING,
     RUNNING,
-    FINISHED
+    FINISHED,
+    TERMINATED // NEW: For memory access violations, etc.
 };
 
 std::string processStateToString(ProcessState state);
-const int MAX = 1024;               //arbitrary size for start_time and end_time arrays
+const int MAX = 1024;
 
 class Process {
 private:
     uint16_t pid;
     std::string process_name;
-    std::vector<ICommand*> instructions;
+    std::vector<std::unique_ptr<ICommand>> instructions;
     // std::chrono::time_point<std::chrono::system_clock> start_time;       //we should be counting time according to hypothetical CPU ticks
     // std::chrono::time_point<std::chrono::system_clock> end_time;         //not actual system time
     uint64_t arrival_time;          //do we just compute for this during runtime and not store it in a variable?
@@ -32,20 +34,25 @@ private:
     uint64_t start_time[MAX];       //arbitrary size of 1024
     uint64_t end_time[MAX];         //arbitrary size of 1024
     size_t run_count;
+    size_t program_counter;
 
     int current_core_id;            //need -1 for unassigned core
     ProcessState state;
     std::unordered_map<std::string, uint16_t> variables;
+
+        // --- NEW: Attributes absorbed from ScreenSession ---
+    std::string creation_timestamp_str; 
+    Process* next; 
 
 public:
     Process();
     Process(int id, const std::string& name);
     ~Process();
 
-    void addInstruction(ICommand* instruction);
+    void addInstruction(std::unique_ptr<ICommand> instruction);
     void runInstructions();
 
-    const std::vector<ICommand*>& getInstructions() const;
+    const std::vector<std::unique_ptr<ICommand>>& getInstructions() const;
     int getInstructionCount() const;
     uint16_t getPid() const;
     std::string getProcessName() const;
@@ -62,6 +69,8 @@ public:
     ProcessState getState() const;
     std::unordered_map<std::string, uint16_t> getVariables() const;
     uint16_t getVariableValue(const std::string& name);
+    std::string getCreationTimestamp() const;
+    size_t getProgramCounter() const;
 
     void setBurstTime();
     void setBurstTime(uint64_t burst);
@@ -78,4 +87,8 @@ public:
     void displayVariables() const;
 
     double updateRunningAverage(double previous_average, uint64_t new_wait, size_t index);
+
+    Process* getNext() const { return next; }
+    void setNext(Process* nextProcess) { this->next = nextProcess; }
+    void runScreenInterface(); 
 };
