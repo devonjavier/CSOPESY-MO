@@ -16,12 +16,13 @@ std::string processStateToString(ProcessState state) {
 Process::Process() : pid(-1), process_name("null"), current_core_id(-1), state(ProcessState::IDLE), next(nullptr), program_counter(0) {}
 
 Process::Process(int id, const std::string& name)
-    : pid(id), process_name(name), current_core_id(-1), state(ProcessState::IDLE) {
+    : pid(id), process_name(name), current_core_id(-1), state(ProcessState::IDLE), next(nullptr), program_counter(0) {
     arrival_time = 0;               //init to 0 or current time if needed
     burst_time = 0;                 //init to 0 or a default value
     remaining_burst = burst_time;   //init to burst_time
     waiting_time = 0;               //init to 0 or a default value
     run_count = 0;                  //init to 0
+    
 }
 
 Process::~Process() {}
@@ -158,6 +159,15 @@ std::string Process::formatTime(const std::chrono::time_point<std::chrono::syste
 
 void Process::addInstruction(std::unique_ptr<ICommand> instruction) {
     instructions.push_back(std::move(instruction));
+}
+
+void Process::runInstructionSlice(unsigned int slice_size) {
+    if (state != ProcessState::RUNNING) return;
+
+    for (unsigned int i = 0; i < slice_size && program_counter < instructions.size(); ++i) {
+        instructions[program_counter]->execute(*this);
+        program_counter++; 
+    }
 }
 
 void Process::runInstructions() {

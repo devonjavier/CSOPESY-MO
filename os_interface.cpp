@@ -280,8 +280,10 @@ void scheduler_start() {
         std::cout << "Scheduler not initialized.\n";
         return;
     }
+
+    // 2 flags?  communication, dunno how to optimize
     os_scheduler->startScheduler(num_cpu);
-    g_is_generating = true; // Set the flag to start the loop
+    g_is_generating = true; 
 
     g_process_generator_thread = std::thread([]() {
         while (g_is_generating) { // Loop is controlled by our flag

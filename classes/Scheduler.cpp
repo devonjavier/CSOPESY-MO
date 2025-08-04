@@ -26,6 +26,127 @@ class Scheduler {
     int quantumCycles; 
     uint16_t programcounter = 0;
 
+    void fcfs_scheduler(int coreId) {
+        while (this->schedulerRunning) {
+            std::unique_ptr<Process> current_process;
+
+            // --- Safely Dequeue a Process ---
+            {
+                std::unique_lock<std::mutex> lock(this->queueMutex);
+
+                // Wait until the queue has a process OR the scheduler is stopping.
+                this->queueCV.wait(lock, [this] {
+                    return !this->ready_queue.empty() || !this->schedulerRunning;
+                });
+
+                // If woken up to stop and the queue is empty, the thread can exit.
+                if (!this->schedulerRunning && this->ready_queue.empty()) {
+                    break; // Exit the while loop
+                }
+
+                // If woken up but queue is somehow empty (spurious wakeup), just loop again.
+                if (this->ready_queue.empty()) {
+                    continue;
+                }
+                
+                // Move ownership of the process from the queue to our local variable.
+                current_process = std::move(this->ready_queue.front());
+                this->ready_queue.pop();
+            } // Mutex is unlocked here.
+
+            // --- Execute the Process ---
+            if (current_process) {
+                current_process->setState(ProcessState::RUNNING);
+                current_process->setCurrentCoreId(coreId);
+
+                std::cout << "Core " << coreId << " [FCFS]: Running process " << current_process->getPid() << " to completion." << std::endl;
+                
+                // For FCFS, we run all instructions until the process is done.
+                current_process->runInstructions(); 
+                
+                std::cout << "Core " << coreId << " [FCFS]: Finished process " << current_process->getPid() << "." << std::endl;
+                current_process->setState(ProcessState::FINISHED);
+
+                // --- Move to Completed List ---
+                {
+                    std::lock_guard<std::mutex> lock(this->queueMutex);
+                    this->completedProcesses.push_back(std::move(current_process));
+                }
+            }
+        }
+        std::cout << "Core " << coreId << ": Exiting FCFS worker thread." << std::endl;
+    }
+
+    void rr_scheduler(int coreId){
+          while (this->schedulerRunning) {
+            std::unique_ptr<Process> current_process;
+
+            // --- Safely Dequeue a Process (Identical to FCFS) ---
+            {
+                std::unique_lock<std::mutex> lock(this->queueMutex);
+                this->queueCV.wait(lock, [this] {
+                    return !this->ready_queue.empty() || !this->schedulerRunning;
+                });
+
+                if (!this->schedulerRunning && this->ready_queue.empty()) {
+                    break;
+                }
+                if (this->ready_queue.empty()) {
+                    continue;
+                }
+                current_process = std::move(this->ready_queue.front());
+                this->ready_queue.pop();
+            }
+
+            // --- Execute a Time Slice ---
+            if (current_process) {
+                current_process->setState(ProcessState::RUNNING);
+                current_process->setCurrentCoreId(coreId);
+
+                // Determine the number of instructions to run in this slice.
+                unsigned int slice = std::min<unsigned>(
+                    current_process->getRemainingBurst(),
+                    this->quantumCycles
+                );
+
+                std::cout << "Core " << coreId << " [RR]: Running process " << current_process->getPid() 
+                          << " for " << slice << " cycles." << std::endl;
+
+                // Execute only the instructions for this time slice.
+                // NOTE: This requires Process to have a method that can run a specific
+                // number of instructions, not just all of them.
+                current_process->runInstructionSlice(slice);
+
+                // Update the remaining burst time.
+                current_process->setRemainingBurst(
+                    current_process->getRemainingBurst() - slice
+                );
+
+                // --- Decide What's Next for the Process ---
+                if (current_process->getRemainingBurst() > 0) {
+                    // Process is not finished, move it back to the ready queue (preemption).
+                    std::cout << "Core " << coreId << " [RR]: Time slice ended for process " 
+                              << current_process->getPid() << ". Re-queueing." << std::endl;
+                    current_process->setState(ProcessState::WAITING);
+                    {
+                        std::lock_guard<std::mutex> lock(this->queueMutex);
+                        this->ready_queue.push(std::move(current_process));
+                        this->queueCV.notify_one(); // Notify another thread that work is available
+                    }
+                } else {
+                    // Process is finished.
+                    std::cout << "Core " << coreId << " [RR]: Finished process " << current_process->getPid() << "." << std::endl;
+                    current_process->setState(ProcessState::FINISHED);
+                    {
+                        std::lock_guard<std::mutex> lock(this->queueMutex);
+                        this->completedProcesses.push_back(std::move(current_process));
+                    }
+                }
+            }
+        }
+        std::cout << "Core " << coreId << ": Exiting Round Robin worker thread." << std::endl;
+    }
+
 
     public:
     Scheduler(const std::string& Scheduler, int quantum) 
@@ -47,16 +168,34 @@ class Scheduler {
         processes.push_back(std::move(process));
     }
 
+    void schedulerAlgo(int coreId) {
+        if (this->SchedulerType == "fcfs") {
+            fcfs_scheduler(coreId);
+        } else if (this->SchedulerType == "rr") {
+            rr_scheduler(coreId);
+        } else {
+            // Handle error case: unknown scheduler type
+            std::cerr << "Core " << coreId << ": Unknown scheduler type '" << this->SchedulerType << "'. Exiting thread." << std::endl;
+        }
+    }
+
     void queueProcesses() {
         std::lock_guard<std::mutex> lock(queueMutex);
-        
-        for (auto& process : processes) {
-            if (process->getState() == ProcessState::IDLE) {
-                process->setState(ProcessState::WAITING);
-                ready_queue.push(std::move(process));
-                queueCV.notify_one(); 
+
+        auto is_idle = [&](std::unique_ptr<Process>& p) {
+            if (p && p->getState() == ProcessState::IDLE) {
+                p->setState(ProcessState::WAITING);
+
+                ready_queue.push(std::move(p)); 
+                queueCV.notify_one();
+
+                return true; 
             }
-        }
+            return false;
+        };
+
+        auto new_end = std::remove_if(processes.begin(), processes.end(), is_idle);
+        processes.erase(new_end, processes.end());
     }
 
     // //version 1
@@ -165,14 +304,10 @@ class Scheduler {
 
     // void Scheduler::startScheduler(int num_cpu) {
     void startScheduler(int num_cpu) {
-        generatingProcesses = true;
-
-        std::cout << std::endl;
-        std::cout << "Starting Scheduler with " << num_cpu << " cores.\n";
-        std::cout << "Scheduler Type: " << SchedulerType << "\n";
-        std::cout << "Quantum Cycles: " << quantumCycles << "\n";
-        std::cout << "Scheduler Running: " << (schedulerRunning ? "Yes" : "No") << "\n";
-        std::cout << "Generating Processes: " << (generatingProcesses ? "Yes" : "No") << "\n\n\nƒ";
+        this->schedulerRunning = true;
+         for (int coreId = 0; coreId < num_cpu; ++coreId) {
+            workerThreads.emplace_back(&Scheduler::schedulerAlgo, this, coreId);
+        }
 
         //version 1
         // // SchedulerRunning = true;
@@ -203,16 +338,16 @@ class Scheduler {
         // }
 
         //version 3
-        schedulerRunning = true;
-        generatingProcesses = true;
+        // schedulerRunning = true;
+        // generatingProcesses = true;
         
-        for (int coreId = 0; coreId < num_cpu; ++coreId) {
+        // for (int coreId = 0; coreId < num_cpu; ++coreId) {
             
 
-            workerThreads.emplace_back([this,coreId](){
+        //     workerThreads.emplace_back([this,coreId](){
                 
-            });
-        }
+        //     });
+        // }
     }
 
     void stopGenerating() {
@@ -297,69 +432,69 @@ class Scheduler {
     // 2) set remaining_burst to 0
     // 3) set waiting_time
     // and finally return the overall average waiting time.
-    struct CompareArrival {
-        bool operator()(Process* a, Process* b) const {
-            auto at_a = a->getArrivalTime();
-            auto at_b = b->getArrivalTime();
-            if (at_a == at_b)
-                return a->getPid() > b->getPid();   // later PID => lower priority
-            return at_a > at_b;                     // larger arrival_time => lower priority
-        }
-    };
+    // struct CompareArrival {
+    //     bool operator()(Process* a, Process* b) const {
+    //         auto at_a = a->getArrivalTime();
+    //         auto at_b = b->getArrivalTime();
+    //         if (at_a == at_b)
+    //             return a->getPid() > b->getPid();   // later PID => lower priority
+    //         return at_a > at_b;                     // larger arrival_time => lower priority
+    //     }
+    // };
 
-    double FCFS() {
-        if (processes.empty()) 
-            return 0.0;
+    // double FCFS() {
+    //     if (processes.empty()) 
+    //         return 0.0;
 
-        // Build a min‐heap of Process* by arrival time
-        std::priority_queue<
-            Process*,
-            std::vector<Process*>,
-            CompareArrival
-        > arrivalQ;
+    //     // Build a min‐heap of Process* by arrival time
+    //     std::priority_queue<
+    //         Process*,
+    //         std::vector<Process*>,
+    //         CompareArrival
+    //     > arrivalQ;
 
-        for (auto& proc : processes) {
-            arrivalQ.push(proc.get());
-        }
+    //     for (auto& proc : processes) {
+    //         arrivalQ.push(proc.get());
+    //     }
 
-        // Pop the very first process
-        Process* prev = arrivalQ.top();
-        arrivalQ.pop();
+    //     // Pop the very first process
+    //     Process* prev = arrivalQ.top();
+    //     arrivalQ.pop();
 
-        // First process: starts at its arrival, no waiting
-        prev->setStartTime(prev->getArrivalTime());
-        prev->setEndTime(prev->getStartTime(0) + prev->getBurstTime());
-        prev->setRemainingBurst(0);
-        prev->setWaitingTime    (0);
+    //     // First process: starts at its arrival, no waiting
+    //     prev->setStartTime(prev->getArrivalTime());
+    //     prev->setEndTime(prev->getStartTime(0) + prev->getBurstTime());
+    //     prev->setRemainingBurst(0);
+    //     prev->setWaitingTime    (0);
 
-        double aveWait = 0.0;
-        size_t count  = 1;  // we’ll use this as the “i” in computeStreamAve
+    //     double aveWait = 0.0;
+    //     size_t count  = 1;  // we’ll use this as the “i” in computeStreamAve
 
-        // Now handle the rest in arrival order
-        while (!arrivalQ.empty()) {
-            Process* curr = arrivalQ.top();
-            arrivalQ.pop();
+    //     // Now handle the rest in arrival order
+    //     while (!arrivalQ.empty()) {
+    //         Process* curr = arrivalQ.top();
+    //         arrivalQ.pop();
 
-            uint64_t start = prev->getEndTime(0);
-            curr->setStartTime(start);
+    //         uint64_t start = prev->getEndTime(0);
+    //         curr->setStartTime(start);
 
-            uint64_t finish = start + curr->getBurstTime();
-            curr->setEndTime(finish);
+    //         uint64_t finish = start + curr->getBurstTime();
+    //         curr->setEndTime(finish);
 
-            curr->setRemainingBurst(0);
+    //         curr->setRemainingBurst(0);
 
-            uint64_t wait = finish
-                        - curr->getArrivalTime()
-                        - curr->getBurstTime();
-            curr->setWaitingTime(wait);
+    //         uint64_t wait = finish
+    //                     - curr->getArrivalTime()
+    //                     - curr->getBurstTime();
+    //         curr->setWaitingTime(wait);
 
-            // update running average
-            aveWait = updateRunningAverage(aveWait, wait, count);
-            ++count;
+    //         // update running average
+    //         aveWait = updateRunningAverage(aveWait, wait, count);
+    //         ++count;
 
-            prev = curr;
-        }
+    //         prev = curr;
+    //     }
 
-        return aveWait;
-    }
+    //     return aveWait;
+    // }
 };

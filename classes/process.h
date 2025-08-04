@@ -50,6 +50,7 @@ public:
     ~Process();
 
     void addInstruction(std::unique_ptr<ICommand> instruction);
+    void runInstructionSlice(unsigned int slice_size);
     void runInstructions();
 
     const std::vector<std::unique_ptr<ICommand>>& getInstructions() const;
