@@ -428,7 +428,7 @@ void screen_session(ScreenSession& session) {
 }
 
 
-void new_screen(std::string name) {
+void new_screen(const std::string& name) {
 
     if (head == nullptr) {
         head = new ScreenSession(name, 1, 50, get_timestamp()); // placeholder values
@@ -596,7 +596,9 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
 
     } else if (choice == "screen -ls") {
         ScreenSession* curr = head;
-        while (curr) {
+        if (!curr) {
+            std::cout << "  (no sessions)\n";
+        } else {
             auto st = os_scheduler->getStatus();
             std::cout << "Total cores: " << st.totalCores
                         << "  Busy: "       << st.busyCores
@@ -605,24 +607,21 @@ bool accept_input(std::string choice, ScreenSession *current_screen){
             std::cout << "READY:   "; for (auto& n: st.readyList)    std::cout<<n<<" "; std::cout<<"\n";
             std::cout << "RUNNING: "; for (auto& n: st.runningList)  std::cout<<n<<" "; std::cout<<"\n";
             std::cout << "FINISHED:"; for (auto& n: st.finishedList) std::cout<<n<<" "; std::cout<<"\n";
+            std::cout << "\nActive screen sessions:\n";
+            while (curr) {
+                std::cout
+                    << "  Name:   "  << curr->name  
+                    << "    Line:   " << curr->current_line 
+                    << "/"        << curr->total_lines
+                    << "    Created: " << curr->timestamp
+                    << "\n";
+                curr = curr->next;
+            }
             system("pause");
             if (current_screen) current_screen->current_line++;
-            curr = curr->next;
         }
-    } else {
-        while (curr) {
-            std::cout
-                << "  Name:   "  << curr->name  
-                << "    Line:   " << curr->current_line 
-                << "/"        << curr->total_lines
-                << "    Created: " << curr->timestamp
-                << "\n";
-            curr = curr->next;
-        }
-
         system("pause");
         if (current_screen) current_screen->current_line++;
-        
     } else if (choice == "^g") {
         std::thread(Scheduler_start).detach();
     } else if (choice == "process-smi") {
