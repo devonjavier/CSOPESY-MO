@@ -1,0 +1,70 @@
+In file included from os_interface.cpp:6,
+                 from main.cpp:1:
+classes/Scheduler.h:23:20: error: non-member function 'Status getStatus()' cannot have cv-qualifier
+   23 | Status getStatus() const;
+      |                    ^~~~~
+os_interface.cpp: In function 'void generate_random_processes()':
+os_interface.cpp:120:9: error: 'new_screen' was not declared in this scope; did you mean 'clear_screen'?
+  120 |         new_screen(proc.getProcessName());
+      |         ^~~~~~~~~~
+      |         clear_screen
+os_interface.cpp: In lambda function:
+os_interface.cpp:257:60: error: 'CPU_TICK_MS' was not declared in this scope
+  257 |                 std::chrono::milliseconds(delays_perexec * CPU_TICK_MS)
+      |                                                            ^~~~~~~~~~~
+os_interface.cpp: In function 'void Scheduler_start()':
+os_interface.cpp:262:34: error: 'void Scheduler::checkIfComplete()' is private within this context
+  262 |     os_scheduler->checkIfComplete();
+      |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~
+classes/Scheduler.h:41:10: note: declared private here
+   41 |     void checkIfComplete();
+      |          ^~~~~~~~~~~~~~~
+os_interface.cpp: In function 'void report_util()':
+os_interface.cpp:287:29: error: 'class Scheduler' has no member named 'getStatus'
+  287 |     auto st = os_scheduler->getStatus();
+      |                             ^~~~~~~~~
+os_interface.cpp: In function 'void screen_session(ScreenSession&)':
+os_interface.cpp:415:32: error: 'choice' was not declared in this scope
+  415 |         std::getline(std::cin, choice);
+      |                                ^~~~~~
+os_interface.cpp: At global scope:
+os_interface.cpp:476:6: error: default argument given for parameter 2 of 'void create_process_screen(const std::string&, int)' [-fpermissive]
+  476 | void create_process_screen(const std::string& name, int total_lines = 1){
+      |      ^~~~~~~~~~~~~~~~~~~~~
+os_interface.cpp:47:6: note: previous specification in 'void create_process_screen(const std::string&, int)' here
+   47 | void create_process_screen(const std::string& name, int total_lines = 1);
+      |      ^~~~~~~~~~~~~~~~~~~~~
+os_interface.cpp: In function 'bool accept_input(std::string, ScreenSession*)':
+os_interface.cpp:538:9: error: 'Sleep' was not declared in this scope; did you mean '_sleep'?
+  538 |         Sleep(60);
+      |         ^~~~~
+      |         _sleep
+os_interface.cpp:595:33: error: 'class Scheduler' has no member named 'getStatus'
+  595 |         auto st = os_scheduler->getStatus();
+      |                                 ^~~~~~~~~
+os_interface.cpp:606:16: error: 'curr' was not declared in this scope
+  606 |         while (curr) {
+      |                ^~~~
+os_interface.cpp: At global scope:
+os_interface.cpp:620:7: error: expected unqualified-id before 'else'
+  620 |     } else if (choice == "^g") {
+      |       ^~~~
+os_interface.cpp:622:7: error: expected unqualified-id before 'else'
+  622 |     } else if (choice == "process-smi") {
+      |       ^~~~
+os_interface.cpp:637:7: error: expected unqualified-id before 'else'
+  637 |     } else {
+      |       ^~~~
+os_interface.cpp:641:19: error: expected constructor, destructor, or type conversion before ';' token
+  641 |     clear_screen();
+      |                   ^
+os_interface.cpp:642:5: error: expected unqualified-id before 'return'
+  642 |     return exit;
+      |     ^~~~~~
+os_interface.cpp:643:1: error: expected declaration before '}' token
+  643 | }
+      | ^
+os_interface.cpp: In function 'bool accept_input(std::string, ScreenSession*)':
+os_interface.cpp:620:5: warning: control reaches end of non-void function [-Wreturn-type]
+  620 |     } else if (choice == "^g") {
+      |     ^
