@@ -712,7 +712,7 @@ void menu(){
         if (current == OSState::MAIN_MENU) {
             screen_init();
         } else if (current == OSState::SCREEN_SESSION) {
-            process_screen_init(active_process); // needs function 
+            // process_screen_init(active_process); // needs function 
         }   
 
 
