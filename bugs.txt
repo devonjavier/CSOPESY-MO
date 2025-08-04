@@ -1,35 +1,176 @@
-g++ main.cpp -o main
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x2c4): undefined reference to `PRINT::PRINT()'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x37b): undefined reference to `DECLARE::DECLARE(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unsigned short)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x3fb): undefined reference to `SLEEP::SLEEP(unsigned char)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x508): undefined reference to `FOR::FOR(std::vector<std::unique_ptr<ICommand, std::default_delete<ICommand> >, std::allocator<std::unique_ptr<ICommand, std::default_delete<ICommand> > > >&&, unsigned char)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x627): undefined reference to `SUBTRACT::SUBTRACT(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x7a6): undefined reference to `ADD::ADD(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x834): undefined reference to `UNKNOWN::UNKNOWN()'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0xb8e): undefined reference to `Process::Process(int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0xc34): undefined reference to `Process::addInstruction(ICommand*)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0xc5f): undefined reference to `Scheduler::addProcess(Process const&)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0xc72): undefined reference to `Process::getProcessName[abi:cxx11]() const'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0xcab): undefined reference to `Process::~Process()'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0xd1a): undefined reference to `Process::~Process()'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x1395): undefined reference to `Scheduler::Scheduler(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x15fe): undefined reference to `Scheduler::queueProcesses()'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x163b): undefined reference to `Scheduler::isGeneratingProcesses() const'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x1667): undefined reference to `Scheduler::startScheduler(int)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x1686): undefined reference to `Scheduler::checkIfComplete()'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x170e): undefined reference to `Scheduler::getStatus() const'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x1d5f): undefined reference to `ScreenSession::ScreenSession(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x1e60): undefined reference to `ScreenSession::ScreenSession(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x2057): undefined reference to `ScreenSession::ScreenSession(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x211c): undefined reference to `ScreenSession::ScreenSession(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x26b0): undefined reference to `Scheduler::stopGenerating()'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x26bf): undefined reference to `Scheduler::stopScheduler()'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x2b2b): undefined reference to `Scheduler::getStatus() const'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x302b): undefined reference to `Scheduler::findProcessByName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x30aa): undefined reference to `Process::getProcessName[abi:cxx11]() const'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x30e0): undefined reference to `Process::getPid() const'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x3111): undefined reference to `Process::getState() const'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x3122): undefined reference to `processStateToString[abi:cxx11](ProcessState)'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x3173): undefined reference to `Process::getLogBuffer[abi:cxx11]() const'
-C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x3224): undefined reference to `Process::getState() const'
-collect2.exe: error: ld returned 1 exit status
+g++ -std=c++17 -Wall \ main.cpp \ os_interface.cpp \ classes/ICommand.cpp \ classes/Process.cpp \ classes/Scheduler.cpp \ classes/screen.cpp \ -o csopesy \ -pthread
+In file included from main.cpp:1:
+os_interface.cpp: In function 'void menu()':
+os_interface.cpp:658:9: warning: label 'std' defined but not used [-Wunused-label]
+  658 |         std:getline(std::cin, choice);
+      |         ^~~
+os_interface.cpp: In function 'void menu()':
+os_interface.cpp:658:9: warning: label 'std' defined but not used [-Wunused-label]
+  658 |         std:getline(std::cin, choice);
+      |         ^~~
+classes/Scheduler.cpp: In function 'void checkIfComplete()':
+classes/Scheduler.cpp:14:38: error: 'queueMutex' was not declared in this scope
+   14 |     std::lock_guard<std::mutex> lock(queueMutex);
+      |                                      ^~~~~~~~~~
+classes/Scheduler.cpp:15:10: error: 'generatingProcesses' was not declared in this scope
+   15 |     if (!generatingProcesses && ready_queue.empty() && runningThreadsDone()) {
+      |          ^~~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:15:33: error: 'ready_queue' was not declared in this scope
+   15 |     if (!generatingProcesses && ready_queue.empty() && runningThreadsDone()) {
+      |                                 ^~~~~~~~~~~
+classes/Scheduler.cpp:15:56: error: 'runningThreadsDone' was not declared in this scope
+   15 |     if (!generatingProcesses && ready_queue.empty() && runningThreadsDone()) {
+      |                                                        ^~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:16:9: error: 'schedulerRunning' was not declared in this scope
+   16 |         schedulerRunning = false;
+      |         ^~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:17:9: error: 'queueCV' was not declared in this scope
+   17 |         queueCV.notify_all();
+      |         ^~~~~~~
+classes/Scheduler.cpp: In function 'void addProcess(const Process&)':
+classes/Scheduler.cpp:23:38: error: 'queueMutex' was not declared in this scope
+   23 |     std::lock_guard<std::mutex> lock(queueMutex);
+      |                                      ^~~~~~~~~~
+classes/Scheduler.cpp:24:5: error: 'processes' was not declared in this scope; did you mean 'process'?
+   24 |     processes.push_back(process);
+      |     ^~~~~~~~~
+      |     process
+classes/Scheduler.cpp: In function 'void queueProcesses()':
+classes/Scheduler.cpp:28:38: error: 'queueMutex' was not declared in this scope
+   28 |     std::lock_guard<std::mutex> lock(queueMutex);
+      |                                      ^~~~~~~~~~
+classes/Scheduler.cpp:30:26: error: 'processes' was not declared in this scope; did you mean 'process'?
+   30 |     for (auto& process : processes) {
+      |                          ^~~~~~~~~
+      |                          process
+classes/Scheduler.cpp:33:13: error: 'ready_queue' was not declared in this scope
+   33 |             ready_queue.push(process);
+      |             ^~~~~~~~~~~
+classes/Scheduler.cpp:34:13: error: 'queueCV' was not declared in this scope
+   34 |             queueCV.notify_one();
+      |             ^~~~~~~
+classes/Scheduler.cpp: In function 'void schedulerAlgo(int)':
+classes/Scheduler.cpp:40:12: error: 'generatingProcesses' was not declared in this scope
+   40 |     while (generatingProcesses.load() || !ready_queue.empty()) {
+      |            ^~~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:40:43: error: 'ready_queue' was not declared in this scope
+   40 |     while (generatingProcesses.load() || !ready_queue.empty()) {
+      |                                           ^~~~~~~~~~~
+classes/Scheduler.cpp:41:43: error: 'queueMutex' was not declared in this scope
+   41 |         std::unique_lock<std::mutex> lock(queueMutex);
+      |                                           ^~~~~~~~~~
+classes/Scheduler.cpp:42:9: error: 'queueCV' was not declared in this scope
+   42 |         queueCV.wait(lock, [this]{
+      |         ^~~~~~~
+classes/Scheduler.cpp:42:29: error: invalid use of 'this' in non-member function
+   42 |         queueCV.wait(lock, [this]{
+      |                             ^~~~
+classes/Scheduler.cpp: In lambda function:
+classes/Scheduler.cpp:43:17: error: 'ready_queue' is not captured
+   43 |         return !ready_queue.empty()
+      |                 ^~~~~~~~~~~
+classes/Scheduler.cpp:42:33: note: the lambda has no capture-default
+   42 |         queueCV.wait(lock, [this]{
+      |                                 ^
+classes/Scheduler.cpp:40:43: note: '<typeprefixerror>ready_queue' declared here
+   40 |     while (generatingProcesses.load() || !ready_queue.empty()) {
+      |                                           ^~~~~~~~~~~
+classes/Scheduler.cpp:44:17: error: 'generatingProcesses' is not captured
+   44 |             || !generatingProcesses.load();
+      |                 ^~~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:42:33: note: the lambda has no capture-default
+   42 |         queueCV.wait(lock, [this]{
+      |                                 ^
+classes/Scheduler.cpp:40:12: note: '<typeprefixerror>generatingProcesses' declared here
+   40 |     while (generatingProcesses.load() || !ready_queue.empty()) {
+      |            ^~~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp: In function 'void schedulerAlgo(int)':
+classes/Scheduler.cpp:59:13: error: 'quantumCycles' was not declared in this scope
+   59 |             quantumCycles);
+      |             ^~~~~~~~~~~~~
+classes/Scheduler.cpp:78:9: error: 'completedProcesses' was not declared in this scope
+   78 |         completedProcesses.push_back(current);
+      |         ^~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:79:9: error: 'current_mem_usage' was not declared in this scope
+   79 |         current_mem_usage -= mem_per_proc;
+      |         ^~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:79:30: error: 'mem_per_proc' was not declared in this scope
+   79 |         current_mem_usage -= mem_per_proc;
+      |                              ^~~~~~~~~~~~
+classes/Scheduler.cpp: In function 'void stopGenerating()':
+classes/Scheduler.cpp:132:5: error: 'generatingProcesses' was not declared in this scope
+  132 |     generatingProcesses = false;
+      |     ^~~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:133:5: error: 'queueCV' was not declared in this scope
+  133 |     queueCV.notify_all();   // wake up any workers waiting
+      |     ^~~~~~~
+classes/Scheduler.cpp: In function 'void stopScheduler()':
+classes/Scheduler.cpp:138:5: error: 'schedulerRunning' was not declared in this scope
+  138 |     schedulerRunning = false;
+      |     ^~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:139:5: error: 'generatingProcesses' was not declared in this scope
+  139 |     generatingProcesses = false;
+      |     ^~~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:140:5: error: 'queueCV' was not declared in this scope
+  140 |     queueCV.notify_all();
+      |     ^~~~~~~
+classes/Scheduler.cpp:141:20: error: 'workerThreads' was not declared in this scope
+  141 |     for (auto &t : workerThreads)
+      |                    ^~~~~~~~~~~~~
+classes/Scheduler.cpp:143:5: error: 'workerThreads' was not declared in this scope
+  143 |     workerThreads.clear();
+      |     ^~~~~~~~~~~~~
+classes/Scheduler.cpp: In function 'void finalizeScheduler()':
+classes/Scheduler.cpp:147:5: error: 'schedulerRunning' was not declared in this scope
+  147 |     schedulerRunning = false;
+      |     ^~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:148:24: error: 'workerThreads' was not declared in this scope
+  148 |         for (auto& t : workerThreads) {
+      |                        ^~~~~~~~~~~~~
+classes/Scheduler.cpp: At global scope:
+classes/Scheduler.cpp:156:27: error: non-member function 'bool isSchedulerRunning()' cannot have cv-qualifier
+  156 | bool isSchedulerRunning() const {
+      |                           ^~~~~
+classes/Scheduler.cpp: In function 'bool isSchedulerRunning()':
+classes/Scheduler.cpp:157:12: error: 'schedulerRunning' was not declared in this scope; did you mean 'isSchedulerRunning'?
+  157 |     return schedulerRunning;
+      |            ^~~~~~~~~~~~~~~~
+      |            isSchedulerRunning
+classes/Scheduler.cpp: At global scope:
+classes/Scheduler.cpp:160:30: error: non-member function 'bool isGeneratingProcesses()' cannot have cv-qualifier
+  160 | bool isGeneratingProcesses() const {
+      |                              ^~~~~
+classes/Scheduler.cpp: In function 'bool isGeneratingProcesses()':
+classes/Scheduler.cpp:161:12: error: 'generatingProcesses' was not declared in this scope; did you mean 'isGeneratingProcesses'?
+  161 |     return generatingProcesses;
+      |            ^~~~~~~~~~~~~~~~~~~
+      |            isGeneratingProcesses
+classes/Scheduler.cpp: In function 'bool runningThreadsDone()':
+classes/Scheduler.cpp:165:38: error: 'queueMutex' was not declared in this scope
+  165 |     std::lock_guard<std::mutex> lock(queueMutex);
+      |                                      ^~~~~~~~~~
+classes/Scheduler.cpp:166:24: error: 'runningProcesses' was not declared in this scope; did you mean 'queueProcesses'?
+  166 |     return std::all_of(runningProcesses.begin(), runningProcesses.end(), [](const Process& p) {
+      |                        ^~~~~~~~~~~~~~~~
+      |                        queueProcesses
+classes/Scheduler.cpp: In function 'void displayProcessList()':
+classes/Scheduler.cpp:172:25: error: 'processes' was not declared in this scope; did you mean 'Process'?
+  172 |     for (Process proc : processes) {
+      |                         ^~~~~~~~~
+      |                         Process
+classes/Scheduler.cpp: In function 'double FCFS()':
+classes/Scheduler.cpp:200:9: error: 'processes' was not declared in this scope; did you mean 'Process'?
+  200 |     if (processes.empty())
+      |         ^~~~~~~~~
+      |         Process
+classes/Scheduler.cpp:210:23: error: 'processes' was not declared in this scope; did you mean 'Process'?
+  210 |     for (auto& proc : processes) {
+      |                       ^~~~~~~~~
+      |                       Process
+classes/Scheduler.cpp:246:19: error: 'updateRunningAverage' was not declared in this scope
+  246 |         aveWait = updateRunningAverage(aveWait, wait, count);
+      |                   ^~~~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp: At global scope:
+classes/Scheduler.cpp:262:12: error: 'Status' in 'class Scheduler' does not name a type
+  262 | Scheduler::Status Scheduler::getStatus() const {
+      |            ^~~~~~
