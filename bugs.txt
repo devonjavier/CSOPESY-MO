@@ -1,18 +1,35 @@
-In file included from main.cpp:1:
-os_interface.cpp: In function 'bool accept_input(std::string, ScreenSession*)':
-os_interface.cpp:590:19: error: call of overloaded 'new_screen(std::string&)' is ambiguous
-  590 |         new_screen(name);
-      |         ~~~~~~~~~~^~~~~~
-os_interface.cpp:590:19: note: there are 2 candidates
-os_interface.cpp:50:6: note: candidate 1: 'void new_screen(const std::string&)'
-   50 | void new_screen(const std::string& name);
-      |      ^~~~~~~~~~
-os_interface.cpp:431:6: note: candidate 2: 'void new_screen(std::string)'
-  431 | void new_screen(std::string name) {
-      |      ^~~~~~~~~~
-os_interface.cpp:613:16: error: 'curr' was not declared in this scope
-  613 |         while (curr) {
-      |                ^~~~
-os_interface.cpp:626:7: error: 'else' without a previous 'if'
-  626 |     } else if (choice == "^g") {
-      |       ^~~~
+g++ main.cpp -o main
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x2c4): undefined reference to `PRINT::PRINT()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x37b): undefined reference to `DECLARE::DECLARE(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unsigned short)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x3fb): undefined reference to `SLEEP::SLEEP(unsigned char)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x508): undefined reference to `FOR::FOR(std::vector<std::unique_ptr<ICommand, std::default_delete<ICommand> >, std::allocator<std::unique_ptr<ICommand, std::default_delete<ICommand> > > >&&, unsigned char)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x627): undefined reference to `SUBTRACT::SUBTRACT(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x7a6): undefined reference to `ADD::ADD(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x834): undefined reference to `UNKNOWN::UNKNOWN()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0xb8e): undefined reference to `Process::Process(int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0xc34): undefined reference to `Process::addInstruction(ICommand*)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0xc5f): undefined reference to `Scheduler::addProcess(Process const&)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0xc72): undefined reference to `Process::getProcessName[abi:cxx11]() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0xcab): undefined reference to `Process::~Process()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0xd1a): undefined reference to `Process::~Process()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x1395): undefined reference to `Scheduler::Scheduler(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x15fe): undefined reference to `Scheduler::queueProcesses()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x163b): undefined reference to `Scheduler::isGeneratingProcesses() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x1667): undefined reference to `Scheduler::startScheduler(int)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x1686): undefined reference to `Scheduler::checkIfComplete()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x170e): undefined reference to `Scheduler::getStatus() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x1d5f): undefined reference to `ScreenSession::ScreenSession(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x1e60): undefined reference to `ScreenSession::ScreenSession(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x2057): undefined reference to `ScreenSession::ScreenSession(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x211c): undefined reference to `ScreenSession::ScreenSession(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, int, int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x26b0): undefined reference to `Scheduler::stopGenerating()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x26bf): undefined reference to `Scheduler::stopScheduler()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x2b2b): undefined reference to `Scheduler::getStatus() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x302b): undefined reference to `Scheduler::findProcessByName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x30aa): undefined reference to `Process::getProcessName[abi:cxx11]() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x30e0): undefined reference to `Process::getPid() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x3111): undefined reference to `Process::getState() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x3122): undefined reference to `processStateToString[abi:cxx11](ProcessState)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x3173): undefined reference to `Process::getLogBuffer[abi:cxx11]() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\cchXfEHg.o:main.cpp:(.text+0x3224): undefined reference to `Process::getState() const'
+collect2.exe: error: ld returned 1 exit status
