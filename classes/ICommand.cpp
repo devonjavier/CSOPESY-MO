@@ -26,9 +26,10 @@ void PRINT::execute(Process& process) {
         messageContent = "Hello world from " + process.getProcessName();
     }
 
-
     std::string log = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + 
         std::to_string(process.getCurrentCoreId()) + ", " + messageContent;
+    
+    process.addLog(log);
 }
 
 std::string PRINT::toString() const {
