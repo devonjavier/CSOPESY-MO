@@ -215,12 +215,9 @@ void READ::execute(Process& process) {
         return; // Stop execution immediately
     }
 
-    // 2. Perform the read. For this simulation, we read a default value.
-    // In a more complex simulation, you would read from a memory buffer in the Process class.
-    // As per the spec, an uninitialized read returns 0.
+
     uint16_t value_read = process.readMemory(memory_address);
     
-    // 3. Store the result in the process's symbol table.
     process.setVariable(variable_name, value_read);
 }
 

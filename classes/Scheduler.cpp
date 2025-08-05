@@ -57,7 +57,6 @@ class Scheduler {
                 
                 while(current_process->getProgramCounter() < current_process->getInstructionCount()) {
                     if (!executeInstruction(*current_process)) {
-
                         break; 
                     }
                 }

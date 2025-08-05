@@ -28,8 +28,6 @@ MemoryManager::MemoryManager(size_t total_memory_size, size_t frame_size, size_t
     }
     backing_store.close();
 
-    std::cout << "[MMU] Memory Manager initialized with " << num_frames 
-              << " frames of " << frame_size << " bytes each." << std::endl;
 }
 
 int MemoryManager::selectVictimFrame() {
@@ -59,15 +57,6 @@ void MemoryManager::loadPageFromBackingStore(int pid, int page_number, int frame
     std::vector<char> page_data(frame_size);
     backing_store.read(page_data.data(), frame_size);
 
-    if (backing_store.gcount() == 0) {
-
-        std::cout << "[MMU] Loaded NEW page " << page_number << " for PID " << pid 
-                  << " into frame " << frame_number << "." << std::endl;
-    } else {
-        std::cout << "[MMU] Loaded EXISTING page " << page_number << " for PID " << pid 
-                  << " from backing store into frame " << frame_number << "." << std::endl;
-    }
-
     backing_store.close();
 
 }
@@ -77,10 +66,8 @@ void MemoryManager::writePageToBackingStore(int pid, int page_number) {
     std::fstream backing_store(backing_store_filename, std::ios::in | std::ios::out | std::ios::binary | std::ios::ate);
     
     if (!backing_store.is_open()) {
-        // If the file doesn't exist, create it.
         std::ofstream new_file(backing_store_filename, std::ios::binary);
         new_file.close();
-        // And try opening it again.
         backing_store.open(backing_store_filename, std::ios::in | std::ios::out | std::ios::binary | std::ios::ate);
         if(!backing_store.is_open()){
             std::cerr << "[MMU] CRITICAL ERROR: Could not create or open backing store for writing." << std::endl;
@@ -101,26 +88,20 @@ void MemoryManager::writePageToBackingStore(int pid, int page_number) {
     backing_store.write(page_data.data(), frame_size);
     backing_store.close();
     
-    std::cout << "[MMU] Wrote dirty page " << page_number << " for PID " << pid 
-              << " to backing store." << std::endl;
+
 }
 
 void MemoryManager::handlePageFault(Process& faulting_process, int page_number) {
     std::lock_guard<std::mutex> lock(mmu_mutex);
 
-    std::cout << "[MMU] Page fault for PID " << faulting_process.getPid() 
-              << ", Page " << page_number << "." << std::endl;
-
     int target_frame_index = -1;
-
 
     if (!free_frames.empty()) {
         target_frame_index = free_frames.front();
         free_frames.pop_front();
-        std::cout << "[MMU] Found free frame: " << target_frame_index << "." << std::endl;
+
     } else {
         target_frame_index = selectVictimFrame(); 
-        std::cout << "[MMU] No free frames. Evicting victim from frame: " << target_frame_index << "." << std::endl;
 
         Frame& victim_frame = physical_memory[target_frame_index];
         int victim_pid = victim_frame.owner_pid;
@@ -133,15 +114,11 @@ void MemoryManager::handlePageFault(Process& faulting_process, int page_number) 
         }
 
         if (victim_process->getPageTable()->isDirty(victim_page_number)) {
-            std::cout << "[MMU] Writing dirty page " << victim_page_number << " for PID " << victim_pid 
-                      << " to backing store." << std::endl;
             writePageToBackingStore(victim_pid, victim_page_number);
         }
 
         victim_process->getPageTable()->unmapPage(victim_page_number);
         
-
-        std::cout << "[MMU] Evicted Page " << victim_page_number << " from PID " << victim_pid << "." << std::endl;
     }
 
     loadPageFromBackingStore(faulting_process.getPid(), page_number, target_frame_index);
@@ -150,14 +127,10 @@ void MemoryManager::handlePageFault(Process& faulting_process, int page_number) 
 
     fifo_queue.push_back(target_frame_index);
     
-    std::cout << "[MMU] Page fault for PID " << faulting_process.getPid() << " resolved." << std::endl;
 }
 
 void MemoryManager::releaseProcessMemory(int pid) {
     std::lock_guard<std::mutex> lock(mmu_mutex);
-
-    std::cout << "[MMU] Releasing all memory frames for terminated PID " << pid << "." << std::endl;
-
     for (size_t i = 0; i < physical_memory.size(); ++i) {
         if (physical_memory[i].owner_pid == pid) {
 
