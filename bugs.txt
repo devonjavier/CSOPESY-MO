@@ -1,22 +1,358 @@
-In file included from C:/mingw64/include/c++/15.1.0/bits/std_thread.h:45,
-                 from C:/mingw64/include/c++/15.1.0/thread:47,
-                 from os_interface.cpp:8,
+>g++ main.cpp -o main.exe
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x108b): undefined reference to `Process::getPid() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x12ec): undefined reference to `Process::getPageTable() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x1384): undefined reference to `Process::getPageTable() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x1409): undefined reference to `Process::getPid() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x142d): undefined reference to `Process::getPageTable() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x1467): undefined reference to `Process::getPid() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x14b6): undefined reference to `Process::getPid() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x191e): undefined reference to `PRINT::PRINT()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x19d3): undefined reference to `DECLARE::DECLARE(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unsigned short)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x1a52): undefined reference to `SLEEP::SLEEP(unsigned char)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x1b5f): undefined reference to `FOR::FOR(std::vector<std::unique_ptr<ICommand, std::default_delete<ICommand> >, std::allocator<std::unique_ptr<ICommand, std::default_delete<ICommand> > > >&&, unsigned char)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x1c84): undefined reference to `SUBTRACT::SUBTRACT(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x1e06): undefined reference to `ADD::ADD(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x1ef6): undefined reference to `READ::READ(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unsigned int)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x1fd7): undefined reference to `WRITE::WRITE(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unsigned int)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x2015): undefined reference to `UNKNOWN::UNKNOWN()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x23bd): undefined reference to `Process::addInstruction(std::unique_ptr<ICommand, std::default_delete<ICommand> >)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x23e1): undefined reference to `Process::setBurstTime()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x23f1): undefined reference to `Process::getBurstTime() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x23ff): undefined reference to `Process::setRemainingBurst(unsigned long long)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x3107): undefined reference to `get_timestamp[abi:cxx11]()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x35e7): undefined reference to `Process::runScreenInterface()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x36ea): undefined reference to `Process::getState() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x3703): undefined reference to `Process::runScreenInterface()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x3708): undefined reference to `clear_screen()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x3987): undefined reference to `processStateToString[abi:cxx11](ProcessState)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x3b32): undefined reference to `Process::getState() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x3b94): undefined reference to `Process::getProcessName[abi:cxx11]() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x3bcc): undefined reference to `Process::getPid() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x3c1b): undefined reference to `Process::getCurrentCoreId() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x3c63): undefined reference to `Process::getBurstTime() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x3c99): undefined reference to `Process::getRemainingBurst() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x3e18): undefined reference to `clear_screen()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x3e34): undefined reference to `clear_screen()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x3f5c): undefined reference to `clear_screen()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x3fcd): undefined reference to `clear_screen()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text+0x3fef): undefined reference to `clear_screen()'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler14fcfs_schedulerEi[_ZN9Scheduler14fcfs_schedulerEi]+0x140): undefined reference to `Process::setState(ProcessState)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler14fcfs_schedulerEi[_ZN9Scheduler14fcfs_schedulerEi]+0x159): undefined reference to `Process::setCurrentCoreId(int)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler14fcfs_schedulerEi[_ZN9Scheduler14fcfs_schedulerEi]+0x191): undefined reference to `Process::getProgramCounter() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler14fcfs_schedulerEi[_ZN9Scheduler14fcfs_schedulerEi]+0x1a8): undefined reference to `Process::getInstructionCount() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler14fcfs_schedulerEi[_ZN9Scheduler14fcfs_schedulerEi]+0x1cb): undefined reference to `Process::getState() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler14fcfs_schedulerEi[_ZN9Scheduler14fcfs_schedulerEi]+0x1ee): undefined reference to `Process::setState(ProcessState)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler12rr_schedulerEi[_ZN9Scheduler12rr_schedulerEi]+0x141): undefined reference to `Process::setState(ProcessState)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler12rr_schedulerEi[_ZN9Scheduler12rr_schedulerEi]+0x15a): undefined reference to `Process::setCurrentCoreId(int)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler12rr_schedulerEi[_ZN9Scheduler12rr_schedulerEi]+0x17b): undefined reference to `Process::getRemainingBurst() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler12rr_schedulerEi[_ZN9Scheduler12rr_schedulerEi]+0x1f3): undefined reference to `Process::getInstructionCount() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler12rr_schedulerEi[_ZN9Scheduler12rr_schedulerEi]+0x20a): undefined reference to `Process::getProgramCounter() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler12rr_schedulerEi[_ZN9Scheduler12rr_schedulerEi]+0x218): undefined reference to `Process::setRemainingBurst(unsigned long long)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler12rr_schedulerEi[_ZN9Scheduler12rr_schedulerEi]+0x22c): undefined reference to `Process::getRemainingBurst() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler12rr_schedulerEi[_ZN9Scheduler12rr_schedulerEi]+0x24f): undefined reference to `Process::setState(ProcessState)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler12rr_schedulerEi[_ZN9Scheduler12rr_schedulerEi]+0x2b3): undefined reference to `Process::setState(ProcessState)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler18executeInstructionER7Process[_ZN9Scheduler18executeInstructionER7Process]+0x1b): undefined reference to `Process::getProgramCounter() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler18executeInstructionER7Process[_ZN9Scheduler18executeInstructionER7Process]+0x2b): undefined reference to `Process::getInstructionCount() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler18executeInstructionER7Process[_ZN9Scheduler18executeInstructionER7Process]+0x4e): undefined reference to `Process::getInstructions() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler18executeInstructionER7Process[_ZN9Scheduler18executeInstructionER7Process]+0xcf): undefined reference to `READ::getRequiredPage(unsigned long long) const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler18executeInstructionER7Process[_ZN9Scheduler18executeInstructionER7Process]+0x13e): undefined reference to `WRITE::getRequiredPage(unsigned long long) const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler18executeInstructionER7Process[_ZN9Scheduler18executeInstructionER7Process]+0x175): undefined reference to `Process::getPageTable() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler18executeInstructionER7Process[_ZN9Scheduler18executeInstructionER7Process]+0x19a): undefined reference to `Process::runInstructionSlice(unsigned int)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler18executeInstructionER7Process[_ZN9Scheduler18executeInstructionER7Process]+0x1a6): undefined reference to `Process::getState() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler18executeInstructionER7Process[_ZN9Scheduler18executeInstructionER7Process]+0x1d9): undefined reference to `Process::getPid() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler18executeInstructionER7Process[_ZN9Scheduler18executeInstructionER7Process]+0x20b): undefined reference to `Process::getTerminationReason[abi:cxx11]() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler17findProcessByNameERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE[_ZN9Scheduler17findProcessByNameERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE]+0x94): undefined reference to `Process::getProcessName[abi:cxx11]() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler17findProcessByNameERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE[_ZN9Scheduler17findProcessByNameERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE]+0x178): undefined reference to `Process::getProcessName[abi:cxx11]() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler17findProcessByNameERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE[_ZN9Scheduler17findProcessByNameERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE]+0x25b): undefined reference to `Process::getProcessName[abi:cxx11]() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZN9Scheduler17findProcessByNameERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE[_ZN9Scheduler17findProcessByNameERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE]+0x34a): undefined reference to `Process::getProcessName[abi:cxx11]() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZZN9Scheduler14queueProcessesEvENKUlRSt10unique_ptrI7ProcessSt14default_deleteIS1_EEE_clES5_[_ZZN9Scheduler14queueProcessesEvENKUlRSt10unique_ptrI7ProcessSt14default_deleteIS1_EEE_clES5_]+0x30): undefined reference to `Process::getState() const'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZZN9Scheduler14queueProcessesEvENKUlRSt10unique_ptrI7ProcessSt14default_deleteIS1_EEE_clES5_[_ZZN9Scheduler14queueProcessesEvENKUlRSt10unique_ptrI7ProcessSt14default_deleteIS1_EEE_clES5_]+0x5d): undefined reference to `Process::setState(ProcessState)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZSt11make_uniqueI7ProcessJRiRNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEyyEENSt8__detail9_MakeUniqIT_E15__single_objectEDpOT0_[_ZSt11make_uniqueI7ProcessJRiRNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEyyEENSt8__detail9_MakeUniqIT_E15__single_objectEDpOT0_]+0x78): undefined reference to `Process::Process(int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unsigned long long, unsigned long long)'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccjiHghM.o:main.cpp:(.text$_ZNKSt14default_deleteI7ProcessEclEPS0_[_ZNKSt14default_deleteI7ProcessEclEPS0_]+0x20): undefined reference to `Process::~Process()'
+collect2.exe: error: ld returned 1 exit status
+
+C:\Users\Andrei\Desktop\CSOPESY\MCO\CSOPESY-MO>g++ -std=c++17 -Wall main.cpp \ classes/helper.cpp \ classes/ICommand.cpp \ classes/MemoryManager.cpp \ classes/PageTable.cpp \ classes/process.cpp \ classes/Scheduler.cpp \ os_interface.cpp \ -o main \ -pthread
+In file included from classes/MemoryManager.cpp:5,
+                 from os_interface.cpp:12,
                  from main.cpp:1:
-C:/mingw64/include/c++/15.1.0/bits/unique_ptr.h: In instantiation of 'std::__detail::__unique_ptr_t<_Tp> std:make_unique(_Args&& ...) [with _Tp = Process; _Args = {int&, __cxx11::basic_string<char, char_traits<char>, allocator<char> >&}; __detail::__unique_ptr_t<_Tp> = __detail::__unique_ptr_t<Process>]':
-os_interface.cpp:126:42:   required from here
-  126 |     auto proc = std::make_unique<Process>(g_next_pid, name);
-      |                 ~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-C:/mingw64/include/c++/15.1.0/bits/unique_ptr.h:1085:30: error: no matching function for call to 'Process::Process(int&, std::__cxx11::basic_string<char>&)'
- 1085 |     { return unique_ptr<_Tp>(new _Tp(std::forward<_Args>(__args)...)); }
-      |                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-C:/mingw64/include/c++/15.1.0/bits/unique_ptr.h:1085:30: note: there are 2 candidates
-In file included from classes/MemoryManager.cpp:4,
+classes/Scheduler.cpp: In member function 'void Scheduler::fcfs_scheduler(int)':
+classes/Scheduler.cpp:58:60: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and 'int' [-Wsign-compare]
+   58 |                 while(current_process->getProgramCounter() < current_process->getInstructionCount()) {
+      |                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp: In member function 'bool Scheduler::executeInstruction(Process&)':
+classes/Scheduler.cpp:142:16: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and 'int' [-Wsign-compare]
+  142 |         if (pc >= process.getInstructionCount()) {
+      |             ~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from classes/MemoryManager.cpp:6:
+classes/PageTable.cpp: In member function 'int PageTable::getFrameNumber(int) const':
+classes/PageTable.cpp:20:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
+   20 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'bool PageTable::isPresent(int) const':
+classes/PageTable.cpp:33:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
+   33 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'bool PageTable::isDirty(int) const':
+classes/PageTable.cpp:41:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
+   41 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'void PageTable::setDirty(int, bool)':
+classes/PageTable.cpp:49:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+   49 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'void PageTable::mapPageToFrame(int, int)':
+classes/PageTable.cpp:57:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+   57 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'void PageTable::unmapPage(int)':
+classes/PageTable.cpp:67:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+   67 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+os_interface.cpp: In function 'void generate_random_processes()':
+os_interface.cpp:154:18: warning: unused variable 'new_proc_ptr' [-Wunused-variable]
+  154 |         Process* new_proc_ptr = create_new_process("Process" + std::to_string(g_next_pid));
+      |                  ^~~~~~~~~~~~
+os_interface.cpp: In function 'void accept_main_menu_input(std::string, OSState*, Process**)':
+os_interface.cpp:358:44: warning: value computed is not used [-Wunused-value]
+  358 |                 proc_to_resume->getState() != ProcessState::FINISHED;
+      |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
+classes/helper.cpp: In function 'std::string get_timestamp()':
+classes/helper.cpp:4:21: error: 'std::chrono' has not been declared
+    4 |     auto now = std::chrono::system_clock::now();
+      |                     ^~~~~~
+classes/helper.cpp:5:33: error: 'std::chrono' has not been declared
+    5 |     std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+      |                                 ^~~~~~
+In file included from classes/MemoryManager.cpp:2:
+classes/MemoryManager.h:19:16: error: 'string' in namespace 'std' does not name a type
+   19 |     const std::string backing_store_filename = "csopesy-backing-store.txt";
+      |                ^~~~~~
+classes/MemoryManager.h:8:1: note: 'std::string' is defined in header '<string>'; this is probably fixable by adding '#include <string>'
+    7 | #include "Frame.h"
+  +++ |+#include <string>
+    8 |
+In file included from classes/MemoryManager.cpp:5:
+classes/Scheduler.cpp: In member function 'void Scheduler::fcfs_scheduler(int)':
+classes/Scheduler.cpp:58:60: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and 'int' [-Wsign-compare]
+   58 |                 while(current_process->getProgramCounter() < current_process->getInstructionCount()) {
+      |                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:75:14: error: 'cout' is not a member of 'std'
+   75 |         std::cout << "Core " << coreId << ": Exiting FCFS worker thread." << std::endl;
+      |              ^~~~
+classes/Scheduler.cpp:14:1: note: 'std::cout' is defined in header '<iostream>'; this is probably fixable by adding '#include <iostream>'
+   13 | #include <windows.h>
+  +++ |+#include <iostream>
+   14 |
+classes/Scheduler.cpp: In member function 'void Scheduler::rr_scheduler(int)':
+classes/Scheduler.cpp:137:14: error: 'cout' is not a member of 'std'
+  137 |         std::cout << "Core " << coreId << ": Exiting Round Robin worker thread." << std::endl;
+      |              ^~~~
+classes/Scheduler.cpp:137:14: note: 'std::cout' is defined in header '<iostream>'; this is probably fixable by adding '#include <iostream>'
+classes/Scheduler.cpp: In member function 'bool Scheduler::executeInstruction(Process&)':
+classes/Scheduler.cpp:142:16: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and 'int' [-Wsign-compare]
+  142 |         if (pc >= process.getInstructionCount()) {
+      |             ~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:170:18: error: 'cout' is not a member of 'std'
+  170 |             std::cout << "[Scheduler] Process " << process.getPid() << " terminated due to: "
+      |                  ^~~~
+classes/Scheduler.cpp:170:18: note: 'std::cout' is defined in header '<iostream>'; this is probably fixable by adding '#include <iostream>'
+classes/Scheduler.cpp: In member function 'void Scheduler::checkIfComplete()':
+classes/Scheduler.cpp:228:18: error: 'cout' is not a member of 'std'
+  228 |             std::cout << "All processes completed. Scheduler is shutting down.\n";
+      |                  ^~~~
+classes/Scheduler.cpp:228:18: note: 'std::cout' is defined in header '<iostream>'; this is probably fixable by adding '#include <iostream>'
+classes/Scheduler.cpp: In member function 'void Scheduler::schedulerAlgo(int)':
+classes/Scheduler.cpp:243:18: error: 'cerr' is not a member of 'std'
+  243 |             std::cerr << "Core " << coreId << ": Unknown scheduler type '" << this->SchedulerType << "'. Exiting thread." << std::endl;
+      |                  ^~~~
+classes/Scheduler.cpp:243:18: note: 'std::cerr' is defined in header '<iostream>'; this is probably fixable by adding '#include <iostream>'
+classes/Scheduler.cpp: In member function 'void Scheduler::finalizeScheduler()':
+classes/Scheduler.cpp:295:18: error: 'cout' is not a member of 'std'
+  295 |             std::cout << "Scheduler fully shut down. All processes completed.\n";
+      |                  ^~~~
+classes/Scheduler.cpp:295:18: note: 'std::cout' is defined in header '<iostream>'; this is probably fixable by adding '#include <iostream>'
+In file included from classes/MemoryManager.cpp:6:
+classes/PageTable.cpp: In member function 'int PageTable::getFrameNumber(int) const':
+classes/PageTable.cpp:20:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
+   20 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'bool PageTable::isPresent(int) const':
+classes/PageTable.cpp:33:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
+   33 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'bool PageTable::isDirty(int) const':
+classes/PageTable.cpp:41:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
+   41 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'void PageTable::setDirty(int, bool)':
+classes/PageTable.cpp:49:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+   49 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'void PageTable::mapPageToFrame(int, int)':
+classes/PageTable.cpp:57:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+   57 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'void PageTable::unmapPage(int)':
+classes/PageTable.cpp:67:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+   67 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/MemoryManager.cpp: In constructor 'MemoryManager::MemoryManager(size_t, size_t, size_t)':
+classes/MemoryManager.cpp:25:33: error: 'backing_store_filename' was not declared in this scope
+   25 |     std::ofstream backing_store(backing_store_filename, std::ios::trunc | std::ios::binary);
+      |                                 ^~~~~~~~~~~~~~~~~~~~~~
+classes/MemoryManager.cpp: In member function 'void MemoryManager::loadPageFromBackingStore(int, int, int':
+classes/MemoryManager.cpp:50:32: error: 'backing_store_filename' was not declared in this scope
+   50 |     std::fstream backing_store(backing_store_filename, std::ios::in | std::ios::binary);
+      |                                ^~~~~~~~~~~~~~~~~~~~~~
+classes/MemoryManager.cpp: In member function 'void MemoryManager::writePageToBackingStore(int, int)':
+classes/MemoryManager.cpp:77:32: error: 'backing_store_filename' was not declared in this scope
+   77 |     std::fstream backing_store(backing_store_filename, std::ios::in | std::ios::out | std::ios::binary | std::ios::ate);
+      |                                ^~~~~~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'int PageTable::getFrameNumber(int) const':
+classes/PageTable.cpp:20:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
+   20 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'bool PageTable::isPresent(int) const':
+classes/PageTable.cpp:33:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
+   33 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'bool PageTable::isDirty(int) const':
+classes/PageTable.cpp:41:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
+   41 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'void PageTable::setDirty(int, bool)':
+classes/PageTable.cpp:49:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+   49 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'void PageTable::mapPageToFrame(int, int)':
+classes/PageTable.cpp:57:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+   57 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'void PageTable::unmapPage(int)':
+classes/PageTable.cpp:67:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+   67 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+In file included from classes/process.cpp:2:
+classes/process.h: In constructor 'Process::Process(int, const std::string&, size_t, size_t)':
+classes/process.h:42:18: warning: 'Process::state' will be initialized after [-Wreorder]
+   42 |     ProcessState state;
+      |                  ^~~~~
+classes/process.h:39:12: warning:   'size_t Process::program_counter' [-Wreorder]
+   39 |     size_t program_counter;
+      |            ^~~~~~~~~~~~~~~
+classes/process.cpp:16:1: warning:   when initialized here [-Wreorder]
+   16 | Process::Process(int id, const std::string& name, size_t mem_size, size_t page_size)
+      | ^~~~~~~
+classes/process.cpp: In member function 'void Process::runScreenInterface()':
+classes/process.cpp:261:9: error: 'clear_screen' was not declared in this scope
+  261 |         clear_screen(); // Assumes this is a global function
+      |         ^~~~~~~~~~~~
+In file included from classes/Scheduler.cpp:1:
+classes/MemoryManager.h:19:16: error: 'string' in namespace 'std' does not name a type
+   19 |     const std::string backing_store_filename = "csopesy-backing-store.txt";
+      |                ^~~~~~
+classes/MemoryManager.h:8:1: note: 'std::string' is defined in header '<string>'; this is probably fixable by adding '#include <string>'
+    7 | #include "Frame.h"
+  +++ |+#include <string>
+    8 |
+classes/Scheduler.cpp: In member function 'void Scheduler::fcfs_scheduler(int)':
+classes/Scheduler.cpp:58:60: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and 'int' [-Wsign-compare]
+   58 |                 while(current_process->getProgramCounter() < current_process->getInstructionCount()) {
+      |                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:75:14: error: 'cout' is not a member of 'std'
+   75 |         std::cout << "Core " << coreId << ": Exiting FCFS worker thread." << std::endl;
+      |              ^~~~
+classes/Scheduler.cpp:14:1: note: 'std::cout' is defined in header '<iostream>'; this is probably fixable by adding '#include <iostream>'
+   13 | #include <windows.h>
+  +++ |+#include <iostream>
+   14 |
+classes/Scheduler.cpp:75:83: error: 'endl' is not a member of 'std'
+   75 |         std::cout << "Core " << coreId << ": Exiting FCFS worker thread." << std::endl;
+      |                                                                                   ^~~~
+classes/Scheduler.cpp:14:1: note: 'std::endl' is defined in header '<ostream>'; this is probably fixable by adding '#include <ostream>'
+   13 | #include <windows.h>
+  +++ |+#include <ostream>
+   14 |
+classes/Scheduler.cpp: In member function 'void Scheduler::rr_scheduler(int)':
+classes/Scheduler.cpp:137:14: error: 'cout' is not a member of 'std'
+  137 |         std::cout << "Core " << coreId << ": Exiting Round Robin worker thread." << std::endl;
+      |              ^~~~
+classes/Scheduler.cpp:137:14: note: 'std::cout' is defined in header '<iostream>'; this is probably fixable by adding '#include <iostream>'
+classes/Scheduler.cpp:137:90: error: 'endl' is not a member of 'std'
+  137 |         std::cout << "Core " << coreId << ": Exiting Round Robin worker thread." << std::endl;
+      |                                                                                          ^~~~
+classes/Scheduler.cpp:137:90: note: 'std::endl' is defined in header '<ostream>'; this is probably fixable by adding '#include <ostream>'
+classes/Scheduler.cpp: In member function 'bool Scheduler::executeInstruction(Process&)':
+classes/Scheduler.cpp:142:16: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and 'int' [-Wsign-compare]
+  142 |         if (pc >= process.getInstructionCount()) {
+      |             ~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:170:18: error: 'cout' is not a member of 'std'
+  170 |             std::cout << "[Scheduler] Process " << process.getPid() << " terminated due to: "
+      |                  ^~~~
+classes/Scheduler.cpp:170:18: note: 'std::cout' is defined in header '<iostream>'; this is probably fixable by adding '#include <iostream>'
+classes/Scheduler.cpp:171:65: error: 'endl' is not a member of 'std'
+  171 |                       << process.getTerminationReason() << std::endl;
+      |                                                                 ^~~~
+classes/Scheduler.cpp:171:65: note: 'std::endl' is defined in header '<ostream>'; this is probably fixable by adding '#include <ostream>'
+classes/Scheduler.cpp: In member function 'void Scheduler::checkIfComplete()':
+classes/Scheduler.cpp:228:18: error: 'cout' is not a member of 'std'
+  228 |             std::cout << "All processes completed. Scheduler is shutting down.\n";
+      |                  ^~~~
+classes/Scheduler.cpp:228:18: note: 'std::cout' is defined in header '<iostream>'; this is probably fixable by adding '#include <iostream>'
+classes/Scheduler.cpp: In member function 'void Scheduler::schedulerAlgo(int)':
+classes/Scheduler.cpp:243:18: error: 'cerr' is not a member of 'std'
+  243 |             std::cerr << "Core " << coreId << ": Unknown scheduler type '" << this->SchedulerType << "'. Exiting thread." << std::endl;
+      |                  ^~~~
+classes/Scheduler.cpp:243:18: note: 'std::cerr' is defined in header '<iostream>'; this is probably fixable by adding '#include <iostream>'
+classes/Scheduler.cpp:243:131: error: 'endl' is not a member of 'std'
+  243 |             std::cerr << "Core " << coreId << ": Unknown scheduler type '" << this->SchedulerType << "'. Exiting thread." << std::endl;
+      |                                                                                                                                   ^~~~
+classes/Scheduler.cpp:243:131: note: 'std::endl' is defined in header '<ostream>'; this is probably fixable by adding '#include <ostream>'
+classes/Scheduler.cpp: In member function 'void Scheduler::finalizeScheduler()':
+classes/Scheduler.cpp:295:18: error: 'cout' is not a member of 'std'
+  295 |             std::cout << "Scheduler fully shut down. All processes completed.\n";
+      |                  ^~~~
+classes/Scheduler.cpp:295:18: note: 'std::cout' is defined in header '<iostream>'; this is probably fixable by adding '#include <iostream>'
+In file included from classes/MemoryManager.cpp:5,
                  from os_interface.cpp:12:
-classes/process.h:66:5: note: candidate 1: 'Process::Process(int, const std::string&, size_t, size_t)'
-   66 |     Process(int id, const std::string& name, size_t mem_size, size_t page_size);
-      |     ^~~~~~~
-classes/process.h:66:5: note: candidate expects 4 arguments, 2 provided
-classes/process.h:65:5: note: candidate 2: 'Process::Process()'
-   65 |     Process();
-      |     ^~~~~~~
-classes/process.h:65:5: note: candidate expects 0 arguments, 2 provided
+classes/Scheduler.cpp: In member function 'void Scheduler::fcfs_scheduler(int)':
+classes/Scheduler.cpp:58:60: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and 'int' [-Wsign-compare]
+   58 |                 while(current_process->getProgramCounter() < current_process->getInstructionCount()) {
+      |                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp: In member function 'bool Scheduler::executeInstruction(Process&)':
+classes/Scheduler.cpp:142:16: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and 'int' [-Wsign-compare]
+  142 |         if (pc >= process.getInstructionCount()) {
+      |             ~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from classes/MemoryManager.cpp:6:
+classes/PageTable.cpp: In member function 'int PageTable::getFrameNumber(int) const':
+classes/PageTable.cpp:20:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
+   20 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'bool PageTable::isPresent(int) const':
+classes/PageTable.cpp:33:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
+   33 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'bool PageTable::isDirty(int) const':
+classes/PageTable.cpp:41:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
+   41 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'void PageTable::setDirty(int, bool)':
+classes/PageTable.cpp:49:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+   49 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'void PageTable::mapPageToFrame(int, int)':
+classes/PageTable.cpp:57:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+   57 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+classes/PageTable.cpp: In member function 'void PageTable::unmapPage(int)':
+classes/PageTable.cpp:67:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
+   67 |     if (page_number < 0 || page_number >= this->num_pages) {
+      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+os_interface.cpp: In function 'void generate_random_processes()':
+os_interface.cpp:154:18: warning: unused variable 'new_proc_ptr' [-Wunused-variable]
+  154 |         Process* new_proc_ptr = create_new_process("Process" + std::to_string(g_next_pid));
+      |                  ^~~~~~~~~~~~
+os_interface.cpp: In function 'void accept_main_menu_input(std::string, OSState*, Process**)':
+os_interface.cpp:358:44: warning: value computed is not used [-Wunused-value]
+  358 |                 proc_to_resume->getState() != ProcessState::FINISHED;
+      |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
