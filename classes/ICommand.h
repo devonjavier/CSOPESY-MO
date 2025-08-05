@@ -20,11 +20,13 @@ private:
     std::string message;
     std::string variableName;
     bool isVariable;
+    bool isCombined = false; 
 
 public:
     PRINT(); // default constructor
     PRINT(const std::string& varName); // print variable
     PRINT(const std::string& msg, bool isMsg); // print custom message
+    PRINT(const std::string& msg, const std::string& varName);
 
     void execute(Process& process) override;
     std::string toString(const Process& process) const override;

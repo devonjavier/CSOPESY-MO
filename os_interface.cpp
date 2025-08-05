@@ -320,6 +320,28 @@ Process* create_new_process(std::string name) {
     return raw_ptr; 
 }
 
+// overload, instruction parse
+Process* create_new_process(std::string name, size_t mem_size, std::vector<std::unique_ptr<ICommand>> program) {
+    if (!os_scheduler) return nullptr;
+
+    auto proc = std::make_unique<Process>(g_next_pid, name, mem_size, mem_per_frame);
+    Process* raw_ptr = proc.get();
+
+
+    for (auto& instruction : program) {
+        raw_ptr->addInstruction(std::move(instruction));
+    }
+
+    raw_ptr->setBurstTime();
+    raw_ptr->setRemainingBurst(raw_ptr->getBurstTime());
+
+
+    os_scheduler->addProcess(std::move(proc));
+    g_next_pid++;
+
+    return raw_ptr;
+}
+
 
 void generate_random_processes() {
     for (int i = 0; i < batchprocess_freq; ++i) {
@@ -476,7 +498,41 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         system("pause");
 
     } else if (choice.rfind("screen -c", 0) == 0) {
+        std::stringstream ss(choice);
+        std::string command, flag, name;
+        size_t mem_size;
 
+        // parsing
+        ss >> command >> flag >> name >> mem_size;
+
+        size_t first_quote = choice.find('"');
+        size_t last_quote = choice.rfind('"');
+        
+        if (name.empty() || ss.fail() || first_quote == std::string::npos || last_quote == first_quote) {
+            std::cout << "Error: Invalid format. Usage: screen -c <name> <size> \"<instructions>\"\n";
+            system("pause");
+            return; 
+        }
+        
+        std::string raw_instructions = choice.substr(first_quote + 1, last_quote - first_quote - 1);
+        
+        bool is_power_of_two = (mem_size > 0) && ((mem_size & (mem_size - 1)) == 0);
+        if (mem_size < 64 || mem_size > 65536 || !is_power_of_two) {
+            std::cout << "Error: Invalid memory allocation. Size must be a power of 2 between 64 and 65536.\n";
+            system("pause");
+            return;
+        }
+        
+        std::vector<std::unique_ptr<ICommand>> program = parseInstructionString(raw_instructions);
+
+        if (program.empty()) {
+            std::cout << "Error: Failed to parse instruction string or instruction count is invalid.\n";
+        } else {
+            create_new_process(name, mem_size, std::move(program));
+            std::cout << "Process '" << name << "' created successfully with custom instructions.\n";
+        }
+
+        system("pause");
     } else if (choice == "exit") {
         *current = OSState::EXITING;
         std::cout << "Exiting the OS...\n";
@@ -490,15 +546,14 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         if (!g_memory_manager || !os_scheduler) {
             std::cout << "Error: System not fully initialized. Please run 'initialize' first.\n";
         } else {
-            // --- Get all statistics from both subsystems ---
-            // Memory Stats
+
             size_t total_mem = g_memory_manager->getTotalMemory();
             size_t used_mem = g_memory_manager->getUsedMemory();
             size_t free_mem = g_memory_manager->getFreeMemory();
-            // Paging Stats
+
             size_t paged_in = g_memory_manager->getNumPagedIn();
             size_t paged_out = g_memory_manager->getNumPagedOut();
-            // CPU Stats
+
             size_t active_ticks = os_scheduler->getActiveTicks();
             size_t idle_ticks = os_scheduler->getIdleTicks();
             size_t total_ticks = os_scheduler->getTotalTicks();

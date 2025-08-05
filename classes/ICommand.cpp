@@ -15,9 +15,21 @@ PRINT::PRINT(const std::string& varName) : message(""), variableName(varName), i
 
 PRINT::PRINT(const std::string& msg, bool isMsg) : message(msg), variableName(""), isVariable(false) {}
 
+PRINT::PRINT(const std::string& msg, const std::string& varName)
+    : message(msg), 
+      variableName(varName), 
+      isVariable(true), // It does involve a variable
+      isCombined(true)  // It's the special combined case
+{}
+
 void PRINT::execute(Process& process) {
 
     std::string messageContent;
+    if (isCombined) {
+        uint16_t value = process.getVariableValue(variableName);
+        messageContent = message + std::to_string(value);
+    }
+
     if (isVariable && !variableName.empty()) {
         uint16_t value = process.getVariableValue(variableName);
         messageContent = variableName + " = " + std::to_string(value);
