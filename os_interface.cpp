@@ -144,17 +144,23 @@ void initialize() {
     config.close();
 }
 
-
-
 ICommand* generateRandomInstruction() {
     // Randomly choose an instruction type
     int instruction_type = rand() % 8; // 0 to 4 for 5 different types
 
+    std::string randomVarName1 = "var" + std::to_string(rand() % 10);
+    std::string randomVarName2 = "var" + std::to_string(rand() % 10);
+    std::string resultVarName = "result" + std::to_string(rand() % 5);
+
     switch (instruction_type) {
         case 0: // PRINT
-            return new PRINT(); 
+            if (rand() % 2 == 0) {
+                return new PRINT(); 
+            } else {
+                return new PRINT(randomVarName1, true);
+            }
         case 1: // DECLARE
-            return new DECLARE("var" + std::to_string(rand() % 100), rand() % 100);
+            return new DECLARE(randomVarName1, rand() % 100);
         case 2: // SLEEP
             return new SLEEP(rand() % 50 + 1);
         case 3: {
@@ -168,24 +174,123 @@ ICommand* generateRandomInstruction() {
 
             return new FOR(std::move(body), loop_count);
         }
-        case 4: // SUBTRACT with random variables or values
-            return new SUBTRACT("result", "var" + std::to_string(rand() % 100), "var" + std::to_string(rand() % 100));
+        case 4: 
+            return new SUBTRACT(resultVarName, randomVarName1, randomVarName2);
         case 5:
-            return new ADD("result", "var" + std::to_string(rand() % 100), "var" + std::to_string(rand() % 100));
+            return new ADD(resultVarName, randomVarName1, randomVarName2);
         case 6: { // READ
             // Generate a random memory address within the default process memory size
             uint32_t random_address = rand() % mem_per_proc; 
-            return new READ("var_read", random_address);
+            return new READ(randomVarName1, random_address);
         }
         case 7: { // WRITE
             uint32_t random_address = rand() % mem_per_proc;
             // Write the value of a random, potentially undeclared variable
-            std::string random_var = "var" + std::to_string(rand() % 100);
-            return new WRITE(random_var, random_address);
+            return new WRITE(randomVarName1, random_address);
         }
         default:
             return new UNKNOWN;
     }
+}
+
+std::vector<std::unique_ptr<ICommand>> parseInstructionString(const std::string& raw_instructions) {
+    std::vector<std::unique_ptr<ICommand>> program;
+    std::stringstream ss(raw_instructions);
+    std::string instruction_token;
+
+    while (std::getline(ss, instruction_token, ';')) {
+
+        instruction_token.erase(0, instruction_token.find_first_not_of(" \t\n\r"));
+        instruction_token.erase(instruction_token.find_last_not_of(" \t\n\r") + 1);
+
+        if (instruction_token.empty()) continue;
+
+        std::stringstream token_stream(instruction_token);
+        std::string opcode;
+        token_stream >> opcode;
+
+
+        if (opcode == "DECLARE") {
+            std::string varName;
+            uint16_t value;
+            if (token_stream >> varName >> value) {
+                program.push_back(std::make_unique<DECLARE>(varName, value));
+            } else return {}; 
+        } 
+        else if (opcode == "ADD") {
+            std::string res, op1, op2;
+            if (token_stream >> res >> op1 >> op2) {
+                program.push_back(std::make_unique<ADD>(res, op1, op2));
+            } else return {};
+        }
+        else if (opcode == "SUBTRACT") {
+            std::string res, op1, op2;
+            if (token_stream >> res >> op1 >> op2) {
+                program.push_back(std::make_unique<SUBTRACT>(res, op1, op2));
+            } else return {};
+        }
+        else if (opcode == "READ") {
+            std::string varName;
+            uint32_t address;
+            if (token_stream >> varName >> std::hex >> address) { 
+                program.push_back(std::make_unique<READ>(varName, address));
+            } else return {};
+        }
+        else if (opcode == "WRITE") {
+            std::string varName;
+            uint32_t address;
+
+            if (token_stream >> address >> varName >> std::hex) {
+                 program.push_back(std::make_unique<WRITE>(varName, address));
+            } else return {};
+        }
+        else if (opcode == "PRINT") {
+
+            std::string content;
+            std::getline(token_stream, content); 
+            
+
+            size_t open_paren = content.find('(');
+            size_t close_paren = content.rfind(')');
+            if (open_paren == std::string::npos || close_paren == std::string::npos) return {};
+
+            content = content.substr(open_paren + 1, close_paren - open_paren - 1);
+
+            size_t plus_pos = content.find('+');
+            if (plus_pos != std::string::npos) {
+
+                size_t quote_start = content.find('"');
+                size_t quote_end = content.find('"', quote_start + 1);
+                if (quote_start == std::string::npos || quote_end == std::string::npos) return {};
+                
+                std::string literal = content.substr(quote_start + 1, quote_end - quote_start - 1);
+                std::string varName = content.substr(plus_pos + 1);
+                varName.erase(0, varName.find_first_not_of(" \t"));
+                
+
+                program.push_back(std::make_unique<PRINT>(literal, varName)); 
+            } else {
+
+                size_t quote_start = content.find('"');
+                if (quote_start != std::string::npos) { // It's a literal string
+                    program.push_back(std::make_unique<PRINT>(content.substr(quote_start + 1, content.rfind('"') - quote_start - 1), true));
+                } else { // It's a single variable
+                    content.erase(0, content.find_first_not_of(" \t"));
+                    program.push_back(std::make_unique<PRINT>(content));
+                }
+            }
+        }
+        else {
+            return {}; 
+        }
+    }
+
+    if (program.size() < 1 || program.size() > 50) {
+        std::cout << "[Parser] Error: Instruction count must be between 1 and 50.\n";
+        return {}; 
+    }
+
+    return program;
 }
 
 Process* create_new_process(std::string name) {
@@ -370,6 +475,8 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         }
         system("pause");
 
+    } else if (choice.rfind("screen -c", 0) == 0) {
+
     } else if (choice == "exit") {
         *current = OSState::EXITING;
         std::cout << "Exiting the OS...\n";
@@ -377,28 +484,40 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
     } else if (choice == "clear") { 
         clear_screen();
         screen_init();
-    } else if (choice == "vmstat") {
-        if (!g_memory_manager) {
-            std::cout << "Error: Memory Manager not initialized. Please run 'initialize' first.\n";
-        } else {
+    } else if (choice == "report-util") {
 
+    } else if (choice == "vmstat") {
+        if (!g_memory_manager || !os_scheduler) {
+            std::cout << "Error: System not fully initialized. Please run 'initialize' first.\n";
+        } else {
+            // --- Get all statistics from both subsystems ---
+            // Memory Stats
             size_t total_mem = g_memory_manager->getTotalMemory();
             size_t used_mem = g_memory_manager->getUsedMemory();
             size_t free_mem = g_memory_manager->getFreeMemory();
+            // Paging Stats
+            size_t paged_in = g_memory_manager->getNumPagedIn();
+            size_t paged_out = g_memory_manager->getNumPagedOut();
+            // CPU Stats
+            size_t active_ticks = os_scheduler->getActiveTicks();
+            size_t idle_ticks = os_scheduler->getIdleTicks();
+            size_t total_ticks = os_scheduler->getTotalTicks();
 
-            std::cout << "\n--- Virtual Memory Statistics ---\n";
-            const int label_width = 15; 
+
+            const int label_width = 18; 
+        
+            std::cout << std::left << std::setw(label_width) << "Total Memory:" << total_mem << " bytes\n";
+            std::cout << std::left << std::setw(label_width) << "Used Memory:"  << used_mem << " bytes\n";
+            std::cout << std::left << std::setw(label_width) << "Free Memory:"  << free_mem << " bytes\n";
             
-            std::cout << std::left << std::setw(label_width) << "Total Memory:" 
-                      << total_mem << " bytes\n";
+            std::cout << std::left << std::setw(label_width) << "Pages Paged In:" << paged_in << "\n";
+            std::cout << std::left << std::setw(label_width) << "Pages Paged Out:" << paged_out << "\n";
             
-            std::cout << std::left << std::setw(label_width) << "Used Memory:"  
-                      << used_mem << " bytes\n";
-            
-            std::cout << std::left << std::setw(label_width) << "Free Memory:"  
-                      << free_mem << " bytes\n";
-            
-            std::cout << "---------------------------------\n";
+
+            std::cout << std::left << std::setw(label_width) << "Active Ticks:" << active_ticks << "\n";
+            std::cout << std::left << std::setw(label_width) << "Idle Ticks:" << idle_ticks << "\n";
+            std::cout << std::left << std::setw(label_width) << "Total Ticks:" << total_ticks << "\n";
+
         }
         system("pause");
     }

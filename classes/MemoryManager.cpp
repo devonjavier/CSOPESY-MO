@@ -94,6 +94,8 @@ void MemoryManager::handlePageFault(Process& faulting_process, int page_number) 
     std::lock_guard<std::mutex> lock(mmu_mutex);
 
     int target_frame_index = -1;
+    pages_paged_in++;
+
 
     if (!free_frames.empty()) {
         target_frame_index = free_frames.front();
@@ -113,6 +115,7 @@ void MemoryManager::handlePageFault(Process& faulting_process, int page_number) 
         }
 
         if (victim_process->getPageTable()->isDirty(victim_page_number)) {
+            pages_paged_out++;
             writePageToBackingStore(victim_pid, victim_page_number);
         }
 
@@ -161,4 +164,12 @@ size_t MemoryManager::getFreeMemory() const {
 size_t MemoryManager::getUsedMemory() const {
 
     return getTotalMemory() - getFreeMemory();
+}
+
+size_t MemoryManager::getNumPagedIn() const {
+    return pages_paged_in.load(); // Use .load() for safe atomic reads
+}
+
+size_t MemoryManager::getNumPagedOut() const {
+    return pages_paged_out.load(); // Use .load() for safe atomic reads
 }

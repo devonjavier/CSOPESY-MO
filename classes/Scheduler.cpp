@@ -28,27 +28,28 @@ class Scheduler {
     int quantumCycles; 
     uint16_t programcounter = 0;
     MemoryManager* mmu;
+    std::atomic<size_t> active_cpu_ticks{0};
+    std::atomic<size_t> idle_cpu_ticks{0};
 
     void fcfs_scheduler(int coreId) {
         while (this->schedulerRunning) {
             std::unique_ptr<Process> current_process;
 
-            {
+              {
                 std::unique_lock<std::mutex> lock(this->queueMutex);
-                this->queueCV.wait(lock, [this] {
-                    return !this->ready_queue.empty() || !this->schedulerRunning;
-                });
-
-                if (!this->schedulerRunning && this->ready_queue.empty()) {
-                    break; 
+                if (this->queueCV.wait_for(lock, std::chrono::milliseconds(10), [this] { 
+                    return !this->ready_queue.empty() || !this->schedulerRunning; 
+                })) {
+                    if (!this->schedulerRunning && this->ready_queue.empty()) {
+                        break;
+                    }
+                    current_process = std::move(this->ready_queue.front());
+                    this->ready_queue.pop_front();
+                } else {
+                    idle_cpu_ticks++;
+                    continue;
                 }
-                if (this->ready_queue.empty()) {
-                    continue; 
-                }
-                
-                current_process = std::move(this->ready_queue.front());
-                this->ready_queue.pop_front();
-            } 
+            }   
 
             // process execution
             if (current_process) {
@@ -59,6 +60,7 @@ class Scheduler {
                     if (!executeInstruction(*current_process)) {
                         break; 
                     }
+                    active_cpu_ticks++;
                 }
                     
                 if (current_process->getState() != ProcessState::TERMINATED) {
@@ -302,4 +304,28 @@ class Scheduler {
     bool isGeneratingProcesses() const {
         return generatingProcesses;
     }
+
+    size_t getActiveTicks() const {
+        return active_cpu_ticks.load();
+    }
+
+    size_t getIdleTicks() const {
+        return idle_cpu_ticks.load();
+    }
+
+    size_t getTotalTicks() const {
+        return getActiveTicks() + getIdleTicks();
+    }
+
+    float computeUtilization(int num_cpu) {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        return (100.0f * runningProcesses.size()) / num_cpu;
+    }
+
+    int numBusyCores() {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        return (int)runningProcesses.size();
+    }
+
+
 };

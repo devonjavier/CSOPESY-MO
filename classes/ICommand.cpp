@@ -147,13 +147,13 @@ SLEEP::SLEEP(uint8_t ticks) : cpuTicks(ticks) {}
 
 void SLEEP::execute(Process& process) {
     std::string startLog = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + 
-        std::to_string(process.getCurrentCoreId()) + ", " + " Sleeping for " + std::to_string(cpuTicks) + " CPU ticks";
+        std::to_string(process.getCurrentCoreId()) + ", " + "Sleeping for " + std::to_string(cpuTicks) + " CPU ticks";
     process.addLog(startLog);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(cpuTicks * 10));
 
     std::string endLog = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + 
-        std::to_string(process.getCurrentCoreId()) + "Woke up from sleep";
+        std::to_string(process.getCurrentCoreId()) + ", " + "Woke up from sleep";
     process.addLog(endLog);
 }
 
@@ -170,9 +170,6 @@ void FOR::execute(Process& process) {
         std::to_string(process.getCurrentCoreId()) + ", " + "Starting FOR loop (" + std::to_string(repeatCount) + " iterations)";
     process.addLog(startLog);
     for (uint8_t i = 0; i < repeatCount; ++i) {
-        // std::cout << "[Process " << process.getProcessName() << "] "
-        //           << "Loop iteration " << static_cast<int>(i + 1) << "/" << static_cast<int>(repeatCount) << std::endl;
-
         for (auto& instruction : instructions) {
             instruction->execute(process);
         }
@@ -219,6 +216,11 @@ void READ::execute(Process& process) {
     uint16_t value_read = process.readMemory(memory_address);
     
     process.setVariable(variable_name, value_read);
+
+    std::string log = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + 
+    std::to_string(process.getCurrentCoreId()) + ", " + "Read value " + 
+    std::to_string(value_read) + " from 0x" + std::to_string(memory_address) + " into " + variable_name;
+    process.addLog(log);
 }
 
 std::string READ::toString(const Process& process) const {
@@ -241,18 +243,16 @@ void WRITE::execute(Process& process) {
         return;
     }
 
-    // 2. Get the value to write from the process's symbol table.
-    uint16_t value_to_write = 0; // Default to 0 if variable doesn't exist
+    uint16_t value_to_write = 0; 
     process.getVariable(variable_name, value_to_write);
-
-    // 3. Perform the write.
-    // In this simulation, this is a conceptual operation. We can log it.
-    // In a more complex sim, you would write to a memory buffer.
     process.writeMemory(memory_address, value_to_write);
-    
-    // 4. Mark the page as "dirty" since it has been modified.
     int page_number = getRequiredPage(process.getPageTable()->getPageSize());
     process.getPageTable()->setDirty(page_number, true);
+
+    std::string log = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + 
+    std::to_string(process.getCurrentCoreId()) + ", " + "Wrote value " + 
+    std::to_string(value_to_write) + " (from " + variable_name + ") to 0x" + std::to_string(memory_address);
+    process.addLog(log);
 }
 
 std::string WRITE::toString(const Process& process) const {
