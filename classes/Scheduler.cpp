@@ -91,50 +91,118 @@ class Scheduler {
                     }
                     current_process = std::move(this->ready_queue.front());
                     this->ready_queue.pop_front();
+
+                    this->runningProcesses.push_back(std::move(current_process));
                 } else {
                     idle_cpu_ticks++;
                     continue;
                 }
             } 
 
-            // time slice execution, rr
-            if (current_process) {
-                current_process->setState(ProcessState::RUNNING);
-                current_process->setCurrentCoreId(coreId);
+            Process* process_to_run = nullptr;
+            {
+                std::lock_guard<std::mutex> lock(this->queueMutex);
+                // In a real multi-core RR, we'd need a better way to associate
+                // the coreId with the process, but for now, we find the one we just added.
+                // This is still slightly risky if two threads run this code simultaneously.
+                // A better way is to search by state or lack of coreId.
+                // For now, let's assume the last one is ours.
+                for(auto& p : runningProcesses) {
+                    if (p->getCurrentCoreId() == -1) { // Find one that hasn't been assigned a core yet
+                        process_to_run = p.get();
+                        process_to_run->setCurrentCoreId(coreId);
+                        break;
+                    }
+                }
+            }
+
+            if (process_to_run) {
+                process_to_run->setState(ProcessState::RUNNING);
 
                 unsigned int slice = std::min<unsigned>(
-                    current_process->getRemainingBurst(),
-                    this->quantumCycles
+                    process_to_run->getRemainingBurst(),
+                    (unsigned int)this->quantumCycles
                 );
 
                 for (unsigned int i = 0; i < slice; ++i) {
-                    if (!executeInstruction(*current_process)) {
+                    if (!executeInstruction(*process_to_run)) {
                         break; 
                     }
                     active_cpu_ticks++;
                 }
                 
-                current_process->setRemainingBurst(
-                    current_process->getInstructionCount() - current_process->getProgramCounter()
+                process_to_run->setRemainingBurst(
+                    process_to_run->getInstructionCount() - process_to_run->getProgramCounter()
                 );
 
- 
-                if (current_process->getRemainingBurst() > 0) {
-                    current_process->setState(ProcessState::WAITING);
-                    {
-                        std::lock_guard<std::mutex> lock(this->queueMutex);
-                        this->ready_queue.push_back(std::move(current_process));
-                        this->queueCV.notify_one(); 
-                    }
-                } else {
+                // --- STEP 3: Move the process from running to its next state ---
+                {
+                    std::lock_guard<std::mutex> lock(this->queueMutex);
+                    
+                    // Find the unique_ptr in the running vector that matches our raw pointer
+                    auto it = std::find_if(runningProcesses.begin(), runningProcesses.end(), 
+                        [&](const auto& p) { return p.get() == process_to_run; });
 
-                    current_process->setState(ProcessState::FINISHED);
-                    {
-                        std::lock_guard<std::mutex> lock(this->queueMutex);
-                        this->completedProcesses.push_back(std::move(current_process));
+                    if (it != runningProcesses.end()) {
+                        if (process_to_run->getRemainingBurst() > 0 && process_to_run->getState() != ProcessState::TERMINATED) {
+                            process_to_run->setState(ProcessState::WAITING);
+                            process_to_run->setCurrentCoreId(-1); // Un-assign core
+                            this->ready_queue.push_back(std::move(*it)); // Re-queue it
+                            this->queueCV.notify_one();
+                        } else {
+                            if (process_to_run->getState() != ProcessState::TERMINATED) {
+                                process_to_run->setState(ProcessState::FINISHED);
+                            }
+                            this->completedProcesses.push_back(std::move(*it)); // Move to completed
+                        }
+                        // Erase the now-empty unique_ptr from the running vector
+                        runningProcesses.erase(it);
                     }
                 }
+            } else {
+                // No unassigned process was found, this core is idle for a moment.
+                idle_cpu_ticks++;
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
+
+            // time slice execution, rr
+            // if (current_process) {
+            //     current_process->setState(ProcessState::RUNNING);
+            //     current_process->setCurrentCoreId(coreId);
+
+            //     unsigned int slice = std::min<unsigned>(
+            //         current_process->getRemainingBurst(),
+            //         this->quantumCycles
+            //     );
+
+            //     for (unsigned int i = 0; i < slice; ++i) {
+            //         if (!executeInstruction(*current_process)) {
+            //             break; 
+            //         }
+            //         active_cpu_ticks++;
+            //     }
+                
+            //     current_process->setRemainingBurst(
+            //         current_process->getInstructionCount() - current_process->getProgramCounter()
+            //     );
+
+ 
+            //     if (current_process->getRemainingBurst() > 0) {
+            //         current_process->setState(ProcessState::WAITING);
+            //         {
+            //             std::lock_guard<std::mutex> lock(this->queueMutex);
+            //             this->ready_queue.push_back(std::move(current_process));
+            //             this->queueCV.notify_one(); 
+            //         }
+            //     } else {
+
+            //         current_process->setState(ProcessState::FINISHED);
+            //         {
+            //             std::lock_guard<std::mutex> lock(this->queueMutex);
+            //             this->completedProcesses.push_back(std::move(current_process));
+            //         }
+            //     }
+            // }
         }
         std::cout << "Core " << coreId << ": Exiting Round Robin worker thread." << std::endl;
     }

@@ -8,6 +8,7 @@
 #include <memory>
 #include <mutex>
 #include <atomic>
+#include <iomanip>
 #include "classes/MemoryManager.cpp"
 #include <fstream>
 #include <sstream>
@@ -192,6 +193,19 @@ ICommand* generateRandomInstruction() {
             return new UNKNOWN;
     }
 }
+std::string parseStringLiteral(const std::string& input) {
+    std::string trimmed = input;
+    // Trim leading/trailing whitespace first
+    trimmed.erase(0, trimmed.find_first_not_of(" \t"));
+    trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
+
+    if (trimmed.length() < 2 || trimmed.front() != '"' || trimmed.back() != '"') {
+        return ""; // Not a valid quoted string
+    }
+
+    // Return the content inside the outer quotes
+    return trimmed.substr(1, trimmed.length() - 2);
+}
 
 std::vector<std::unique_ptr<ICommand>> parseInstructionString(const std::string& raw_instructions) {
     std::vector<std::unique_ptr<ICommand>> program;
@@ -243,42 +257,80 @@ std::vector<std::unique_ptr<ICommand>> parseInstructionString(const std::string&
                 program.push_back(std::make_unique<WRITE>(varName, address));
             } else return {};
         }
-        
+
         else if (opcode == "PRINT") {
+        std::string content;
+        std::getline(token_stream, content); // Get the rest of the line: (...)
 
-            std::string content;
-            std::getline(token_stream, content); 
-            
+        size_t open_paren = content.find('(');
+        size_t close_paren = content.rfind(')');
+        if (open_paren == std::string::npos || close_paren == std::string::npos) return {};
 
-            size_t open_paren = content.find('(');
-            size_t close_paren = content.rfind(')');
-            if (open_paren == std::string::npos || close_paren == std::string::npos) return {};
+        content = content.substr(open_paren + 1, close_paren - open_paren - 1);
 
-            content = content.substr(open_paren + 1, close_paren - open_paren - 1);
+        size_t plus_pos = content.find('+');
+        if (plus_pos != std::string::npos) {
+            // Case: "literal" + variable
+            std::string literal_part = content.substr(0, plus_pos);
+            std::string varName_part = content.substr(plus_pos + 1);
 
-            size_t plus_pos = content.find('+');
-            if (plus_pos != std::string::npos) {
+            // Use our new helper to correctly parse the literal
+            std::string literal = parseStringLiteral(literal_part);
 
-                size_t quote_start = content.find('"');
-                size_t quote_end = content.find('"', quote_start + 1);
-                if (quote_start == std::string::npos || quote_end == std::string::npos) return {};
-                
-                std::string literal = content.substr(quote_start + 1, quote_end - quote_start - 1);
-                std::string varName = content.substr(plus_pos + 1);
-                varName.erase(0, varName.find_first_not_of(" \t"));
-                
+            // Trim the variable part
+            varName_part.erase(0, varName_part.find_first_not_of(" \t"));
+            varName_part.erase(varName_part.find_last_not_of(" \t") + 1);
 
-                program.push_back(std::make_unique<PRINT>(literal, varName)); 
-            } else {
-
-                size_t quote_start = content.find('"');
-                if (quote_start != std::string::npos) { // It's a literal string
-                    program.push_back(std::make_unique<PRINT>(content.substr(quote_start + 1, content.rfind('"') - quote_start - 1), true));
-                } else { // It's a single variable
-                    content.erase(0, content.find_first_not_of(" \t"));
-                    program.push_back(std::make_unique<PRINT>(content));
-                }
+            if (literal.empty() || varName_part.empty()) {
+                return {}; // Parsing failed
             }
+            
+            program.push_back(std::make_unique<PRINT>(literal, varName_part));
+
+        } else {
+            // Case: A single item (either a literal or a variable)
+            std::string literal = parseStringLiteral(content);
+            if (!literal.empty() || (content.find('"') != std::string::npos)) {
+                // It was a valid quoted string
+                program.push_back(std::make_unique<PRINT>(literal, true));
+            } else {
+                // It's a single variable
+                content.erase(0, content.find_first_not_of(" \t"));
+                content.erase(content.find_last_not_of(" \t") + 1);
+                program.push_back(std::make_unique<PRINT>(content));
+            }
+        }
+    } else if (opcode == "SLEEP") {
+            int duration;
+            if (token_stream >> duration) {
+                program.push_back(std::make_unique<SLEEP>(duration));
+            } else return {};
+        }
+        else if (opcode == "FOR") {
+            int repeatCount;
+            std::vector<std::unique_ptr<ICommand>> body;
+
+            token_stream >> repeatCount;
+            if (token_stream.peek() != '{') return {}; 
+
+            char openBrace, closeBrace;
+            token_stream >> openBrace; // Read the '{'
+            if (openBrace != '{') return {}; 
+
+            std::string body_instructions;
+            std::getline(token_stream, body_instructions, '}'); // Read until '}'
+
+            auto body_program = parseInstructionString(body_instructions);
+            if (body_program.empty()) return {}; 
+
+            for (auto& instr : body_program) {
+                body.push_back(std::move(instr));
+            }
+
+            program.push_back(std::make_unique<FOR>(std::move(body), repeatCount));
+        }
+        else if (opcode == "UNKNOWN") {
+            program.push_back(std::make_unique<UNKNOWN>());
         }
         else {
             return {}; 
@@ -344,9 +396,12 @@ Process* create_new_process(std::string name, size_t mem_size, std::vector<std::
 
 
 void generate_random_processes() {
+
     for (int i = 0; i < batchprocess_freq; ++i) {
         Process* new_proc_ptr = create_new_process("Process" + std::to_string(g_next_pid)); 
     }
+
+    
 }
 
 // 2. screen_init()
@@ -393,8 +448,9 @@ void scheduler_start() {
 
 
 void scheduler_stop() {
-    os_scheduler -> stopGenerating();
+    g_is_generating = false;
     std::cout << "Scheduler stopped.\n";
+    system("pause");
 }
 
 
@@ -471,10 +527,17 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         if (!os_scheduler) {
             std::cout << "Scheduler not initialized.\n";
         } else {
+
+            std::vector<Process*> all_procs = os_scheduler->getAllProcesses();
+            size_t active_ticks = os_scheduler->getActiveTicks();
+            size_t total_ticks = os_scheduler->getTotalTicks();
+            float cpu_util = (total_ticks > 0) ? (static_cast<float>(active_ticks) / total_ticks) * 100.0f : 0.0f;
+
+            std::cout << " CPU Utilization : " << std::fixed << std::setprecision(2) << cpu_util << "%\n";
+
             std::cout << "\n--- Process List ---\n";
             // Ask the scheduler for a list of all processes
-            std::vector<Process*> all_procs = os_scheduler->getAllProcesses();
-
+            
             if (all_procs.empty()) {
                 std::cout << "  (No processes in system)\n";
             } else {
@@ -555,6 +618,57 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
     } else if (choice == "clear") { 
         clear_screen();
         screen_init();
+    } else if (choice == "process-smi") {
+        if (!g_memory_manager || !os_scheduler) {
+            std::cout << "Error: System not fully initialized. Please run 'initialize' first.\n";
+        } else {
+            size_t total_mem = g_memory_manager->getTotalMemory();
+            size_t used_mem = g_memory_manager->getUsedMemory();
+            
+            float mem_util = (total_mem > 0) ? (static_cast<float>(used_mem) / total_mem) * 100.0f : 0.0f;
+            
+            size_t active_ticks = os_scheduler->getActiveTicks();
+            size_t total_ticks = os_scheduler->getTotalTicks();
+            float cpu_util = (total_ticks > 0) ? (static_cast<float>(active_ticks) / total_ticks) * 100.0f : 0.0f;
+
+            clear_screen();
+            std::cout << "+-----------------------------------------------------------------------------+\n";
+            std::cout << "| PROCESS-SMI V1.0                Driver Version: 1.0                           |\n";
+            std::cout << "|-------------------------------+----------------------+----------------------+\n";
+            std::cout << "| CPU Util.                     | Memory Usage         |                      |\n";
+            std::cout << "|===============================+======================+======================|\n";
+            
+
+            std::cout << "| " << std::fixed << std::setprecision(2) << std::setw(7) << cpu_util << "%   Off  |  ";
+            std::cout << std::setw(7) << (used_mem / 1024) << "KiB / " << std::setw(7) << (total_mem / 1024) << "KiB | ";
+            std::cout << std::setw(7) << std::fixed << std::setprecision(2) << mem_util << "% Usage       |\n";
+            
+            std::cout << "+-----------------------------------------------------------------------------+\n";
+            
+            std::vector<Process*> all_procs = os_scheduler->getAllProcesses();
+
+            std::cout << "| Processes:                                                                  |\n";
+            std::cout << "|  PID       Name                 State                Memory Usage           |\n";
+            std::cout << "|=============================================================================|\n";
+
+            if (all_procs.empty()) {
+                std::cout << "|  No running processes.                                                      |\n";
+            } else {
+                for (Process* proc : all_procs) {
+                    if (proc) {
+
+                        std::cout << "|  " << std::left << std::setw(10) << proc->getPid()
+                                  << std::setw(21) << proc->getProcessName()
+                                  << std::setw(21) << processStateToString(proc->getState());
+                        std::stringstream mem_ss;
+                        mem_ss << proc->getMemorySize() << " Bytes";
+                        std::cout << std::setw(22) << mem_ss.str() << "|\n";
+                    }
+                }
+            }
+            std::cout << "+-----------------------------------------------------------------------------+\n";
+        }
+        system("pause");  
     } else if (choice == "report-util") {
 
     } else if (choice == "vmstat") {
@@ -596,9 +710,7 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
          clear_screen();
          screen_init();
     }
-
 }
-
 
 void accept_screen_session_input(std::string choice, OSState* current, Process** active_session){
     if (choice == "process-smi") {
@@ -639,7 +751,6 @@ void menu(){
     }
 
     if(os_scheduler != nullptr) {
-        os_scheduler -> stopGenerating();
         g_is_generating = false;
         if (g_process_generator_thread.joinable()) {
             g_process_generator_thread.join(); 
