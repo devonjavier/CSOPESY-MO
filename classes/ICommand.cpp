@@ -29,9 +29,11 @@ void PRINT::execute(Process& process) {
 
     std::string log = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + 
         std::to_string(process.getCurrentCoreId()) + ", " + messageContent;
+    
+    process.addLog(log);
 }
 
-std::string PRINT::toString() const {
+std::string PRINT::toString(const Process& process) const {
     if (isVariable) {
         return "PRINT variable \"" + variableName + "\"";
     } else {
@@ -50,7 +52,7 @@ void DECLARE::execute(Process& process) {
     process.addLog(log);
 }
 
-std::string DECLARE::toString() const {
+std::string DECLARE::toString(const Process& process) const {
     return "DECLARE " + variableName + " = " + std::to_string(value);
 }
 
@@ -89,7 +91,7 @@ void ADD::execute(Process& process) {
     process.addLog(log);
 }
 
-std::string ADD::toString() const {
+std::string ADD::toString(const Process& process) const {
     auto a = operand1IsVar ? operand1Var : std::to_string(operand1Value);
     auto b = operand2IsVar ? operand2Var : std::to_string(operand2Value);
     return "ADD " + resultVar + " = " + a + " + " + b;
@@ -129,7 +131,7 @@ void SUBTRACT::execute(Process& process) {
     process.addLog(log);
 }
 
-std::string SUBTRACT::toString() const {
+std::string SUBTRACT::toString(const Process& process) const {
     auto a = operand1IsVar ? operand1Var : std::to_string(operand1Value);
     auto b = operand2IsVar ? operand2Var : std::to_string(operand2Value);
     return "SUBTRACT " + resultVar + " = " + a + " - " + b;
@@ -150,7 +152,7 @@ void SLEEP::execute(Process& process) {
     process.addLog(endLog);
 }
 
-std::string SLEEP::toString() const {
+std::string SLEEP::toString(const Process& process) const {
     return "SLEEP " + std::to_string(cpuTicks) + " ticks";
 }
 
@@ -176,12 +178,12 @@ void FOR::execute(Process& process) {
     process.addLog(endLog);
 }
 
-std::string FOR::toString() const {
+std::string FOR::toString(const Process& process) const {
     std::string instrsStr;
     instrsStr.reserve(instructions.size() * 20);  // optional: avoid a few reallocs
 
     for (const auto& instr : instructions) {
-        instrsStr += instr->toString();
+        instrsStr += instr->toString(process);
         instrsStr += "; ";
     }
     if (!instrsStr.empty()) {
@@ -209,7 +211,7 @@ void UNKNOWN::execute(Process& process) {
               << "ERROR: Unknown command encountered. Reason: " << reason << std::endl;
 }
 
-std::string UNKNOWN::toString() const {
+std::string UNKNOWN::toString(const Process& process) const {
     return "UNKNOWN command: " + reason;
 }
 

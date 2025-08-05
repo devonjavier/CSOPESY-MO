@@ -8,7 +8,7 @@
 #include <memory>
 #include <mutex>
 #include <atomic>
-#include "classes/Scheduler.cpp"
+#include "classes/MemoryManager.cpp"
 #include <fstream>
 #include <sstream>
 #include <random> // For random number generation
@@ -42,6 +42,9 @@ int mem_per_proc = 0;
 //initialization of Screens and Processes Lists
 Scheduler* os_scheduler = nullptr;
 
+// Global memory manager pointer
+MemoryManager* g_memory_manager = nullptr;
+
 // p_id
 int g_next_pid = 1;
 // process generator thread
@@ -51,73 +54,6 @@ bool g_is_generating = false;
 
 
 std::mutex screenListMutex;
-
-
-ICommand* generateRandomInstruction() {
-    // Randomly choose an instruction type
-    int instruction_type = rand() % 6; // 0 to 4 for 5 different types
-
-    switch (instruction_type) {
-        case 0: // PRINT
-            return new PRINT(); 
-        case 1: // DECLARE
-            return new DECLARE("var" + std::to_string(rand() % 100), rand() % 100);
-        case 2: // SLEEP
-            return new SLEEP(rand() % 50 + 1);
-        case 3: {
-            int loop_count = rand() % 3 + 1; 
-            std::vector<std::unique_ptr<ICommand>> body;
-
-            int body_instr_count = rand() % 3 + 1;
-            for (int i = 0; i < body_instr_count; ++i) {
-                body.push_back(std::unique_ptr<ICommand>(generateRandomInstruction()));
-            }
-
-            return new FOR(std::move(body), loop_count);
-        }
-        case 4: // SUBTRACT with random variables or values
-            return new SUBTRACT("result", "var" + std::to_string(rand() % 100), "var" + std::to_string(rand() % 100));
-        case 5:
-            return new ADD("result", "var" + std::to_string(rand() % 100), "var" + std::to_string(rand() % 100));
-        default:
-            return new UNKNOWN;
-    }
-}
-
-Process* create_new_process(std::string name) {
-    std::default_random_engine generator(
-        std::chrono::system_clock::now().time_since_epoch().count()
-    );
-
-    std::uniform_int_distribution<int> instructionDist(min_ins, max_ins);
-    int num_instructions = instructionDist(generator);
-
-    auto proc = std::make_unique<Process>(g_next_pid, name); 
-
-    //TEMP 
-    Process* raw_ptr = proc.get();
-    
-    for (int i = 0; i < num_instructions; ++i) {
-        proc->addInstruction(std::unique_ptr<ICommand>(generateRandomInstruction())); 
-    }
-
-    raw_ptr->setBurstTime(); // calc burst time
-    raw_ptr->setRemainingBurst(raw_ptr->getBurstTime());
-    
-
-    os_scheduler->addProcess(std::move(proc));
-    g_next_pid++;
-    
-    return raw_ptr; 
-}
-
-
-void generate_random_processes() {
-    for (int i = 0; i < batchprocess_freq; ++i) {
-        Process* new_proc_ptr = create_new_process("Process" + std::to_string(g_next_pid)); 
-    }
-}
-
 
 void initialize() {
 
@@ -203,8 +139,76 @@ void initialize() {
     };
 
     os_scheduler = new Scheduler(scheduler_type, quantumcycles);
+    g_memory_manager = new MemoryManager(max_overall_mem, mem_per_frame, mem_per_proc);
 
     config.close();
+}
+
+
+
+ICommand* generateRandomInstruction() {
+    // Randomly choose an instruction type
+    int instruction_type = rand() % 6; // 0 to 4 for 5 different types
+
+    switch (instruction_type) {
+        case 0: // PRINT
+            return new PRINT(); 
+        case 1: // DECLARE
+            return new DECLARE("var" + std::to_string(rand() % 100), rand() % 100);
+        case 2: // SLEEP
+            return new SLEEP(rand() % 50 + 1);
+        case 3: {
+            int loop_count = rand() % 3 + 1; 
+            std::vector<std::unique_ptr<ICommand>> body;
+
+            int body_instr_count = rand() % 3 + 1;
+            for (int i = 0; i < body_instr_count; ++i) {
+                body.push_back(std::unique_ptr<ICommand>(generateRandomInstruction()));
+            }
+
+            return new FOR(std::move(body), loop_count);
+        }
+        case 4: // SUBTRACT with random variables or values
+            return new SUBTRACT("result", "var" + std::to_string(rand() % 100), "var" + std::to_string(rand() % 100));
+        case 5:
+            return new ADD("result", "var" + std::to_string(rand() % 100), "var" + std::to_string(rand() % 100));
+        default:
+            return new UNKNOWN;
+    }
+}
+
+Process* create_new_process(std::string name) {
+    std::default_random_engine generator(
+        std::chrono::system_clock::now().time_since_epoch().count()
+    );
+
+    std::uniform_int_distribution<int> instructionDist(min_ins, max_ins);
+    int num_instructions = instructionDist(generator);
+
+    auto proc = std::make_unique<Process>(g_next_pid, name); 
+
+    //TEMP 
+    Process* raw_ptr = proc.get();
+    
+    for (int i = 0; i < num_instructions; ++i) {
+        proc->addInstruction(std::unique_ptr<ICommand>(generateRandomInstruction())); 
+    }
+
+    raw_ptr->setBurstTime(); // calc burst time
+    raw_ptr->setRemainingBurst(raw_ptr->getBurstTime());
+    
+
+    os_scheduler->addProcess(std::move(proc));
+    g_next_pid++;
+    
+    return raw_ptr; 
+}
+
+
+void generate_random_processes() {
+    for (int i = 0; i < batchprocess_freq; ++i) {
+        Process* new_proc_ptr = create_new_process("Process" + std::to_string(g_next_pid)); 
+    }
 }
 
 // 2. screen_init()
@@ -296,7 +300,7 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         std::string name = choice.substr(10); // get process name
 
         Process* proc = create_new_process(name); // what to do with process pointer???
-        proc = nullptr;
+        proc->runScreenInterface();
         system("pause");
     } else if (choice.rfind("screen -r", 0) == 0){ 
         if (!os_scheduler) {

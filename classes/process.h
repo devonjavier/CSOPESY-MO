@@ -8,6 +8,7 @@
 #include <memory> 
 #include <inttypes.h>
 #include "ICommand.h"
+#include "PageTable.h"
 
 enum class ProcessState {
     IDLE,
@@ -38,7 +39,19 @@ private:
 
     int current_core_id;            //need -1 for unassigned core
     ProcessState state;
-    std::unordered_map<std::string, uint16_t> variables;
+
+    struct SymbolTableEntry {
+        std::string name;
+        uint16_t value;
+        bool in_use = false;
+    };
+    SymbolTableEntry symbol_table[32]; 
+    size_t symbol_count = 0;
+
+    size_t memory_size; // The total allocated memory for this process (e.g., 256 bytes)
+    std::unique_ptr<PageTable> page_table;
+    std::string termination_reason = ""; // For storing access violation messages
+
 
     std::string creation_timestamp_str; 
 
@@ -47,7 +60,7 @@ private:
 
 public:
     Process();
-    Process(int id, const std::string& name);
+    Process(int id, const std::string& name, size_t mem_size, size_t page_size);
     ~Process();
 
     void addInstruction(std::unique_ptr<ICommand> instruction);
@@ -76,6 +89,9 @@ public:
     uint16_t getVariableValue(const std::string& name);
     std::string getCreationTimestamp() const;
     size_t getProgramCounter() const;
+    bool getVariable(const std::string& name, uint16_t& value) const;
+    size_t getMemorySize() const;
+    PageTable* getPageTable() const;
 
     void setBurstTime();
     void setBurstTime(uint64_t burst);
@@ -85,7 +101,9 @@ public:
     void setEndTime(uint64_t end);
     void setCurrentCoreId(int coreId);
     void setState(ProcessState newState);
-    void setVariable(const std::string& name, uint16_t value);
+    bool setVariable(const std::string& name, uint16_t value);
+    void terminate(const std::string& reason); 
+    std::string getTerminationReason() const;
 
     std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp);
     void displayInstructionList();
