@@ -1,234 +1,60 @@
-In file included from main.cpp:1:
-os_interface.cpp: In function 'void menu()':
-os_interface.cpp:658:9: warning: label 'std' defined but not used [-Wunused-label]
-  658 |         std:getline(std::cin, choice);
-      |         ^~~
-os_interface.cpp: In function 'void menu()':
-os_interface.cpp:658:9: warning: label 'std' defined but not used [-Wunused-label]
-  658 |         std:getline(std::cin, choice);
-      |         ^~~
-cc1plus.exe: fatal error: classes/helper.cpp: No such file or directory
-compilation terminated.
-cc1plus.exe: fatal error: classes/MemoryManager.cpp: No such file or directory
-compilation terminated.
-cc1plus.exe: fatal error: classes/PageTable.cpp: No such file or directory
-compilation terminated.
-classes/Scheduler.cpp:22:6: error: redefinition of 'void Scheduler::addProcess(const Process&)'
-   22 | void Scheduler::addProcess(const Process& process) {
-      |      ^~~~~~~~~
-classes/Scheduler.cpp:7:6: note: 'void Scheduler::addProcess(const Process&)' previously defined here
-    7 | void Scheduler::addProcess(const Process& p) {
-      |      ^~~~~~~~~
-classes/Scheduler.cpp: In member function 'void Scheduler::schedulerAlgo(int)':
-classes/Scheduler.cpp:79:9: error: 'current_mem_usage' was not declared in this scope
-   79 |         current_mem_usage -= mem_per_proc;
-      |         ^~~~~~~~~~~~~~~~~
-classes/Scheduler.cpp:79:30: error: 'mem_per_proc' was not declared in this scope
-   79 |         current_mem_usage -= mem_per_proc;
-      |                              ^~~~~~~~~~~~
-classes/Scheduler.cpp: In member function 'double Scheduler::FCFS()':
-classes/Scheduler.cpp:246:19: error: 'updateRunningAverage' was not declared in this scope
-  246 |         aveWait = updateRunningAverage(aveWait, wait, count);
-      |                   ^~~~~~~~~~~~~~~~~~~~
-classes/Scheduler.cpp: At global scope:
-classes/Scheduler.cpp:262:12: error: 'Status' in 'class Scheduler' does not name a type
-  262 | Scheduler::Status Scheduler::getStatus() const {
-      |            ^~~~~~
-
-C:\Users\Andrei\Desktop\CSOPESY\MCO\CSOPESY-MO>g++ -std=c++17 -Wall -pthread \ main.cpp \ os_interface.cpp \ classes/helper.cpp \ classes/ICommand.cpp \ classes/MemoryManager.cpp \ classes/PageTable.cpp \ classes/process.cpp \ classes/Scheduler.cpp \ -o main.exe
-In file included from classes/MemoryManager.cpp:5,
-                 from os_interface.cpp:12,
-                 from main.cpp:1:
-classes/Scheduler.cpp: In member function 'void Scheduler::fcfs_scheduler(int)':
-classes/Scheduler.cpp:60:60: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and 'int' [-Wsign-compare]
-   60 |                 while(current_process->getProgramCounter() < current_process->getInstructionCount()) {
-      |                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-classes/Scheduler.cpp: In member function 'bool Scheduler::executeInstruction(Process&)':
-classes/Scheduler.cpp:144:16: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and 'int' [-Wsign-compare]
-  144 |         if (pc >= process.getInstructionCount()) {
-      |             ~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-In file included from classes/MemoryManager.cpp:6:
-classes/PageTable.cpp: In member function 'int PageTable::getFrameNumber(int) const':
-classes/PageTable.cpp:20:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
-   20 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'bool PageTable::isPresent(int) const':
-classes/PageTable.cpp:33:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
-   33 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'bool PageTable::isDirty(int) const':
-classes/PageTable.cpp:41:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
-   41 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'void PageTable::setDirty(int, bool)':
-classes/PageTable.cpp:49:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
-   49 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'void PageTable::mapPageToFrame(int, int)':
-classes/PageTable.cpp:57:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
-   57 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'void PageTable::unmapPage(int)':
-classes/PageTable.cpp:67:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
-   67 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-os_interface.cpp: In function 'void generate_random_processes()':
-os_interface.cpp:154:18: warning: unused variable 'new_proc_ptr' [-Wunused-variable]
-  154 |         Process* new_proc_ptr = create_new_process("Process" + std::to_string(g_next_pid));
-      |                  ^~~~~~~~~~~~
-os_interface.cpp: In function 'void accept_main_menu_input(std::string, OSState*, Process**)':
-os_interface.cpp:358:44: warning: value computed is not used [-Wunused-value]
-  358 |                 proc_to_resume->getState() != ProcessState::FINISHED;
-      |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
-In file included from classes/MemoryManager.cpp:5,
-                 from os_interface.cpp:12:
-classes/Scheduler.cpp: In member function 'void Scheduler::fcfs_scheduler(int)':
-classes/Scheduler.cpp:60:60: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and 'int' [-Wsign-compare]
-   60 |                 while(current_process->getProgramCounter() < current_process->getInstructionCount()) {
-      |                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-classes/Scheduler.cpp: In member function 'bool Scheduler::executeInstruction(Process&)':
-classes/Scheduler.cpp:144:16: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and 'int' [-Wsign-compare]
-  144 |         if (pc >= process.getInstructionCount()) {
-      |             ~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-In file included from classes/MemoryManager.cpp:6:
-classes/PageTable.cpp: In member function 'int PageTable::getFrameNumber(int) const':
-classes/PageTable.cpp:20:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
-   20 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'bool PageTable::isPresent(int) const':
-classes/PageTable.cpp:33:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
-   33 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'bool PageTable::isDirty(int) const':
-classes/PageTable.cpp:41:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
-   41 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'void PageTable::setDirty(int, bool)':
-classes/PageTable.cpp:49:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
-   49 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'void PageTable::mapPageToFrame(int, int)':
-classes/PageTable.cpp:57:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
-   57 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'void PageTable::unmapPage(int)':
-classes/PageTable.cpp:67:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
-   67 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-os_interface.cpp: In function 'void generate_random_processes()':
-os_interface.cpp:154:18: warning: unused variable 'new_proc_ptr' [-Wunused-variable]
-  154 |         Process* new_proc_ptr = create_new_process("Process" + std::to_string(g_next_pid));
-      |                  ^~~~~~~~~~~~
-os_interface.cpp: In function 'void accept_main_menu_input(std::string, OSState*, Process**)':
-os_interface.cpp:358:44: warning: value computed is not used [-Wunused-value]
-  358 |                 proc_to_resume->getState() != ProcessState::FINISHED;
-      |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
-In file included from classes/MemoryManager.cpp:2:
-classes/MemoryManager.h:19:16: error: 'string' in namespace 'std' does not name a type
-   19 |     const std::string backing_store_filename = "csopesy-backing-store.txt";
-      |                ^~~~~~
-classes/MemoryManager.h:8:1: note: 'std::string' is defined in header '<string>'; this is probably fixable by adding '#include <string>'
-    7 | #include "Frame.h"
-  +++ |+#include <string>
-    8 |
-In file included from classes/MemoryManager.cpp:5:
-classes/Scheduler.cpp: In member function 'void Scheduler::fcfs_scheduler(int)':
-classes/Scheduler.cpp:60:60: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and 'int' [-Wsign-compare]
-   60 |                 while(current_process->getProgramCounter() < current_process->getInstructionCount()) {
-      |                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-classes/Scheduler.cpp: In member function 'bool Scheduler::executeInstruction(Process&)':
-classes/Scheduler.cpp:144:16: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and 'int' [-Wsign-compare]
-  144 |         if (pc >= process.getInstructionCount()) {
-      |             ~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-In file included from classes/MemoryManager.cpp:6:
-classes/PageTable.cpp: In member function 'int PageTable::getFrameNumber(int) const':
-classes/PageTable.cpp:20:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
-   20 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'bool PageTable::isPresent(int) const':
-classes/PageTable.cpp:33:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
-   33 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'bool PageTable::isDirty(int) const':
-classes/PageTable.cpp:41:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
-   41 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'void PageTable::setDirty(int, bool)':
-classes/PageTable.cpp:49:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
-   49 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'void PageTable::mapPageToFrame(int, int)':
-classes/PageTable.cpp:57:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
-   57 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'void PageTable::unmapPage(int)':
-classes/PageTable.cpp:67:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
-   67 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/MemoryManager.cpp: In constructor 'MemoryManager::MemoryManager(size_t, size_t, size_t)':
-classes/MemoryManager.cpp:25:33: error: 'backing_store_filename' was not declared in this scope
-   25 |     std::ofstream backing_store(backing_store_filename, std::ios::trunc | std::ios::binary);
-      |                                 ^~~~~~~~~~~~~~~~~~~~~~
-classes/MemoryManager.cpp: In member function 'void MemoryManager::loadPageFromBackingStore(int, int, int)':
-classes/MemoryManager.cpp:50:32: error: 'backing_store_filename' was not declared in this scope
-   50 |     std::fstream backing_store(backing_store_filename, std::ios::in | std::ios::binary);
-      |                                ^~~~~~~~~~~~~~~~~~~~~~
-classes/MemoryManager.cpp: In member function 'void MemoryManager::writePageToBackingStore(int, int)':
-classes/MemoryManager.cpp:77:32: error: 'backing_store_filename' was not declared in this scope
-   77 |     std::fstream backing_store(backing_store_filename, std::ios::in | std::ios::out | std::ios::binary | std::ios::ate);
-      |                                ^~~~~~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'int PageTable::getFrameNumber(int) const':
-classes/PageTable.cpp:20:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
-   20 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'bool PageTable::isPresent(int) const':
-classes/PageTable.cpp:33:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
-   33 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'bool PageTable::isDirty(int) const':
-classes/PageTable.cpp:41:40: warning: comparison of integer expressions of different signedness: 'int' and 'const size_t' {aka 'const long long unsigned int'} [-Wsign-compare]
-   41 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'void PageTable::setDirty(int, bool)':
-classes/PageTable.cpp:49:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
-   49 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'void PageTable::mapPageToFrame(int, int)':
-classes/PageTable.cpp:57:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
-   57 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-classes/PageTable.cpp: In member function 'void PageTable::unmapPage(int)':
-classes/PageTable.cpp:67:40: warning: comparison of integer expressions of different signedness: 'int' and 'size_t' {aka 'long long unsigned int'} [-Wsign-compare]
-   67 |     if (page_number < 0 || page_number >= this->num_pages) {
-      |                            ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
-In file included from classes/process.cpp:2:
-classes/process.h: In constructor 'Process::Process(int, const std::string&, size_t, size_t)':
-classes/process.h:42:18: warning: 'Process::state' will be initialized after [-Wreorder]
-   42 |     ProcessState state;
-      |                  ^~~~~
-classes/process.h:39:12: warning:   'size_t Process::program_counter' [-Wreorder]
-   39 |     size_t program_counter;
-      |            ^~~~~~~~~~~~~~~
-classes/process.cpp:16:1: warning:   when initialized here [-Wreorder]
-   16 | Process::Process(int id, const std::string& name, size_t mem_size, size_t page_size)
-      | ^~~~~~~
-classes/process.cpp: In member function 'void Process::runScreenInterface()':
-classes/process.cpp:261:9: error: 'clear_screen' was not declared in this scope
-  261 |         clear_screen(); // Assumes this is a global function
-      |         ^~~~~~~~~~~~
-In file included from classes/Scheduler.cpp:1:
-classes/MemoryManager.h:19:16: error: 'string' in namespace 'std' does not name a type
-   19 |     const std::string backing_store_filename = "csopesy-backing-store.txt";
-      |                ^~~~~~
-classes/MemoryManager.h:8:1: note: 'std::string' is defined in header '<string>'; this is probably fixable by adding '#include <string>'
-    7 | #include "Frame.h"
-  +++ |+#include <string>
-    8 |
-classes/Scheduler.cpp: In member function 'void Scheduler::fcfs_scheduler(int)':
-classes/Scheduler.cpp:60:60: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and int' [-Wsign-compare]
-   60 |                 while(current_process->getProgramCounter() < current_process->getInstructionCount()) {
-      |                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-classes/Scheduler.cpp: In member function 'bool Scheduler::executeInstruction(Process&)':
-classes/Scheduler.cpp:144:16: warning: comparison of integer expressions of different signedness: 'size_t' {aka 'long long unsigned int'} and 'int' [-Wsign-compare]
-  144 |         if (pc >= process.getInstructionCount()) {
-      |             ~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+g++ -std=c++17 -pthread \ main.cpp \ os_interface.cpp \ classes/helper.cpp \ classes/ICommand.cpp \ classes/MemoryManager.cpp \ classes/PageTable.cpp \ classes/process.cpp \ classes/Scheduler.cpp \ -o main.exe
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find \: No such file or directory
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find \: No such file or directory
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x0): multiple definition of `MemoryManager::MemoryManager(unsigned long long, unsigned long long, unsigned long long)'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x0): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x0): multiple definition of `MemoryManager::MemoryManager(unsigned long long, unsigned long long, unsigned long long)'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x0): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x358): multiple definition of `MemoryManager::selectVictimFrame()'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x358): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x400): multiple definition of `MemoryManager::loadPageFromBackingStore(int, int, int)'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x400): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x748): multiple definition of `MemoryManager::writePageToBackingStore(int, int)'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x748): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0xb1e): multiple definition of `MemoryManager::handlePageFault(Process&, int)'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0xb1e): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x1064): multiple definition of `MemoryManager::releaseProcessMemory(int)'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x1064): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x1262): multiple definition of `MemoryManager::getPageSize() const'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x1262): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x1278): multiple definition of `MemoryManager::getTotalMemory() const'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x1278): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x12a6): multiple definition of `MemoryManager::getFreeMemory() const'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x12a6): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x12d8): multiple definition of `MemoryManager::getUsedMemory() const'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x12d8): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x1312): multiple definition of `generateRandomInstruction()'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x1312): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x1db0): multiple definition of `create_new_process(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x1db0): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x1f8b): multiple definition of `generate_random_processes()'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x1f8b): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x2037): multiple definition of `initialize()'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x2037): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x28d6): multiple definition of `screen_init()'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x28d6): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x2af6): multiple definition of `scheduler_start()'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x2af6): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x2b74): multiple definition of `scheduler_stop()'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x2b74): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x2ba8): multiple definition of `report_util()'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x2ba8): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x2cbf): multiple definition of `accept_main_menu_input(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, OSState*, Process**)'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x2cbf): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x39dc): multiple definition of `accept_screen_session_input(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, OSState*, Process**)'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x39dc): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.text+0x3aa7): multiple definition of `menu()'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x3aa7): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.bss+0x60): multiple definition of `os_scheduler'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.bss+0x60): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.bss+0x0): multiple definition of `num_cpu'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.bss+0x0): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.bss+0x20): multiple definition of `scheduler_type[abi:cxx11]'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.bss+0x20): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.bss+0x40): multiple definition of `quantumcycles'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.bss+0x40): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.bss+0x44): multiple definition of `batchprocess_freq'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.bss+0x44): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.bss+0x48): multiple definition of `min_ins'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.bss+0x48): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.bss+0x4c): multiple definition of `max_ins'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.bss+0x4c): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.bss+0x50): multiple definition of `delays_perexec'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.bss+0x50): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.bss+0x54): multiple definition of `max_overall_mem'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.bss+0x54): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.bss+0x58): multiple definition of `mem_per_frame'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.bss+0x58): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.bss+0x5c): multiple definition of `mem_per_proc'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.bss+0x5c): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.bss+0x68): multiple definition of `g_memory_manager'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.bss+0x68): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.data+0x0): multiple definition of `g_next_pid'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.data+0x0): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.bss+0x70): multiple definition of `g_process_generator_thread'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.bss+0x70): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.bss+0x78): multiple definition of `g_is_generating'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.bss+0x78): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccc1e1Mo.o:os_interface.c:(.bss+0x80): multiple definition of `screenListMutex'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.bss+0x80): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find \: No such file or directory
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find \: No such file or directory
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find \: No such file or directory
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccPFP8Kp.o:MemoryManager.:(.text+0x0): multiple definition of `MemoryManager::MemoryManager(unsigned long long, unsigned long long, unsigned long long)'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x0): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccPFP8Kp.o:MemoryManager.:(.text+0x0): multiple definition of `MemoryManager::MemoryManager(unsigned long long, unsigned long long, unsigned long long)'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x0): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccPFP8Kp.o:MemoryManager.:(.text+0x358): multiple definition of `MemoryManager::selectVictimFrame()'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x358): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccPFP8Kp.o:MemoryManager.:(.text+0x400): multiple definition of `MemoryManager::loadPageFromBackingStore(int, int, int)'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x400): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccPFP8Kp.o:MemoryManager.:(.text+0x748): multiple definition of `MemoryManager::writePageToBackingStore(int, int)'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x748): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccPFP8Kp.o:MemoryManager.:(.text+0xb1e): multiple definition of `MemoryManager::handlePageFault(Process&, int)'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0xb1e): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccPFP8Kp.o:MemoryManager.:(.text+0x1066): multiple definition of `MemoryManager::releaseProcessMemory(int)'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x1064): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccPFP8Kp.o:MemoryManager.:(.text+0x1264): multiple definition of `MemoryManager::getPageSize() const'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x1262): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccPFP8Kp.o:MemoryManager.:(.text+0x127a): multiple definition of `MemoryManager::getTotalMemory() const'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x1278): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccPFP8Kp.o:MemoryManager.:(.text+0x12a8): multiple definition of `MemoryManager::getFreeMemory() const'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x12a6): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\Users\Andrei\AppData\Local\Temp\ccPFP8Kp.o:MemoryManager.:(.text+0x12da): multiple definition of `MemoryManager::getUsedMemory() const'; C:\Users\Andrei\AppData\Local\Temp\ccS8RCFM.o:main.cpp:(.text+0x12d8): first defined here
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find \: No such file or directory
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find \: No such file or directory
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find \: No such file or directory
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/15.1.0/../../../../x86_64-w64-mingw32/bin/ld.exe: cannot find \: No such file or directory
+collect2.exe: error: ld returned 1 exit status
