@@ -3,6 +3,7 @@
 #include <cstdlib> // for system()
 #include <ctime>
 #include "header.h"
+#include "classes/helper.h"
 #include <vector>
 #include <thread>
 #include <memory>
@@ -523,7 +524,7 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
                             << " Processes ---\n";
                     // Column titles
                     std::cout << std::left << std::setw(nameWidth) << "NAME" 
-                            << std::setw(pidWidth) << "PID" << "STATUS\n";
+                            << std::setw(pidWidth) << "PID" << "STATUS\n"
                             << std::setw(coreWidth) << "CORE"
                             << "BURST (rem)\n";
                     // std::cout << "------------------------------------------\n";
@@ -571,6 +572,9 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
 //     }
 
 //     system("pause");
+    } else if (choice == "report-util") {
+        report_util();
+        system("pause");
     } else if (choice == "exit") {
         *current = OSState::EXITING;
         std::cout << "Exiting the OS...\n";
