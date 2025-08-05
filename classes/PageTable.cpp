@@ -5,7 +5,10 @@
 
 // need to pass memory size, need checker in process ? 
 PageTable::PageTable(size_t process_memory_size, size_t page_size) {
-if (page_size == 0) {
+
+    this->page_size = page_size;
+    
+    if (page_size == 0) {
         throw std::invalid_argument("Page size cannot be zero.");
     }
 
@@ -74,8 +77,5 @@ void PageTable::unmapPage(int page_number) {
 }
 
 size_t PageTable::getPageSize() const {
-    if (entries.empty()) {
-        throw std::runtime_error("PageTable is empty, cannot determine page size.");
-    }
-    return entries.size() * sizeof(PageTableEntry);
+    return this->page_size; // <-- RETURN THE STORED VALUE
 }

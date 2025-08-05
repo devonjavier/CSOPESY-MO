@@ -218,7 +218,7 @@ void READ::execute(Process& process) {
     // 2. Perform the read. For this simulation, we read a default value.
     // In a more complex simulation, you would read from a memory buffer in the Process class.
     // As per the spec, an uninitialized read returns 0.
-    uint16_t value_read = 0; 
+    uint16_t value_read = process.readMemory(memory_address);
     
     // 3. Store the result in the process's symbol table.
     process.setVariable(variable_name, value_read);
@@ -251,6 +251,7 @@ void WRITE::execute(Process& process) {
     // 3. Perform the write.
     // In this simulation, this is a conceptual operation. We can log it.
     // In a more complex sim, you would write to a memory buffer.
+    process.writeMemory(memory_address, value_to_write);
     
     // 4. Mark the page as "dirty" since it has been modified.
     int page_number = getRequiredPage(process.getPageTable()->getPageSize());

@@ -27,6 +27,12 @@ MemoryManager::MemoryManager(size_t total_memory_size, size_t frame_size, size_t
         free_frames.push_back(i);
     }
 
+    std::ofstream backing_store(backing_store_filename, std::ios::trunc | std::ios::binary);
+    if (!backing_store.is_open()) {
+        std::cerr << "[MMU] WARNING: Could not clear backing store file on startup." << std::endl;
+    }
+    backing_store.close();
+
     std::cout << "[MMU] Memory Manager initialized with " << num_frames 
               << " frames of " << frame_size << " bytes each." << std::endl;
 }
@@ -163,6 +169,10 @@ void MemoryManager::handlePageFault(Process& faulting_process, int page_number) 
         if (victim_process->getPageTable()->isDirty(victim_page_number)) {
             // If the page was modified, we MUST write its contents back to the
             // backing store to save the changes before we overwrite the frame.
+            // --- NEW LOG MESSAGE #2: ANNOUNCE DIRTY WRITE-BACK ---
+            // This log will only appear if the evicted page was modified.
+            std::cout << "[MMU] Writing dirty page " << victim_page_number << " for PID " << victim_pid 
+                      << " to backing store." << std::endl;
             writePageToBackingStore(victim_pid, victim_page_number);
         }
 
@@ -170,6 +180,7 @@ void MemoryManager::handlePageFault(Process& faulting_process, int page_number) 
         // From the victim process's perspective, this page is no longer in memory.
         victim_process->getPageTable()->unmapPage(victim_page_number);
         
+        // --- NEW LOG MESSAGE #3: CONFIRM EVICTION ---
         std::cout << "[MMU] Evicted Page " << victim_page_number << " from PID " << victim_pid << "." << std::endl;
     }
 

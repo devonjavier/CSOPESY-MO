@@ -56,6 +56,8 @@ private:
 
     std::string creation_timestamp_str; 
 
+    std::vector<uint16_t> memory_space;
+
     std::vector<std::string> logs;
     std::mutex logMutex;
 
@@ -111,6 +113,9 @@ public:
     void displayVariables() const;
 
     double updateRunningAverage(double previous_average, uint64_t new_wait, size_t index);
+
+    uint16_t readMemory(uint32_t address) const;
+    void writeMemory(uint32_t address, uint16_t value);
 
     void runScreenInterface(); 
 };

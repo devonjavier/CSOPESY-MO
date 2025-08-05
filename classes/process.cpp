@@ -13,17 +13,28 @@ std::string processStateToString(ProcessState state) {
     }
 }
 
-Process::Process() : pid(-1), process_name("null"), current_core_id(-1), state(ProcessState::IDLE),  program_counter(0) {}
+Process::Process(int id, const std::string& name, size_t mem_size, size_t page_size) 
+    : pid(id), 
+      process_name(name), 
+      current_core_id(-1), 
+      state(ProcessState::IDLE),  
+      program_counter(0),
+      memory_size(mem_size)  {
+            this->page_table = std::make_unique<PageTable>(mem_size, page_size);
 
-Process::Process(int id, const std::string& name, size_t mem_size, size_t page_size)
-    : pid(id), process_name(name), current_core_id(-1), state(ProcessState::IDLE),  program_counter(0) {
-    arrival_time = 0;               //init to 0 or current time if needed
-    burst_time = 0;                 //init to 0 or a default value
-    remaining_burst = burst_time;   //init to burst_time
-    waiting_time = 0;               //init to 0 or a default value
-    run_count = 0;                  //init to 0
-    
-}
+            // Initialize other members as before
+
+            if (mem_size > 0) {
+                memory_space.resize(mem_size / 2, 0); 
+            }
+
+            arrival_time = 0;
+            burst_time = 0;
+            remaining_burst = 0;
+            waiting_time = 0;
+            run_count = 0;
+      }
+
 
 Process::~Process() {}
 
@@ -289,6 +300,31 @@ void Process::runScreenInterface() {
             system("pause");
         }
     }
+}
+
+uint16_t Process::readMemory(uint32_t address) const {
+    // The address from the command is a byte address. We need to convert
+    // it to an index into our vector of 2-byte words.
+    size_t index = address / 2;
+
+    // Boundary check
+    if (index >= memory_space.size()) {
+        // This case should be caught by the ICommand's access violation check,
+        // but it's good practice to have a safe fallback.
+        return 0; 
+    }
+    return memory_space[index];
+}
+
+void Process::writeMemory(uint32_t address, uint16_t value) {
+    size_t index = address / 2;
+
+    // Boundary check
+    if (index >= memory_space.size()) {
+        // Again, this is a safety fallback. The ICommand should prevent this.
+        return;
+    }
+    memory_space[index] = value;
 }
 
 size_t Process::getMemorySize() const {

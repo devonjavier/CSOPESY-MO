@@ -55,11 +55,16 @@ class Scheduler {
                 current_process->setState(ProcessState::RUNNING);
                 current_process->setCurrentCoreId(coreId);
                 
-                // fcfs run all instructions
-                current_process->runInstructions(); 
-                
-
-                current_process->setState(ProcessState::FINISHED);
+                while(current_process->getProgramCounter() < current_process->getInstructionCount()) {
+                    if (!executeInstruction(*current_process)) {
+                        // Stop if the instruction failed or the process was terminated.
+                        break; 
+                    }
+                }
+                    
+                if (current_process->getState() != ProcessState::TERMINATED) {
+                    current_process->setState(ProcessState::FINISHED);
+                }
 
                 {
                     std::lock_guard<std::mutex> lock(this->queueMutex);

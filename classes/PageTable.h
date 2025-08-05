@@ -21,11 +21,12 @@ public:
 private:
     std::vector<PageTableEntry> entries;
     size_t num_pages;
+    size_t page_size;
 
 public:
     // Constructor: Calculates the number of pages needed for the process.
     PageTable(size_t process_memory_size, size_t page_size);
-
+    
     // Gets the frame number for a given page, returns -1 if not present.
     int getFrameNumber(int page_number) const;
 
