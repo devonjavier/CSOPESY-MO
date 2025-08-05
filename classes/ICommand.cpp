@@ -1,6 +1,6 @@
 #include "ICommand.h"
 #include "process.h"
-#include "helper.cpp" // becomes global
+#include "helper.h"
 #include <iostream>
 #include <thread>
 #include <chrono>
