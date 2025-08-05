@@ -520,4 +520,14 @@ class Scheduler {
 
     //     return aveWait;
     // }
+
+    float computeUtilization(int num_cpu) const {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        return (100.0f * runningProcesses.size()) / num_cpu;
+    }
+
+    int numBusyCores() const {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        return (int)runningProcesses.size();
+    }
 };

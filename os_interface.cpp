@@ -54,6 +54,14 @@ bool g_is_generating = false;
 //protect link list of session instance/screen list
 std::mutex screenListMutex;
 
+static const std::vector<ProcessState> stateOrder = {
+    ProcessState::IDLE,
+    ProcessState::WAITING,
+    ProcessState::RUNNING,
+    ProcessState::FINISHED,
+    ProcessState::TERMINATED
+};
+
 //initial declaration (maybe transfer to a header file)
 // std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
 //     if (tp.time_since_epoch().count() == 0) return "N/A";
@@ -498,7 +506,7 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         if (!os_scheduler) {
             std::cout << "Scheduler not initialized.\n";
         } else {
-            float util      = os_scheduler->computeUtilization();
+            float util      = os_scheduler->computeUtilization(num_cpu);
             int   usedCores = os_scheduler->numBusyCores();
             int   freeCores = num_cpu - usedCores;
             std::cout << "CPU Utilization: " << util << "%\n";
@@ -524,7 +532,7 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
                             << " Processes ---\n";
                     // Column titles
                     std::cout << std::left << std::setw(nameWidth) << "NAME" 
-                            << std::setw(pidWidth) << "PID" << "STATUS\n"
+                            << std::setw(pidWidth) << "PID" << "STATUS"
                             << std::setw(coreWidth) << "CORE"
                             << "BURST (rem)\n";
                     // std::cout << "------------------------------------------\n";
