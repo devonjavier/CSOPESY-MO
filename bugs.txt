@@ -1,10 +1,37 @@
-g++ -std=c++17 -Wall -pthread \
-    main.cpp \
-    os_interface.cpp \
-    classes/helper.cpp \
-    classes/ICommand.cpp \
-    classes/MemoryManager.cpp \
-    classes/PageTable.cpp \
-    classes/process.cpp \
-    classes/Scheduler.cpp \
-  -o main.exe
+g++ -std=c++17 -Wall -pthread \ main.cpp \ os_interface.cpp \ classes/helper.cpp \ classes/ICommand.cpp \ classes/MemoryManager.cpp \ classes/PageTable.cpp \ classes/process.cpp \ classes/Scheduler.cpp \ -o main.exe
+In file included from main.cpp:1:
+os_interface.cpp: In function 'void menu()':
+os_interface.cpp:658:9: warning: label 'std' defined but not used [-Wunused-label]
+  658 |         std:getline(std::cin, choice);
+      |         ^~~
+os_interface.cpp: In function 'void menu()':
+os_interface.cpp:658:9: warning: label 'std' defined but not used [-Wunused-label]
+  658 |         std:getline(std::cin, choice);
+      |         ^~~
+cc1plus.exe: fatal error: classes/helper.cpp: No such file or directory
+compilation terminated.
+cc1plus.exe: fatal error: classes/MemoryManager.cpp: No such file or directory
+compilation terminated.
+cc1plus.exe: fatal error: classes/PageTable.cpp: No such file or directory
+compilation terminated.
+classes/Scheduler.cpp:22:6: error: redefinition of 'void Scheduler::addProcess(const Process&)'
+   22 | void Scheduler::addProcess(const Process& process) {
+      |      ^~~~~~~~~
+classes/Scheduler.cpp:7:6: note: 'void Scheduler::addProcess(const Process&)' previously defined here
+    7 | void Scheduler::addProcess(const Process& p) {
+      |      ^~~~~~~~~
+classes/Scheduler.cpp: In member function 'void Scheduler::schedulerAlgo(int)':
+classes/Scheduler.cpp:79:9: error: 'current_mem_usag' was not declared in this scope
+   79 |         current_mem_usage -= mem_per_proc;
+      |         ^~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp:79:30: error: 'mem_per_proc' was not declared in this scope
+   79 |         current_mem_usage -= mem_per_proc;
+      |                              ^~~~~~~~~~~~
+classes/Scheduler.cpp: In member function 'double Scheduler::FCFS()':
+classes/Scheduler.cpp:246:19: error: 'updateRunningAverage' was not declared in this scope
+  246 |         aveWait = updateRunningAverage(aveWait, wait, count);
+      |                   ^~~~~~~~~~~~~~~~~~~~
+classes/Scheduler.cpp: At global scope:
+classes/Scheduler.cpp:262:12: error: 'Status' in 'class Scheduler' does not name a type
+  262 | Scheduler::Status Scheduler::getStatus() const {
+      |            ^~~~~~
