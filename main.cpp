@@ -8,6 +8,5 @@
 
 int main() {
     menu();
-    exit_os(0);
     return 0;
 }

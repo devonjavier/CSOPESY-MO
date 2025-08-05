@@ -54,9 +54,6 @@ bool g_is_generating = false;
 std::mutex screenListMutex;
 
 //initial declaration (maybe transfer to a header file)
-void create_process_screen(const std::string& name, int total_lines);
-void new_screen(std::string name);
-
 // std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
 //     if (tp.time_since_epoch().count() == 0) return "N/A";
 //     std::time_t tt = std::chrono::system_clock::to_time_t(tp);
@@ -65,13 +62,6 @@ void new_screen(std::string name);
 //     return std::string(buffer);
 // }
 
-std::string get_timestamp() {
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-    char buffer[100];
-    std::strftime(buffer, sizeof(buffer), "%m/%d/%Y, %I:%M:%S %p", std::localtime(&now_time));
-    return std::string(buffer);
-}
 
 ICommand* generateRandomInstruction() {
     // Randomly choose an instruction type
@@ -117,9 +107,6 @@ Process* create_new_process(std::string name) {
     //TEMP 
     Process* raw_ptr = proc.get();
     
-    std::cout << "  -> Creating Process ID " << proc->getPid() 
-              << " with " << num_instructions << " instructions.\n";
-    
     for (int i = 0; i < num_instructions; ++i) {
         proc->addInstruction(std::unique_ptr<ICommand>(generateRandomInstruction())); 
     }
@@ -147,23 +134,12 @@ Process* create_new_process(std::string name) {
 
 void generate_random_processes() {
     for (int i = 0; i < batchprocess_freq; ++i) {
-        cout << (i + 1) << " out of " << batchprocess_freq << " processes being generated.\n";
         Process* new_proc_ptr = create_new_process("Process" + std::to_string(g_next_pid)); 
     }
 }
 
 
 void initialize() {
-        // Gemini example:
-        // Initialize GDT (or IDT) - architecture-specific!
-        // gdt_init();
-        // idt_init();
-
-        // Set up a minimal stack (architecture-specific!)
-        // stack_init();
-
-        // Basic memory setup (e.g., identity mapping)
-        // memory_init();
 
     std::ifstream config("config.txt");
     if (!config.is_open()) {
@@ -329,13 +305,6 @@ void report_util() {
 
 // 6. clear_screen()
 //    - clears the entire terminal screen
-void clear_screen() {
-    #ifdef _WIN32
-        std::system("cls");
-    #else
-        std::system("clear");
-    #endif
-}
 
 // 7. exit_os(int status)
 //    - shut down the operating system
@@ -354,24 +323,6 @@ void clear_screen() {
 //        - return control to bootloader or firmware
 //        - THEN halt CPU
 //    - int status parameter to indicate exit status (egg. 0 for success, non-zero for an error).
-void exit_os(int status) {
-    // umount_all();     // Unmount file systems
-    // disable_devices();
-    // free_memory();   // Free allocated memory
-    // close_open_files(); // Close open files
-    // save_system_state(); // Save system state
-    // log_shutdown_info(); // Log shutdown information
-    // notify_processes(); // Notify other processes
-    // clean_up_resources(); // Clean up resources
-    // stop_all_processes(); // Stop all running processes
-    // disable_interrupts(); // Disable interrupts
-    // set_cpu_state(); // Set CPU to a known state
-    // return_control_to_bootloader(); // Return control to bootloader or 
-    scheduler_stop();
-    std::exit(status);
-}
-
-
 
 
 // void generate_file(int core_id){
@@ -461,22 +412,22 @@ void exit_os(int status) {
 
 // }
 
-// void find_screen(std::string name) {
-//     Process *current_screen = head;
+Process* find_screen(std::string name) {
+    Process *current_screen = head;
 
-//     while(current_screen != nullptr && current_screen->name != name){
-//         current_screen = current_screen->next;
-//     }
+    while(current_screen != nullptr && current_screen->getProcessName() != name){
+        current_screen = current_screen->getNext();
+    }
     
-//     if(current_screen == nullptr){
-//         std::cout << "Screen session with name '" << name << "' not found.\n";
-//         system("pause");
-//         return;
-//     }
+    if(current_screen == nullptr){
+        std::cout << "Screen session with name '" << name << "' not found.\n";
+        system("pause");
+        return nullptr;
+    }
 
-//     screen_session(*current_screen);
+    return current_screen;
     
-// }
+}
 
 /// Create (but don’t attach) a screen session for this process.
 // void create_process_screen(const std::string& name, int total_lines = 1){
@@ -534,7 +485,22 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         proc = nullptr;
         system("pause");
     } else if (choice.rfind("screen -r", 0) == 0){ 
-        // find the screen session by name //UPDATE FIND SCREEN
+        if (!os_scheduler) {
+            std::cout << "Scheduler not initialized.\n";
+            system("pause");
+        } else {
+            std::string name = choice.substr(10);
+            Process* proc_to_resume = find_screen(name);
+
+            if (proc_to_resume) {
+ 
+                proc_to_resume->runScreenInterface();
+                
+                clear_screen();
+                screen_init();
+                return;
+            }
+        }
     } else if (choice.rfind("screen -ls", 0) == 0) {
         //     std::cout << "\nActive screen sessions:\n";
 
@@ -723,28 +689,15 @@ void menu(){
     while(current != OSState::EXITING){
 
         clear_screen();
+        screen_init();
         
-        if (current == OSState::MAIN_MENU) {
-            screen_init();
-        } else if (current == OSState::SCREEN_SESSION) {
-            // process_screen_init(active_process); // needs function 
-        }   
-
-
-         if (!std::getline(std::cin, choice)) {
-            break;
+        if (!std::getline(std::cin, choice)) {
+            current = OSState::EXITING;
+            continue;
         }
-
-        if(current == OSState::MAIN_MENU){
-            accept_main_menu_input(choice, &current, &active_process);
-        } else if (current == OSState::SCREEN_SESSION) {
-
-            // display screen session here???? 
-            // fml need new ui
-            // THINK LATER
-
-            accept_screen_session_input(choice, &current, &active_process);
-        }
+        
+        accept_main_menu_input(choice, &current, &active_process);
+       
     }
 
     if(os_scheduler != nullptr) {

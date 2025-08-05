@@ -1,5 +1,6 @@
 #include "ICommand.h"
 #include "process.h"
+#include "helper.cpp" // becomes global
 #include <iostream>
 #include <thread>
 #include <chrono>
@@ -14,17 +15,20 @@ PRINT::PRINT(const std::string& varName) : message(""), variableName(varName), i
 PRINT::PRINT(const std::string& msg, bool isMsg) : message(msg), variableName(""), isVariable(false) {}
 
 void PRINT::execute(Process& process) {
+
+    std::string messageContent;
     if (isVariable && !variableName.empty()) {
         uint16_t value = process.getVariableValue(variableName);
-        std::cout << "[Process " << process.getProcessName() << "] " 
-                  << variableName << " = " << value << std::endl;
+        messageContent = variableName + " = " + std::to_string(value);
     } else if (!message.empty()) {
-        std::cout << "[Process " << process.getProcessName() << "] " 
-                  << message << std::endl;
+        messageContent = message;
     } else {
-        std::cout << "[Process " << process.getProcessName() << "] " 
-                  << "Hello world from " << process.getProcessName() << std::endl;
+        messageContent = "Hello world from " + process.getProcessName();
     }
+
+
+    std::string log = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + 
+        std::to_string(process.getCurrentCoreId()) + ", " + messageContent;
 }
 
 std::string PRINT::toString() const {
@@ -41,8 +45,9 @@ DECLARE::DECLARE(const std::string& varName, uint16_t val)
 
 void DECLARE::execute(Process& process) {
     process.setVariable(variableName, value);
-    std::cout << "[Process " << process.getProcessName() << "] " 
-              << "Declared " << variableName << " = " << value << std::endl;
+    std::string log = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + std::to_string(process.getCurrentCoreId()) + ", "
+                    + "Declared " + variableName + " = " + std::to_string(value);
+    process.addLog(log);
 }
 
 std::string DECLARE::toString() const {
@@ -75,8 +80,13 @@ void ADD::execute(Process& process) {
 
     process.setVariable(resultVar, finalResult);
 
-    std::cout << "[Process " << process.getProcessName() << "] " 
-              << resultVar << " = " << op1 << " + " << op2 << " = " << finalResult << std::endl;
+    std::string log = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + 
+                    std::to_string(process.getCurrentCoreId()) + ", "
+                    + resultVar + " = " + std::to_string(op1) 
+                    + " + " + std::to_string(op2) 
+                    + " = " + std::to_string(finalResult);
+    
+    process.addLog(log);
 }
 
 std::string ADD::toString() const {
@@ -110,8 +120,13 @@ void SUBTRACT::execute(Process& process) {
 
     process.setVariable(resultVar, result);
 
-    std::cout << "[Process " << process.getProcessName() << "] " 
-              << resultVar << " = " << op1 << " - " << op2 << " = " << result << std::endl;
+    std::string log = "[Process " + process.getProcessName() + "] " 
+                    + get_timestamp() + " Core ID: " + std::to_string(process.getCurrentCoreId()) + ", "
+                    + resultVar + " = " + std::to_string(op1) 
+                    + " - " + std::to_string(op2) 
+                    + " = " + std::to_string(result);
+
+    process.addLog(log);
 }
 
 std::string SUBTRACT::toString() const {
@@ -124,13 +139,15 @@ std::string SUBTRACT::toString() const {
 SLEEP::SLEEP(uint8_t ticks) : cpuTicks(ticks) {}
 
 void SLEEP::execute(Process& process) {
-    std::cout << "[Process " << process.getProcessName() << "] " 
-              << "Sleeping for " << static_cast<int>(cpuTicks) << " CPU ticks" << std::endl;
+    std::string startLog = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + 
+        std::to_string(process.getCurrentCoreId()) + ", " + " Sleeping for " + std::to_string(cpuTicks) + " CPU ticks";
+    process.addLog(startLog);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(cpuTicks * 10));
 
-    std::cout << "[Process " << process.getProcessName() << "] " 
-              << "Woke up from sleep" << std::endl;
+    std::string endLog = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + 
+        std::to_string(process.getCurrentCoreId()) + "Woke up from sleep";
+    process.addLog(endLog);
 }
 
 std::string SLEEP::toString() const {
@@ -142,20 +159,21 @@ FOR::FOR(std::vector<std::unique_ptr<ICommand>>&& instrs, uint8_t repeats)
     : instructions(std::move(instrs)), repeatCount(repeats) {}
 
 void FOR::execute(Process& process) {
-    std::cout << "[Process " << process.getProcessName() << "] "
-              << "Starting FOR loop (" << static_cast<int>(repeatCount) << " iterations)" << std::endl;
-
+    std::string startLog = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + 
+        std::to_string(process.getCurrentCoreId()) + ", " + "Starting FOR loop (" + std::to_string(repeatCount) + " iterations)";
+    process.addLog(startLog);
     for (uint8_t i = 0; i < repeatCount; ++i) {
-        std::cout << "[Process " << process.getProcessName() << "] "
-                  << "Loop iteration " << static_cast<int>(i + 1) << "/" << static_cast<int>(repeatCount) << std::endl;
+        // std::cout << "[Process " << process.getProcessName() << "] "
+        //           << "Loop iteration " << static_cast<int>(i + 1) << "/" << static_cast<int>(repeatCount) << std::endl;
 
         for (auto& instruction : instructions) {
             instruction->execute(process);
         }
     }
 
-    std::cout << "[Process " << process.getProcessName() << "] "
-              << "FOR loop completed" << std::endl;
+    std::string endLog = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + 
+        std::to_string(process.getCurrentCoreId()) + "FOR loop completed";
+    process.addLog(endLog);
 }
 
 std::string FOR::toString() const {

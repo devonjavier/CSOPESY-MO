@@ -53,7 +53,7 @@ class Scheduler {
                 // fcfs run all instructions
                 current_process->runInstructions(); 
                 
-                std::cout << "Core " << coreId << " [FCFS]: Finished process " << current_process->getPid() << "." << std::endl;
+
                 current_process->setState(ProcessState::FINISHED);
 
                 {
@@ -109,8 +109,6 @@ class Scheduler {
 
  
                 if (current_process->getRemainingBurst() > 0) {
-                    std::cout << "Core " << coreId << " [RR]: Time slice ended for process " 
-                              << current_process->getPid() << ". Re-queueing." << std::endl;
                     current_process->setState(ProcessState::WAITING);
                     {
                         std::lock_guard<std::mutex> lock(this->queueMutex);
@@ -119,7 +117,6 @@ class Scheduler {
                     }
                 } else {
 
-                    std::cout << "Core " << coreId << " [RR]: Finished process " << current_process->getPid() << "." << std::endl;
                     current_process->setState(ProcessState::FINISHED);
                     {
                         std::lock_guard<std::mutex> lock(this->queueMutex);
@@ -129,6 +126,14 @@ class Scheduler {
             }
         }
         std::cout << "Core " << coreId << ": Exiting Round Robin worker thread." << std::endl;
+    }
+
+    std::string get_timestamp() {
+        auto now = std::chrono::system_clock::now();
+        std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+        char buffer[100];
+        std::strftime(buffer, sizeof(buffer), "%m/%d/%Y, %I:%M:%S %p", std::localtime(&now_time));
+        return std::string(buffer);
     }
 
 

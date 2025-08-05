@@ -97,6 +97,10 @@ std::unordered_map<std::string, uint16_t> Process::getVariables() const {
     return variables;
 }
 
+std::vector<std::string> Process::getLogs() const {
+    return logs;
+}
+
 uint16_t Process::getVariableValue(const std::string& name) {
     return variables.find(name) != variables.end() ? variables[name] : 0;
 }
@@ -200,3 +204,56 @@ void Process::displayInstructionList() {
 double updateRunningAverage(double previous_average, uint64_t new_wait, size_t index) {
     return (previous_average * (double)index + new_wait) / (index + 1);
 }
+
+void Process::addLog(const std::string& message) {
+    std::lock_guard<std::mutex> lock(logMutex);
+    logs.push_back(message);
+}
+
+void Process::runScreenInterface() {
+    std::string command;
+    while (true) {
+        clear_screen(); // Assumes this is a global function
+
+        // --- Print all the information in the correct order ---
+        std::cout << "Process name: " << this->getProcessName() << std::endl;
+        std::cout << "ID: " << this->getPid() << std::endl;
+        
+        std::cout << "Logs:" << std::endl;
+        {
+            std::lock_guard<std::mutex> lock(this->logMutex);
+            if (logs.empty()) {
+                std::cout << "  (No log entries yet.)\n";
+            } else {
+                for (const auto& log_entry : logs) {
+                    std::cout << log_entry << std::endl;
+                }
+            }
+        }
+        
+        std::cout << std::endl; // Add a blank line for spacing
+
+        // Check the state to decide what to print at the end
+        if (this->getState() == ProcessState::FINISHED) {
+            std::cout << "Finished!" << std::endl;
+        } else {
+            std::cout << "Current instruction line: " << this->program_counter << std::endl;
+            std::cout << "Lines of code: " << this->getInstructionCount() << std::endl;
+        }
+
+        std::cout << "\nroot:\\> "; // Mimic the prompt from the image
+        
+        std::getline(std::cin, command);
+
+        if (command == "exit") {
+            break; // Exit this screen and return to the main menu
+        } else if (command == "process-smi") {
+            // The loop will automatically refresh, so we just continue
+            continue;
+        } else {
+            std::cout << "Unknown command. Use 'process-smi' to refresh or 'exit' to return." << std::endl;
+            system("pause");
+        }
+    }
+}
+

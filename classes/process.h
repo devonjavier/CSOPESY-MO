@@ -40,9 +40,11 @@ private:
     ProcessState state;
     std::unordered_map<std::string, uint16_t> variables;
 
-        // --- NEW: Attributes absorbed from ScreenSession ---
     std::string creation_timestamp_str; 
     Process* next; 
+
+    std::vector<std::string> logs;
+    std::mutex logMutex;
 
 public:
     Process();
@@ -52,6 +54,9 @@ public:
     void addInstruction(std::unique_ptr<ICommand> instruction);
     void runInstructionSlice(unsigned int slice_size);
     void runInstructions();
+
+    void addLog(const std::string& message);
+    std::vector<std::string> getLogs() const;
 
     const std::vector<std::unique_ptr<ICommand>>& getInstructions() const;
     int getInstructionCount() const;
