@@ -6,6 +6,7 @@
 #include <chrono>
 #include <vector>
 #include <memory> 
+#include <mutex>
 #include <inttypes.h>
 #include "ICommand.h"
 #include "PageTable.h"
@@ -86,7 +87,7 @@ public:
     int getCurrentCoreId() const;
     ProcessState getState() const;
     std::unordered_map<std::string, uint16_t> getVariables() const;
-    uint16_t getVariableValue(const std::string& name);
+    uint16_t getVariableValue(const std::string& name) const;
     std::string getCreationTimestamp() const;
     size_t getProgramCounter() const;
     bool getVariable(const std::string& name, uint16_t& value) const;
@@ -106,7 +107,7 @@ public:
     std::string getTerminationReason() const;
 
     std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp);
-    void displayInstructionList();
+    void displayInstructionList() const;
     void displayVariables() const;
 
     double updateRunningAverage(double previous_average, uint64_t new_wait, size_t index);

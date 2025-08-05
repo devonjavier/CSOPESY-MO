@@ -15,7 +15,7 @@ std::string processStateToString(ProcessState state) {
 
 Process::Process() : pid(-1), process_name("null"), current_core_id(-1), state(ProcessState::IDLE),  program_counter(0) {}
 
-Process::Process(int id, const std::string& name)
+Process::Process(int id, const std::string& name, size_t mem_size, size_t page_size)
     : pid(id), process_name(name), current_core_id(-1), state(ProcessState::IDLE),  program_counter(0) {
     arrival_time = 0;               //init to 0 or current time if needed
     burst_time = 0;                 //init to 0 or a default value
@@ -85,16 +85,19 @@ ProcessState Process::getState() const {
     return state;
 }
 
-std::unordered_map<std::string, uint16_t> Process::getVariables() const {
-    return variables;
-}
-
 std::vector<std::string> Process::getLogs() const {
     return logs;
 }
 
-uint16_t Process::getVariableValue(const std::string& name) {
-    return variables.find(name) != variables.end() ? variables[name] : 0;
+uint16_t Process::getVariableValue(const std::string& name) const { // Made const correct
+    // Linearly search the symbol table for the variable name.
+    for (size_t i = 0; i < symbol_count; ++i) {
+        if (symbol_table[i].in_use && symbol_table[i].name == name) {
+            return symbol_table[i].value;
+        }
+    }
+
+    return 0;
 }
 
 void Process::setBurstTime() {
@@ -141,8 +144,26 @@ void Process::setState(ProcessState newState) {
     // }
 }
 
-void Process::setVariable(const std::string& name, uint16_t value) {
-    variables[name] = value;
+bool Process::setVariable(const std::string& name, uint16_t value) {
+    for (size_t i = 0; i < symbol_count; ++i) {
+        if (symbol_table[i].in_use && symbol_table[i].name == name) {
+            symbol_table[i].value = value;
+            return true; 
+        }
+    }
+
+    if (symbol_count >= 32) {
+        addLog("[System] Symbol table full. Declaration of '" + name + "' ignored.");
+        return false;
+    }
+
+
+    symbol_table[symbol_count].name = name;
+    symbol_table[symbol_count].value = value;
+    symbol_table[symbol_count].in_use = true;
+    symbol_count++; 
+    
+    return true; 
 }
 
 std::string Process::formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
@@ -176,20 +197,27 @@ void Process::runInstructions() {
 }
 
 void Process::displayVariables() const {
-    for (const auto& pair : variables) {
-        std::cout << "Key: "   << pair.first
-                  << ", Value: " << pair.second
-                  << std::endl;
+    std::cout << "--- Symbol Table for PID " << this->pid << " ---\n";
+    if (symbol_count == 0) {
+        std::cout << "  (empty)\n";
+        return;
     }
+
+    // Iterate only through the variables that are currently in use.
+    for (size_t i = 0; i < symbol_count; ++i) {
+        if (symbol_table[i].in_use) {
+            std::cout << "  [" << i << "] " << symbol_table[i].name 
+                      << " = " << symbol_table[i].value << std::endl;
+        }
+    }
+    std::cout << "------------------------------------\n";
 }
 
-void Process::displayInstructionList() {
+void Process::displayInstructionList() const { // Made const correct
     for (size_t i = 0; i < instructions.size(); ++i) {
-
-        std::cout
-            << "[ICommand #" << i << "] "
-            << instructions[i]->toString()
-            << "\n";
+        std::cout << "[ICommand #" << i << "] "
+                  << instructions[i]->toString(*this) 
+                  << "\n";
     }
 }
 
