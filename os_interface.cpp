@@ -270,6 +270,7 @@ void scheduler_start() {
 //    -stops process generation, lets worker threads finish their current tasks
 void scheduler_stop() {
     // Scheduler_running = false;
+    os_scheduler->stopGenerating();
     std::cout << "Scheduler stopped.\n";
 }
 
@@ -440,7 +441,7 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         std::cout << "Quantum Cycles: " << quantumcycles << "\n";
         std::cout << "Batch Process Frequency: " << batchprocess_freq << "\n";
         std::cout << "Min Instructions: " << min_ins << "\n";
-        std::cout << "Max Instructions: " << (1ULL << max_ins) << "\n";
+        std::cout << "Max Instructions: " << max_ins << "\n";
         std::cout << "Delays per Execution: " << delays_perexec << "\n\n";
         std::cout << "Max Overall Memory: " << max_overall_mem << "\n";
         std::cout << "Memory per Frame: " << mem_per_frame << "\n";
@@ -452,11 +453,17 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
     } else if (choice == "scheduler-stop") {
         scheduler_stop();
         system("pause");
+    } else if (choice == "screen") {
+        std::cout<<"Usage:\n"
+            <<"  screen -s <name>  # attach/create session\n"
+            <<"  screen -ls        # list sessions\n"
+            <<"  screen -r <name>  # re-attach session\n";
+        system("pause");
     } else if (choice.rfind("screen -s", 0) == 0) {
         std::string name = choice.substr(10); // get process name
 
         Process* proc = create_new_process(name); // what to do with process pointer???
-        proc = nullptr;
+        proc->runScreenInterface();
         system("pause");
     } else if (choice.rfind("screen -r", 0) == 0){ 
         if (!os_scheduler) {
@@ -471,6 +478,7 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
                 // Ask the scheduler to find the process
                 Process* proc_to_resume = os_scheduler->findProcessByName(name);
 
+                proc_to_resume->getState() != ProcessState::FINISHED;
                 if (proc_to_resume) {
                     // We found it! Block and run its UI.
                     proc_to_resume->runScreenInterface();
@@ -489,6 +497,12 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         if (!os_scheduler) {
             std::cout << "Scheduler not initialized.\n";
         } else {
+            float util      = os_scheduler->computeUtilization();
+            int   usedCores = os_scheduler->numBusyCores();
+            int   freeCores = num_cpu - usedCores;
+            std::cout << "CPU Utilization: " << util << "%\n";
+            std::cout << "Cores used: " << usedCores << ", available: " << freeCores << "\n\n";
+
             std::cout << "\n--- Process List ---\n";
             // Ask the scheduler for a list of all processes
             std::vector<Process*> all_procs = os_scheduler->getAllProcesses();
@@ -499,17 +513,38 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
                 // Use a stable width for formatting
                 const int nameWidth = 20;
                 const int pidWidth = 8;
-                
-                std::cout << std::left << std::setw(nameWidth) << "NAME" 
-                        << std::setw(pidWidth) << "PID" << "STATUS\n";
-                std::cout << "------------------------------------------\n";
+                const int coreWidth = 6;    //idk i havent tested -Andrei
 
-                for (Process* proc : all_procs) {
-                    if (proc) { // Safety first
-                        std::cout << std::left << std::setw(nameWidth) << proc->getProcessName()
-                                << std::setw(pidWidth) << proc->getPid()
-                                << processStateToString(proc->getState()) << std::endl;
+
+                for (ProcessState state : stateOrder) {
+                    // Header for this state
+                    std::cout << "--- " 
+                            << processStateToString(state) 
+                            << " Processes ---\n";
+                    // Column titles
+                    std::cout << std::left << std::setw(nameWidth) << "NAME" 
+                            << std::setw(pidWidth) << "PID" << "STATUS\n";
+                            << std::setw(coreWidth) << "CORE"
+                            << "BURST (rem)\n";
+                    // std::cout << "------------------------------------------\n";
+                    std::cout << std::string(nameWidth+pidWidth+coreWidth+13, '-') << "\n";
+
+                    // Print only those in this state
+                    for (Process* proc : all_procs) {
+                        if (!proc || proc->getState() != state) 
+                            continue;
+                        // if (proc) { // Safety first
+                            std::cout << std::left << std::setw(nameWidth) << proc->getProcessName()
+                                << std::setw(pidWidth) << proc->getPid();
+                            if (state == ProcessState::RUNNING) {
+                                std::cout << std::setw(coreWidth) 
+                                        << proc->getCurrentCoreId();
+                            } else {
+                                std::cout << std::setw(coreWidth) << "-";
+                            }
+                            std::cout << proc->getBurstTime() << " / " << proc->getRemainingBurst() << "\n";
                     }
+                    std::cout << "\n";
                 }
             }
         }
