@@ -1,53 +1,17 @@
-In file included from classes/MemoryManager.cpp:5,
-                 from os_interface.cpp:12,
-                 from main.cpp:1:
-classes/Scheduler.cpp: In member function 'float Scheduler::computeUtilization(int) const':
-classes/Scheduler.cpp:421:42: error: binding reference of type 'std::lock_guard<std::mutex>::mutex_type&' {aka 'std::mutex&'} to 'const std::mutex' discards qualifiers
-  421 |         std::lock_guard<std::mutex> lock(queueMutex);
-      |                                          ^~~~~~~~~~
-In file included from C:/mingw64/include/c++/15.1.0/mutex:49,
-                 from os_interface.cpp:10:
-C:/mingw64/include/c++/15.1.0/bits/std_mutex.h:251:39: note: initializing argument 1 of 'std::lock_guard<_Mutex>::lock_guard(mutex_type&) [with _Mutex = std::mutex; mutex_type = std::mutex]'
-  251 |       explicit lock_guard(mutex_type& __m) : _M_device(__m)
-      |                           ~~~~~~~~~~~~^~~
-classes/Scheduler.cpp: In member function 'int Scheduler::numBusyCores() const':
-classes/Scheduler.cpp:426:42: error: binding reference of type 'std::lock_guard<std::mutex>::mutex_type&' {aka 'std::mutex&'} to 'const std::mutex' discards qualifiers
-  426 |         std::lock_guard<std::mutex> lock(queueMutex);
-      |                                          ^~~~~~~~~~
-C:/mingw64/include/c++/15.1.0/bits/std_mutex.h:251:39: note: initializing argument 1 of 'std::lock_guard<_Mutex>::lock_guard(mutex_type&) [with _Mutex = std::mutex; mutex_type = std::mutex]'
-  251 |       explicit lock_guard(mutex_type& __m) : _M_device(__m)
-      |                           ~~~~~~~~~~~~^~~
-os_interface.cpp: At global scope:
-os_interface.cpp:233:11: error: redefinition of 'ICommand* generateRandomInstruction()'
-  233 | ICommand* generateRandomInstruction() {
-      |           ^~~~~~~~~~~~~~~~~~~~~~~~~
-os_interface.cpp:77:11: note: 'ICommand* generateRandomInstruction()' previously defined here
-   77 | ICommand* generateRandomInstruction() {
-      |           ^~~~~~~~~~~~~~~~~~~~~~~~~
-os_interface.cpp:275:10: error: redefinition of 'Process* create_new_process(std::string)'
-  275 | Process* create_new_process(std::string name) {
-      |          ^~~~~~~~~~~~~~~~~~
-os_interface.cpp:108:10: note: 'Process* create_new_process(std::string)' previously defined here
-  108 | Process* create_new_process(std::string name) {
-      |          ^~~~~~~~~~~~~~~~~~
-os_interface.cpp:303:6: error: redefinition of 'void generate_random_processes()'
-  303 | void generate_random_processes() {
-      |      ^~~~~~~~~~~~~~~~~~~~~~~~~
-os_interface.cpp:136:6: note: 'void generate_random_processes()' previously defined here
-  136 | void generate_random_processes() {
-      |      ^~~~~~~~~~~~~~~~~~~~~~~~~
 In file included from C:/mingw64/include/c++/15.1.0/bits/std_thread.h:45,
                  from C:/mingw64/include/c++/15.1.0/thread:47,
-                 from os_interface.cpp:8:
+                 from os_interface.cpp:8,
+                 from main.cpp:1:
 C:/mingw64/include/c++/15.1.0/bits/unique_ptr.h: In instantiation of 'std::__detail::__unique_ptr_t<_Tp> std:make_unique(_Args&& ...) [with _Tp = Process; _Args = {int&, __cxx11::basic_string<char, char_traits<char>, allocator<char> >&}; __detail::__unique_ptr_t<_Tp> = __detail::__unique_ptr_t<Process>]':
-os_interface.cpp:116:42:   required from here
-  116 |     auto proc = std::make_unique<Process>(g_next_pid, name);
+os_interface.cpp:126:42:   required from here
+  126 |     auto proc = std::make_unique<Process>(g_next_pid, name);
       |                 ~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
 C:/mingw64/include/c++/15.1.0/bits/unique_ptr.h:1085:30: error: no matching function for call to 'Process::Process(int&, std::__cxx11::basic_string<char>&)'
  1085 |     { return unique_ptr<_Tp>(new _Tp(std::forward<_Args>(__args)...)); }
       |                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 C:/mingw64/include/c++/15.1.0/bits/unique_ptr.h:1085:30: note: there are 2 candidates
-In file included from classes/MemoryManager.cpp:4:
+In file included from classes/MemoryManager.cpp:4,
+                 from os_interface.cpp:12:
 classes/process.h:66:5: note: candidate 1: 'Process::Process(int, const std::string&, size_t, size_t)'
    66 |     Process(int id, const std::string& name, size_t mem_size, size_t page_size);
       |     ^~~~~~~
