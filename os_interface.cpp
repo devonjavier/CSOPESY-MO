@@ -308,9 +308,9 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         scheduler_stop();
         system("pause");
     } else if (choice.rfind("screen -s", 0) == 0) {
-        std::string name = choice.substr(10); // get process name
+        std::string name = choice.substr(10);
 
-        Process* proc = create_new_process(name); // what to do with process pointer???
+        Process* proc = create_new_process(name); 
         proc->runScreenInterface();
         system("pause");
     } else if (choice.rfind("screen -r", 0) == 0){ 
@@ -323,17 +323,17 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
                 std::cout << "Error: Process name not specified.\n";
                 system("pause");
             } else {
-                // Ask the scheduler to find the process
+
                 Process* proc_to_resume = os_scheduler->findProcessByName(name);
 
                 if (proc_to_resume) {
-                    // We found it! Block and run its UI.
+
                     proc_to_resume->runScreenInterface();
                     
-                    // After the user exits, clean up the main menu screen.
+   
                     clear_screen();
                     screen_init();
-                    return; // Return to avoid double-printing the banner
+                    return; 
                 } else {
                     std::cout << "Process '" << name << "' not found.\n";
                     system("pause");
@@ -412,15 +412,13 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
 
 
 void accept_screen_session_input(std::string choice, OSState* current, Process** active_session){
-        if (choice == "process-smi") {
-
-
+    if (choice == "process-smi") {
         system("pause");
     } else if (choice == "exit") {
-        *current = OSState::MAIN_MENU; // Go back to the main menu
-        *active_session = nullptr;    // De-select the current session
+        *current = OSState::MAIN_MENU;
+        *active_session = nullptr;    
         clear_screen();
-        screen_init(); // Show the main menu banner again
+        screen_init(); 
         std::cout << "--- Returned to main menu ---\n";
     } else {
         std::cout << "Unknown screen command: " << choice << "\n";
