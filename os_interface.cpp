@@ -138,7 +138,7 @@ void initialize() {
         }
     };
     g_memory_manager = new MemoryManager(max_overall_mem, mem_per_frame, mem_per_proc);
-    os_scheduler = new Scheduler(scheduler_type, quantumcycles, g_memory_manager);
+    os_scheduler = new Scheduler(scheduler_type, quantumcycles, g_memory_manager, delays_perexec);
     
 
     config.close();
@@ -422,7 +422,7 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         std::cout << "Quantum Cycles: " << quantumcycles << "\n";
         std::cout << "Batch Process Frequency: " << batchprocess_freq << "\n";
         std::cout << "Min Instructions: " << min_ins << "\n";
-        std::cout << "Max Instructions: " << (1ULL << max_ins) << "\n";
+        std::cout << "Max Instructions: " << (max_ins) << "\n";
         std::cout << "Delays per Execution: " << delays_perexec << "\n\n";
         std::cout << "Max Overall Memory: " << max_overall_mem << "\n";
         std::cout << "Memory per Frame: " << mem_per_frame << "\n";
@@ -513,7 +513,7 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
             system("pause");
             return; 
         }
-        
+
         std::string raw_instructions = choice.substr(first_quote + 1, last_quote - first_quote - 1);
         
         bool is_power_of_two = (mem_size > 0) && ((mem_size & (mem_size - 1)) == 0);

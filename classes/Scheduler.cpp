@@ -28,6 +28,7 @@ class Scheduler {
     int quantumCycles; 
     uint16_t programcounter = 0;
     MemoryManager* mmu;
+    int delays_perexec;
     std::atomic<size_t> active_cpu_ticks{0};
     std::atomic<size_t> idle_cpu_ticks{0};
 
@@ -82,19 +83,18 @@ class Scheduler {
 
             {
                 std::unique_lock<std::mutex> lock(this->queueMutex);
-                this->queueCV.wait(lock, [this] {
-                    return !this->ready_queue.empty() || !this->schedulerRunning;
-                });
-
-                if (!this->schedulerRunning && this->ready_queue.empty()) {
-                    break;
-                }
-                if (this->ready_queue.empty()) {
+                if (this->queueCV.wait_for(lock, std::chrono::milliseconds(10), [this] { 
+                    return !this->ready_queue.empty() || !this->schedulerRunning; 
+                })) {
+                    if (!this->schedulerRunning && this->ready_queue.empty()) {
+                        break;
+                    }
+                    current_process = std::move(this->ready_queue.front());
+                    this->ready_queue.pop_front();
+                } else {
+                    idle_cpu_ticks++;
                     continue;
                 }
-
-                current_process = std::move(this->ready_queue.front());
-                this->ready_queue.pop_front();
             } 
 
             // time slice execution, rr
@@ -111,6 +111,7 @@ class Scheduler {
                     if (!executeInstruction(*current_process)) {
                         break; 
                     }
+                    active_cpu_ticks++;
                 }
                 
                 current_process->setRemainingBurst(
@@ -145,7 +146,6 @@ class Scheduler {
         }
         const auto& command = process.getInstructions()[pc];
 
-
         int required_page = -1;
         if (auto* read_cmd = dynamic_cast<READ*>(command.get())) {
             required_page = read_cmd->getRequiredPage(mmu->getPageSize());
@@ -167,6 +167,11 @@ class Scheduler {
 
         process.runInstructionSlice(1); 
 
+        if (this->delays_perexec > 0) {
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(this->delays_perexec));
+        }
+
         if (process.getState() == ProcessState::TERMINATED) {
             std::cout << "[Scheduler] Process " << process.getPid() << " terminated due to: " 
                       << process.getTerminationReason() << std::endl;
@@ -186,8 +191,8 @@ class Scheduler {
 
 
     public:
-    Scheduler(const std::string& Scheduler, int quantum, MemoryManager* mem_manager) 
-        : SchedulerType(Scheduler), quantumCycles(quantum), mmu(mem_manager) {}
+     Scheduler(const std::string& type, int quantum, MemoryManager* mem_manager, int delay) 
+        : SchedulerType(type), quantumCycles(quantum), mmu(mem_manager), delays_perexec(delay) {}
 
      Process* findProcessByName(const std::string& name) {
         std::lock_guard<std::mutex> lock(queueMutex);
