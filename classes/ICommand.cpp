@@ -1,6 +1,6 @@
 #include "ICommand.h"
 #include "process.h"
-#include "helper.cpp" // becomes global
+#include "helper.h"
 #include <iostream>
 #include <thread>
 #include <chrono>
@@ -26,7 +26,6 @@ void PRINT::execute(Process& process) {
     } else {
         messageContent = "Hello world from " + process.getProcessName();
     }
-
 
     std::string log = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + 
         std::to_string(process.getCurrentCoreId()) + ", " + messageContent;

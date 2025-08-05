@@ -1,8 +1,4 @@
-#include <iostream>
-#include <string>
-#include <cstdlib> // for system()
-#include <ctime>
-#include <vector>
+#include "helper.h"
 
 std::string get_timestamp() {
     auto now = std::chrono::system_clock::now();

@@ -3,6 +3,7 @@
 #include <cstdlib> // for system()
 #include <ctime>
 #include "header.h"
+#include "classes/helper.h"
 #include <vector>
 #include <thread>
 #include <memory>
@@ -54,6 +55,89 @@ bool g_is_generating = false;
 
 
 std::mutex screenListMutex;
+
+static const std::vector<ProcessState> stateOrder = {
+    ProcessState::IDLE,
+    ProcessState::WAITING,
+    ProcessState::RUNNING,
+    ProcessState::FINISHED,
+    ProcessState::TERMINATED
+};
+
+//initial declaration (maybe transfer to a header file)
+// std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
+//     if (tp.time_since_epoch().count() == 0) return "N/A";
+//     std::time_t tt = std::chrono::system_clock::to_time_t(tp);
+//     char buffer[100];
+//     std::strftime(buffer, sizeof(buffer), "%d/%m/%Y %I:%M:%S%p", std::localtime(&tt));
+//     return std::string(buffer);
+// }
+
+
+ICommand* generateRandomInstruction() {
+    // Randomly choose an instruction type
+    int instruction_type = rand() % 6; // 0 to 4 for 5 different types
+
+    switch (instruction_type) {
+        case 0: // PRINT
+            return new PRINT(); 
+        case 1: // DECLARE
+            return new DECLARE("var" + std::to_string(rand() % 100), rand() % 100);
+        case 2: // SLEEP
+            return new SLEEP(rand() % 50 + 1);
+        case 3: {
+            int loop_count = rand() % 3 + 1; 
+            std::vector<std::unique_ptr<ICommand>> body;
+
+            int body_instr_count = rand() % 3 + 1;
+            for (int i = 0; i < body_instr_count; ++i) {
+                body.push_back(std::unique_ptr<ICommand>(generateRandomInstruction()));
+            }
+
+            return new FOR(std::move(body), loop_count);
+        }
+        case 4: // SUBTRACT with random variables or values
+            return new SUBTRACT("result", "var" + std::to_string(rand() % 100), "var" + std::to_string(rand() % 100));
+        case 5:
+            return new ADD("result", "var" + std::to_string(rand() % 100), "var" + std::to_string(rand() % 100));
+        default:
+            return new UNKNOWN;
+    }
+}
+
+Process* create_new_process(std::string name) {
+    std::default_random_engine generator(
+        std::chrono::system_clock::now().time_since_epoch().count()
+    );
+
+    std::uniform_int_distribution<int> instructionDist(min_ins, max_ins);
+    int num_instructions = instructionDist(generator);
+
+    auto proc = std::make_unique<Process>(g_next_pid, name); 
+
+    //TEMP 
+    Process* raw_ptr = proc.get();
+    
+    for (int i = 0; i < num_instructions; ++i) {
+        proc->addInstruction(std::unique_ptr<ICommand>(generateRandomInstruction())); 
+    }
+
+    raw_ptr->setBurstTime(); // calc burst time
+    raw_ptr->setRemainingBurst(raw_ptr->getBurstTime());
+    
+
+    os_scheduler->addProcess(std::move(proc));
+    g_next_pid++;
+    
+    return raw_ptr; 
+}
+
+
+void generate_random_processes() {
+    for (int i = 0; i < batchprocess_freq; ++i) {
+        Process* new_proc_ptr = create_new_process("Process" + std::to_string(g_next_pid)); 
+    }
+}
 
 void initialize() {
 
@@ -266,7 +350,8 @@ void scheduler_start() {
 
 
 void scheduler_stop() {
-    os_scheduler -> stopGenerating();
+    // Scheduler_running = false;
+    os_scheduler->stopGenerating();
     std::cout << "Scheduler stopped.\n";
 }
 
@@ -295,7 +380,7 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         std::cout << "Quantum Cycles: " << quantumcycles << "\n";
         std::cout << "Batch Process Frequency: " << batchprocess_freq << "\n";
         std::cout << "Min Instructions: " << min_ins << "\n";
-        std::cout << "Max Instructions: " << (1ULL << max_ins) << "\n";
+        std::cout << "Max Instructions: " << max_ins << "\n";
         std::cout << "Delays per Execution: " << delays_perexec << "\n\n";
         std::cout << "Max Overall Memory: " << max_overall_mem << "\n";
         std::cout << "Memory per Frame: " << mem_per_frame << "\n";
@@ -306,6 +391,12 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         system("pause");
     } else if (choice == "scheduler-stop") {
         scheduler_stop();
+        system("pause");
+    } else if (choice == "screen") {
+        std::cout<<"Usage:\n"
+            <<"  screen -s <name>  # attach/create session\n"
+            <<"  screen -ls        # list sessions\n"
+            <<"  screen -r <name>  # re-attach session\n";
         system("pause");
     } else if (choice.rfind("screen -s", 0) == 0) {
         std::string name = choice.substr(10); // get process name
@@ -326,6 +417,7 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
                 // Ask the scheduler to find the process
                 Process* proc_to_resume = os_scheduler->findProcessByName(name);
 
+                proc_to_resume->getState() != ProcessState::FINISHED;
                 if (proc_to_resume) {
                     // We found it! Block and run its UI.
                     proc_to_resume->runScreenInterface();
@@ -344,6 +436,12 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         if (!os_scheduler) {
             std::cout << "Scheduler not initialized.\n";
         } else {
+            float util      = os_scheduler->computeUtilization(num_cpu);
+            int   usedCores = os_scheduler->numBusyCores();
+            int   freeCores = num_cpu - usedCores;
+            std::cout << "CPU Utilization: " << util << "%\n";
+            std::cout << "Cores used: " << usedCores << ", available: " << freeCores << "\n\n";
+
             std::cout << "\n--- Process List ---\n";
             // Ask the scheduler for a list of all processes
             std::vector<Process*> all_procs = os_scheduler->getAllProcesses();
@@ -354,22 +452,45 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
                 // Use a stable width for formatting
                 const int nameWidth = 20;
                 const int pidWidth = 8;
-                
-                std::cout << std::left << std::setw(nameWidth) << "NAME" 
-                        << std::setw(pidWidth) << "PID" << "STATUS\n";
-                std::cout << "------------------------------------------\n";
+                const int coreWidth = 6;    //idk i havent tested -Andrei
 
-                for (Process* proc : all_procs) {
-                    if (proc) { // Safety first
-                        std::cout << std::left << std::setw(nameWidth) << proc->getProcessName()
-                                << std::setw(pidWidth) << proc->getPid()
-                                << processStateToString(proc->getState()) << std::endl;
+
+                for (ProcessState state : stateOrder) {
+                    // Header for this state
+                    std::cout << "--- " 
+                            << processStateToString(state) 
+                            << " Processes ---\n";
+                    // Column titles
+                    std::cout << std::left << std::setw(nameWidth) << "NAME" 
+                            << std::setw(pidWidth) << "PID" << "STATUS"
+                            << std::setw(coreWidth) << "CORE"
+                            << "BURST (rem)\n";
+                    // std::cout << "------------------------------------------\n";
+                    std::cout << std::string(nameWidth+pidWidth+coreWidth+13, '-') << "\n";
+
+                    // Print only those in this state
+                    for (Process* proc : all_procs) {
+                        if (!proc || proc->getState() != state) 
+                            continue;
+                        // if (proc) { // Safety first
+                            std::cout << std::left << std::setw(nameWidth) << proc->getProcessName()
+                                << std::setw(pidWidth) << proc->getPid();
+                            if (state == ProcessState::RUNNING) {
+                                std::cout << std::setw(coreWidth) 
+                                        << proc->getCurrentCoreId();
+                            } else {
+                                std::cout << std::setw(coreWidth) << "-";
+                            }
+                            std::cout << proc->getBurstTime() << " / " << proc->getRemainingBurst() << "\n";
                     }
+                    std::cout << "\n";
                 }
             }
         }
         system("pause");
-
+    } else if (choice == "report-util") {
+        report_util();
+        system("pause");
     } else if (choice == "exit") {
         *current = OSState::EXITING;
         std::cout << "Exiting the OS...\n";
