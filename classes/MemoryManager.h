@@ -11,15 +11,13 @@ class Process;
 class MemoryManager {
 private:
     std::vector<Frame> physical_memory;
-    std::deque<int> free_frames; // A queue of indices for available frames.
-    std::deque<int> fifo_queue;  // A queue of frame indices for the FIFO replacement algorithm.
-    std::mutex mmu_mutex;        // To ensure thread-safe access to memory structures.
+    std::deque<int> free_frames; 
+    std::deque<int> fifo_queue;  
+    std::mutex mmu_mutex;        
     size_t frame_size;
-    size_t max_process_memory; // Will store mem_per_proc
+    size_t max_process_memory; 
     const std::string backing_store_filename = "csopesy-backing-store.txt";
     
-
-
     int selectVictimFrame();
     void releaseProcessMemory(int pid);
     void loadPageFromBackingStore(int pid, int page_number, int frame_number);

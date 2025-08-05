@@ -1,13 +1,12 @@
 
 // PageTable.cpp
 #include "PageTable.h"
-#include <stdexcept> // For error handling
+#include <stdexcept> 
 
-// need to pass memory size, need checker in process ? 
 PageTable::PageTable(size_t process_memory_size, size_t page_size) {
 
     this->page_size = page_size;
-    
+
     if (page_size == 0) {
         throw std::invalid_argument("Page size cannot be zero.");
     }
@@ -59,11 +58,8 @@ void PageTable::mapPageToFrame(int page_number, int frame_number) {
         throw std::out_of_range("Page number is out of the valid range for this process.");
     }
 
-
     entries[page_number].present_bit = true;
     entries[page_number].frame_number = frame_number;
-    
-
     entries[page_number].dirty_bit = false; 
 }
 
@@ -77,5 +73,5 @@ void PageTable::unmapPage(int page_number) {
 }
 
 size_t PageTable::getPageSize() const {
-    return this->page_size; // <-- RETURN THE STORED VALUE
+    return this->page_size; 
 }

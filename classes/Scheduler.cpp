@@ -21,7 +21,7 @@ class Scheduler {
     std::vector<std::unique_ptr<Process>> completedProcesses;
     std::vector<std::thread> workerThreads;
     std::atomic<bool> schedulerRunning{false};
-    std::atomic<bool> generatingProcesses{false};            //i think we only need one flag right??
+    std::atomic<bool> generatingProcesses{false};            // i think we only need one flag right??
     std::mutex queueMutex;
     std::condition_variable queueCV;
     std::string SchedulerType;
@@ -40,10 +40,10 @@ class Scheduler {
                 });
 
                 if (!this->schedulerRunning && this->ready_queue.empty()) {
-                    break; // Exit the loop
+                    break; 
                 }
                 if (this->ready_queue.empty()) {
-                    continue; // Spurious wakeup, wait again
+                    continue; 
                 }
                 
                 current_process = std::move(this->ready_queue.front());
@@ -57,7 +57,7 @@ class Scheduler {
                 
                 while(current_process->getProgramCounter() < current_process->getInstructionCount()) {
                     if (!executeInstruction(*current_process)) {
-                        // Stop if the instruction failed or the process was terminated.
+
                         break; 
                     }
                 }
@@ -79,7 +79,6 @@ class Scheduler {
           while (this->schedulerRunning) {
             std::unique_ptr<Process> current_process;
 
-            // process dequed from ready queue
             {
                 std::unique_lock<std::mutex> lock(this->queueMutex);
                 this->queueCV.wait(lock, [this] {
@@ -102,7 +101,6 @@ class Scheduler {
                 current_process->setState(ProcessState::RUNNING);
                 current_process->setCurrentCoreId(coreId);
 
-                // RR: Execute up to 'quantumCycles' instructions for this time slice.
                 unsigned int slice = std::min<unsigned>(
                     current_process->getRemainingBurst(),
                     this->quantumCycles
@@ -110,12 +108,10 @@ class Scheduler {
 
                 for (unsigned int i = 0; i < slice; ++i) {
                     if (!executeInstruction(*current_process)) {
-                        // Stop this slice if instruction failed or process terminated
                         break; 
                     }
                 }
                 
-                // Update remaining burst time based on instructions actually executed
                 current_process->setRemainingBurst(
                     current_process->getInstructionCount() - current_process->getProgramCounter()
                 );
@@ -142,51 +138,41 @@ class Scheduler {
     }
 
     bool executeInstruction(Process& process) {
-        // 1. Get the next instruction to be executed.
         size_t pc = process.getProgramCounter();
         if (pc >= process.getInstructionCount()) {
-            return false; // No more instructions to run
+            return false; 
         }
         const auto& command = process.getInstructions()[pc];
 
-        // 2. Determine which page this instruction needs.
+
         int required_page = -1;
-        // We use dynamic_cast to check the specific type of the command.
         if (auto* read_cmd = dynamic_cast<READ*>(command.get())) {
-            // Call it like a regular member function
             required_page = read_cmd->getRequiredPage(mmu->getPageSize());
 
         } else if (auto* write_cmd = dynamic_cast<WRITE*>(command.get())) {
-            // Call it like a regular member function
+
             required_page = write_cmd->getRequiredPage(mmu->getPageSize());
 
         } else {
-            // For DECLARE, ADD, SUBTRACT, etc., the symbol table is needed.
-            // We assume the symbol table is always on Page 0.
+
             required_page = 0;
         }
 
-        // 3. The Page Fault Handling Loop
-        while (!process.getPageTable()->isPresent(required_page)) {
-            // PAGE FAULT! The required page is not in a physical frame.
-            // Tell the Memory Manager to handle it. This is a blocking call.
-            mmu->handlePageFault(process, required_page);
 
-            // After the fault is handled, the loop will check again.
-            // The spec says this repeats indefinitely until the page is present.
+        while (!process.getPageTable()->isPresent(required_page)) {
+            mmu->handlePageFault(process, required_page);
         }
 
-        // 4. If we get here, the page is guaranteed to be in memory. Execute.
-        process.runInstructionSlice(1); // runInstructionSlice now executes and logs one instruction
 
-        // 5. Check if the instruction caused the process to terminate.
+        process.runInstructionSlice(1); 
+
         if (process.getState() == ProcessState::TERMINATED) {
             std::cout << "[Scheduler] Process " << process.getPid() << " terminated due to: " 
                       << process.getTerminationReason() << std::endl;
-            return false; // Stop further execution for this process
+            return false; 
         }
         
-        return true; // Instruction was executed successfully
+        return true;
     }
 
     std::string get_timestamp() {
@@ -254,7 +240,6 @@ class Scheduler {
         } else if (this->SchedulerType == "rr") {
             rr_scheduler(coreId);
         } else {
-            // Handle error case: unknown scheduler type
             std::cerr << "Core " << coreId << ": Unknown scheduler type '" << this->SchedulerType << "'. Exiting thread." << std::endl;
         }
     }

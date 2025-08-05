@@ -24,26 +24,14 @@ private:
     size_t page_size;
 
 public:
-    // Constructor: Calculates the number of pages needed for the process.
     PageTable(size_t process_memory_size, size_t page_size);
-    
-    // Gets the frame number for a given page, returns -1 if not present.
+
     int getFrameNumber(int page_number) const;
-
-    // Checks if a page is currently in physical memory.
     bool isPresent(int page_number) const;
-    
-    // Checks if a page has been modified.
     bool isDirty(int page_number) const;
-    
-    // Sets the dirty bit for a page.
     void setDirty(int page_number, bool is_dirty);
-
-    // Updates the entry when a page is loaded into a frame.
     void mapPageToFrame(int page_number, int frame_number);
-
-    // Updates the entry when a page is evicted from a frame.
     void unmapPage(int page_number);
 
-    size_t getPageSize() const; // Returns the size of a page in bytes
+    size_t getPageSize() const; 
 };
