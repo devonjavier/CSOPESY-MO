@@ -209,7 +209,6 @@ std::vector<std::unique_ptr<ICommand>> parseInstructionString(const std::string&
         std::string opcode;
         token_stream >> opcode;
 
-
         if (opcode == "DECLARE") {
             std::string varName;
             uint16_t value;
@@ -232,18 +231,19 @@ std::vector<std::unique_ptr<ICommand>> parseInstructionString(const std::string&
         else if (opcode == "READ") {
             std::string varName;
             uint32_t address;
-            if (token_stream >> varName >> std::hex >> address) { 
+            if (token_stream >> varName >> std::hex >> address) {
                 program.push_back(std::make_unique<READ>(varName, address));
             } else return {};
         }
         else if (opcode == "WRITE") {
-            std::string varName;
+             std::string varName;
             uint32_t address;
 
-            if (token_stream >> address >> varName >> std::hex) {
-                 program.push_back(std::make_unique<WRITE>(varName, address));
+            if (token_stream >> std::hex >> address >> varName) {
+                program.push_back(std::make_unique<WRITE>(varName, address));
             } else return {};
         }
+        
         else if (opcode == "PRINT") {
 
             std::string content;
@@ -498,24 +498,35 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         system("pause");
 
     } else if (choice.rfind("screen -c", 0) == 0) {
-        std::stringstream ss(choice);
-        std::string command, flag, name;
-        size_t mem_size;
-
-        // parsing
-        ss >> command >> flag >> name >> mem_size;
-
+ 
         size_t first_quote = choice.find('"');
-        size_t last_quote = choice.rfind('"');
-        
-        if (name.empty() || ss.fail() || first_quote == std::string::npos || last_quote == first_quote) {
-            std::cout << "Error: Invalid format. Usage: screen -c <name> <size> \"<instructions>\"\n";
+        if (first_quote == std::string::npos) {
+            std::cout << "Error: Invalid format. Instruction string must be enclosed in double quotes.\n";
             system("pause");
-            return; 
+            return;
         }
 
-        std::string raw_instructions = choice.substr(first_quote + 1, last_quote - first_quote - 1);
+        std::string command_part = choice.substr(0, first_quote);
+        std::stringstream ss(command_part);
+        std::string command, flag, name;
+        size_t mem_size;
+   
+        ss >> command >> flag >> name >> mem_size;
+
+        if (name.empty() || ss.fail()) {
+            std::cout << "Error: Invalid format. Usage: screen -c <name> <size> \"<instructions>\"\n";
+            system("pause");
+            return;
+        }
         
+        size_t last_quote = choice.rfind('"');
+        if (last_quote == first_quote) { // Only one quote found
+            std::cout << "Error: Invalid format. Unmatched double quote in instruction string.\n";
+            system("pause");
+            return;
+        }
+        std::string raw_instructions = choice.substr(first_quote + 1, last_quote - first_quote - 1);
+
         bool is_power_of_two = (mem_size > 0) && ((mem_size & (mem_size - 1)) == 0);
         if (mem_size < 64 || mem_size > 65536 || !is_power_of_two) {
             std::cout << "Error: Invalid memory allocation. Size must be a power of 2 between 64 and 65536.\n";
@@ -523,15 +534,19 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
             return;
         }
         
+
         std::vector<std::unique_ptr<ICommand>> program = parseInstructionString(raw_instructions);
 
         if (program.empty()) {
             std::cout << "Error: Failed to parse instruction string or instruction count is invalid.\n";
         } else {
-            create_new_process(name, mem_size, std::move(program));
-            std::cout << "Process '" << name << "' created successfully with custom instructions.\n";
+            if (os_scheduler && os_scheduler->findProcessByName(name)) {
+                std::cout << "Error: Process with that name already exists.\n";
+            } else {
+                create_new_process(name, mem_size, std::move(program));
+                std::cout << "Process '" << name << "' created successfully with custom instructions.\n";
+            }
         }
-
         system("pause");
     } else if (choice == "exit") {
         *current = OSState::EXITING;
