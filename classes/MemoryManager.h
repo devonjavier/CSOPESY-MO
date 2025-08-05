@@ -17,9 +17,11 @@ private:
     size_t frame_size;
     size_t max_process_memory; // Will store mem_per_proc
     const std::string backing_store_filename = "csopesy-backing-store.txt";
+    
 
 
     int selectVictimFrame();
+    void releaseProcessMemory(int pid);
     void loadPageFromBackingStore(int pid, int page_number, int frame_number);
     void writePageToBackingStore(int pid, int page_number);
 
@@ -28,7 +30,7 @@ public:
 
 
     void handlePageFault(Process& process, int page_number);
-
+    size_t getPageSize() const;
     size_t getTotalMemory() const;
     size_t getFreeMemory() const;
     size_t getUsedMemory() const;

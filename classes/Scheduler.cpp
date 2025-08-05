@@ -1,4 +1,5 @@
 #include "process.cpp"
+#include "MemoryManager.h"
 #include <queue>
 #include <string>
 #include <vector>
@@ -26,6 +27,7 @@ class Scheduler {
     std::string SchedulerType;
     int quantumCycles; 
     uint16_t programcounter = 0;
+    MemoryManager* mmu;
 
     void fcfs_scheduler(int coreId) {
         while (this->schedulerRunning) {
@@ -95,20 +97,22 @@ class Scheduler {
                 current_process->setState(ProcessState::RUNNING);
                 current_process->setCurrentCoreId(coreId);
 
-
+                // RR: Execute up to 'quantumCycles' instructions for this time slice.
                 unsigned int slice = std::min<unsigned>(
                     current_process->getRemainingBurst(),
                     this->quantumCycles
-                ); // range 
+                );
 
-
-
-
-                current_process->runInstructionSlice(slice);
-
-                // Update the remaining burst time.
+                for (unsigned int i = 0; i < slice; ++i) {
+                    if (!executeInstruction(*current_process)) {
+                        // Stop this slice if instruction failed or process terminated
+                        break; 
+                    }
+                }
+                
+                // Update remaining burst time based on instructions actually executed
                 current_process->setRemainingBurst(
-                    current_process->getRemainingBurst() - slice
+                    current_process->getInstructionCount() - current_process->getProgramCounter()
                 );
 
  
@@ -132,6 +136,54 @@ class Scheduler {
         std::cout << "Core " << coreId << ": Exiting Round Robin worker thread." << std::endl;
     }
 
+    bool executeInstruction(Process& process) {
+        // 1. Get the next instruction to be executed.
+        size_t pc = process.getProgramCounter();
+        if (pc >= process.getInstructionCount()) {
+            return false; // No more instructions to run
+        }
+        const auto& command = process.getInstructions()[pc];
+
+        // 2. Determine which page this instruction needs.
+        int required_page = -1;
+        // We use dynamic_cast to check the specific type of the command.
+        if (auto* read_cmd = dynamic_cast<READ*>(command.get())) {
+            // Call it like a regular member function
+            required_page = read_cmd->getRequiredPage(mmu->getPageSize());
+
+        } else if (auto* write_cmd = dynamic_cast<WRITE*>(command.get())) {
+            // Call it like a regular member function
+            required_page = write_cmd->getRequiredPage(mmu->getPageSize());
+
+        } else {
+            // For DECLARE, ADD, SUBTRACT, etc., the symbol table is needed.
+            // We assume the symbol table is always on Page 0.
+            required_page = 0;
+        }
+
+        // 3. The Page Fault Handling Loop
+        while (!process.getPageTable()->isPresent(required_page)) {
+            // PAGE FAULT! The required page is not in a physical frame.
+            // Tell the Memory Manager to handle it. This is a blocking call.
+            mmu->handlePageFault(process, required_page);
+
+            // After the fault is handled, the loop will check again.
+            // The spec says this repeats indefinitely until the page is present.
+        }
+
+        // 4. If we get here, the page is guaranteed to be in memory. Execute.
+        process.runInstructionSlice(1); // runInstructionSlice now executes and logs one instruction
+
+        // 5. Check if the instruction caused the process to terminate.
+        if (process.getState() == ProcessState::TERMINATED) {
+            std::cout << "[Scheduler] Process " << process.getPid() << " terminated due to: " 
+                      << process.getTerminationReason() << std::endl;
+            return false; // Stop further execution for this process
+        }
+        
+        return true; // Instruction was executed successfully
+    }
+
     std::string get_timestamp() {
         auto now = std::chrono::system_clock::now();
         std::time_t now_time = std::chrono::system_clock::to_time_t(now);
@@ -142,8 +194,8 @@ class Scheduler {
 
 
     public:
-    Scheduler(const std::string& Scheduler, int quantum) 
-        : SchedulerType(Scheduler), quantumCycles(quantum) {}
+    Scheduler(const std::string& Scheduler, int quantum, MemoryManager* mem_manager) 
+        : SchedulerType(Scheduler), quantumCycles(quantum), mmu(mem_manager) {}
 
      Process* findProcessByName(const std::string& name) {
         std::lock_guard<std::mutex> lock(queueMutex);
@@ -236,16 +288,12 @@ class Scheduler {
 
 
     void stopScheduler() {
-
-
         schedulerRunning = false;
         generatingProcesses = false;
         queueCV.notify_all();
         for (auto &t : workerThreads)
             if (t.joinable()) t.join();
         workerThreads.clear();
-
-
     }
 
     void finalizeScheduler() {

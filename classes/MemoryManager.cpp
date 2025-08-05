@@ -3,6 +3,7 @@
 #include <fstream>
 #include "process.h"       // For the full Process definition
 #include "Scheduler.cpp"     // For finding victim processes
+#include "PageTable.cpp"
 #include <iostream>
 #include <stdexcept>
 
@@ -188,6 +189,25 @@ void MemoryManager::handlePageFault(Process& faulting_process, int page_number) 
     fifo_queue.push_back(target_frame_index);
     
     std::cout << "[MMU] Page fault for PID " << faulting_process.getPid() << " resolved." << std::endl;
+}
+
+void MemoryManager::releaseProcessMemory(int pid) {
+    std::lock_guard<std::mutex> lock(mmu_mutex);
+
+    std::cout << "[MMU] Releasing all memory frames for terminated PID " << pid << "." << std::endl;
+
+    for (size_t i = 0; i < physical_memory.size(); ++i) {
+        if (physical_memory[i].owner_pid == pid) {
+
+            physical_memory[i].reset();
+            free_frames.push_back(i);
+            fifo_queue.erase(std::remove(fifo_queue.begin(), fifo_queue.end(), i), fifo_queue.end());
+        }
+    }
+}
+
+size_t MemoryManager::getPageSize() const {
+    return this->frame_size;
 }
 
 

@@ -72,3 +72,10 @@ void PageTable::unmapPage(int page_number) {
     entries[page_number].present_bit = false;
     entries[page_number].frame_number = -1;
 }
+
+size_t PageTable::getPageSize() const {
+    if (entries.empty()) {
+        throw std::runtime_error("PageTable is empty, cannot determine page size.");
+    }
+    return entries.size() * sizeof(PageTableEntry);
+}

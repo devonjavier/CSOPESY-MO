@@ -6,6 +6,7 @@
 #include <chrono>
 #include <limits>
 #include <algorithm>
+#include <sstream>
 
 // ----- PRINT -----
 PRINT::PRINT() : message(""), variableName(""), isVariable(false) {}
@@ -50,6 +51,10 @@ void DECLARE::execute(Process& process) {
     std::string log = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + std::to_string(process.getCurrentCoreId()) + ", "
                     + "Declared " + variableName + " = " + std::to_string(value);
     process.addLog(log);
+}
+
+int DECLARE::getRequiredPage(size_t page_size) {
+    return 0; 
 }
 
 std::string DECLARE::toString(const Process& process) const {
@@ -174,7 +179,7 @@ void FOR::execute(Process& process) {
     }
 
     std::string endLog = "[Process " + process.getProcessName() + "] " + get_timestamp() + " Core ID: " + 
-        std::to_string(process.getCurrentCoreId()) + "FOR loop completed";
+        std::to_string(process.getCurrentCoreId()) + ", " + "FOR loop completed";
     process.addLog(endLog);
 }
 
@@ -198,6 +203,75 @@ std::string FOR::toString(const Process& process) const {
          + "]";
 }
 
+READ::READ(const std::string& var, uint32_t address)
+    : variable_name(var), memory_address(address) {}
+
+void READ::execute(Process& process) {
+    // 1. ACCESS VIOLATION CHECK: Is the address within the process's allocated memory?
+    if (memory_address >= process.getMemorySize()) {
+        std::stringstream ss;
+        ss << "Access violation at 0x" << std::hex << memory_address << ".";
+        process.terminate(ss.str()); // Terminate the process
+        return; // Stop execution immediately
+    }
+
+    // 2. Perform the read. For this simulation, we read a default value.
+    // In a more complex simulation, you would read from a memory buffer in the Process class.
+    // As per the spec, an uninitialized read returns 0.
+    uint16_t value_read = 0; 
+    
+    // 3. Store the result in the process's symbol table.
+    process.setVariable(variable_name, value_read);
+}
+
+std::string READ::toString(const Process& process) const {
+    std::stringstream ss;
+    ss << "READ " << variable_name << " 0x" << std::hex << memory_address;
+    return ss.str();
+}
+
+// Helper for the scheduler to do pre-execution checks
+
+WRITE::WRITE(const std::string& var, uint32_t address)
+    : variable_name(var), memory_address(address) {}
+
+void WRITE::execute(Process& process) {
+    // 1. ACCESS VIOLATION CHECK:
+    if (memory_address >= process.getMemorySize()) {
+        std::stringstream ss;
+        ss << "Access violation at 0x" << std::hex << memory_address << ".";
+        process.terminate(ss.str());
+        return;
+    }
+
+    // 2. Get the value to write from the process's symbol table.
+    uint16_t value_to_write = 0; // Default to 0 if variable doesn't exist
+    process.getVariable(variable_name, value_to_write);
+
+    // 3. Perform the write.
+    // In this simulation, this is a conceptual operation. We can log it.
+    // In a more complex sim, you would write to a memory buffer.
+    
+    // 4. Mark the page as "dirty" since it has been modified.
+    int page_number = getRequiredPage(process.getPageTable()->getPageSize());
+    process.getPageTable()->setDirty(page_number, true);
+}
+
+std::string WRITE::toString(const Process& process) const {
+    uint16_t value = 0;
+    process.getVariable(variable_name, value);
+    std::stringstream ss;
+    ss << "WRITE 0x" << std::hex << memory_address << " (value of " << variable_name << " = " << std::dec << value << ")";
+    return ss.str();
+}
+
+int READ::getRequiredPage(size_t page_size) const {
+    return this->memory_address / page_size;
+}
+
+int WRITE::getRequiredPage(size_t page_size) const {
+    return this->memory_address / page_size;
+}
 //to catch errors
 //-andrei
 UNKNOWN::UNKNOWN() 

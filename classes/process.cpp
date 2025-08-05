@@ -100,6 +100,20 @@ uint16_t Process::getVariableValue(const std::string& name) const { // Made cons
     return 0;
 }
 
+bool Process::getVariable(const std::string& name, uint16_t& value) const {
+    for (size_t i = 0; i < symbol_count; ++i) {
+        if (symbol_table[i].in_use && symbol_table[i].name == name) {
+            value = symbol_table[i].value;
+            return true; // Found the variable
+        }
+    }
+    return false; // Variable not found
+}
+
+size_t Process::getProgramCounter() const {
+    return this->program_counter;
+}
+
 void Process::setBurstTime() {
     burst_time = instructions.size();
 }
@@ -275,5 +289,24 @@ void Process::runScreenInterface() {
             system("pause");
         }
     }
+}
+
+size_t Process::getMemorySize() const {
+    return memory_size;
+}
+
+PageTable* Process::getPageTable() const {
+    return page_table.get(); 
+}
+
+void Process::terminate(const std::string& reason) {
+    this->state = ProcessState::TERMINATED;
+    this->termination_reason = reason;
+    // You might also want to log this event
+    addLog("[System] Process terminated. Reason: " + reason);
+}
+
+std::string Process::getTerminationReason() const {
+    return termination_reason;
 }
 

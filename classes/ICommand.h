@@ -39,6 +39,7 @@ public:
     DECLARE(const std::string& varName, uint16_t val);
     void execute(Process& process) override;
     std::string toString(const Process& process) const override;
+    int getRequiredPage(size_t page_size);
 };
 
 class ADD : public ICommand {
@@ -56,6 +57,7 @@ public:
     ADD(const std::string& var1, const std::string& var2, uint16_t value);
     ADD(const std::string& var1, uint16_t value, const std::string& var3);
     ADD(const std::string& var1, uint16_t value1, uint16_t value2);
+    static int getRequiredPage(size_t page_size) { return 0; }
     void execute(Process& process) override;
     std::string toString(const Process& process) const override;
 };
@@ -75,6 +77,7 @@ public:
     SUBTRACT(const std::string& var1, const std::string& var2, uint16_t value);
     SUBTRACT(const std::string& var1, uint16_t value, const std::string& var3);
     SUBTRACT(const std::string& var1, uint16_t value1, uint16_t value2);
+    static int getRequiredPage(size_t page_size) { return 0; }
     void execute(Process& process) override;
     std::string toString(const Process& process) const override;
 };
@@ -109,9 +112,9 @@ public:
     READ(const std::string& var, uint32_t address);
     void execute(Process& process) override;
     std::string toString(const Process& process) const override;
-    
+    uint32_t getAddress() const { return memory_address; }
     // NEW: A static helper to determine which page this command accesses.
-    static int getRequiredPage(uint32_t address, size_t page_size);
+    int getRequiredPage(size_t page_size) const;
 };
 
 
@@ -124,9 +127,9 @@ public:
     WRITE(const std::string& var, uint32_t address);
     void execute(Process& process) override;
     std::string toString(const Process& process) const override;
-
+    uint32_t getAddress() const { return memory_address; }
     // NEW: A static helper to determine which page this command accesses.
-    static int getRequiredPage(uint32_t address, size_t page_size);
+    int getRequiredPage(size_t page_size) const;
 };
 
 class UNKNOWN : public ICommand {

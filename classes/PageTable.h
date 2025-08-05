@@ -43,4 +43,6 @@ public:
 
     // Updates the entry when a page is evicted from a frame.
     void unmapPage(int page_number);
+
+    size_t getPageSize() const; // Returns the size of a page in bytes
 };

@@ -137,9 +137,9 @@ void initialize() {
 
         }
     };
-
-    os_scheduler = new Scheduler(scheduler_type, quantumcycles);
     g_memory_manager = new MemoryManager(max_overall_mem, mem_per_frame, mem_per_proc);
+    os_scheduler = new Scheduler(scheduler_type, quantumcycles, g_memory_manager);
+    
 
     config.close();
 }
@@ -148,7 +148,7 @@ void initialize() {
 
 ICommand* generateRandomInstruction() {
     // Randomly choose an instruction type
-    int instruction_type = rand() % 6; // 0 to 4 for 5 different types
+    int instruction_type = rand() % 8; // 0 to 4 for 5 different types
 
     switch (instruction_type) {
         case 0: // PRINT
@@ -172,6 +172,17 @@ ICommand* generateRandomInstruction() {
             return new SUBTRACT("result", "var" + std::to_string(rand() % 100), "var" + std::to_string(rand() % 100));
         case 5:
             return new ADD("result", "var" + std::to_string(rand() % 100), "var" + std::to_string(rand() % 100));
+        case 6: { // READ
+            // Generate a random memory address within the default process memory size
+            uint32_t random_address = rand() % mem_per_proc; 
+            return new READ("var_read", random_address);
+        }
+        case 7: { // WRITE
+            uint32_t random_address = rand() % mem_per_proc;
+            // Write the value of a random, potentially undeclared variable
+            std::string random_var = "var" + std::to_string(rand() % 100);
+            return new WRITE(random_var, random_address);
+        }
         default:
             return new UNKNOWN;
     }
@@ -185,7 +196,7 @@ Process* create_new_process(std::string name) {
     std::uniform_int_distribution<int> instructionDist(min_ins, max_ins);
     int num_instructions = instructionDist(generator);
 
-    auto proc = std::make_unique<Process>(g_next_pid, name); 
+    auto proc = std::make_unique<Process>(g_next_pid, name, mem_per_proc, mem_per_frame);
 
     //TEMP 
     Process* raw_ptr = proc.get();
@@ -255,7 +266,7 @@ void scheduler_start() {
 
 
 void scheduler_stop() {
-    // Scheduler_running = false;
+    os_scheduler -> stopGenerating();
     std::cout << "Scheduler stopped.\n";
 }
 
