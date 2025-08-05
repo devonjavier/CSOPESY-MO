@@ -41,7 +41,6 @@ private:
     std::unordered_map<std::string, uint16_t> variables;
 
     std::string creation_timestamp_str; 
-    Process* next; 
 
     std::vector<std::string> logs;
     std::mutex logMutex;
@@ -94,7 +93,5 @@ public:
 
     double updateRunningAverage(double previous_average, uint64_t new_wait, size_t index);
 
-    Process* getNext() const { return next; }
-    void setNext(Process* nextProcess) { this->next = nextProcess; }
     void runScreenInterface(); 
 };

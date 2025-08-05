@@ -14,6 +14,7 @@
 #include <random> // For random number generation
 #include <chrono> // For random number seeding with time
 #include <cmath> 
+#include <iomanip>
 
 using namespace std;
 
@@ -39,7 +40,6 @@ int mem_per_frame = 0;
 int mem_per_proc = 0;
 
 //initialization of Screens and Processes Lists
-Process *head = nullptr;
 Scheduler* os_scheduler = nullptr;
 
 // p_id
@@ -114,21 +114,11 @@ Process* create_new_process(std::string name) {
     raw_ptr->setBurstTime(); // calc burst time
     raw_ptr->setRemainingBurst(raw_ptr->getBurstTime());
     
-    std::lock_guard<std::mutex> lock(screenListMutex);
-    if (head == nullptr) {
-        head = raw_ptr; 
-    } else {
-        Process* current = head;
-        while (current->getNext() != nullptr) {
-            current = current->getNext();
-        }
-        current->setNext(raw_ptr); 
-    }
 
     os_scheduler->addProcess(std::move(proc));
     g_next_pid++;
     
-    return head; 
+    return raw_ptr; 
 }
 
 
@@ -412,22 +402,6 @@ void report_util() {
 
 // }
 
-Process* find_screen(std::string name) {
-    Process *current_screen = head;
-
-    while(current_screen != nullptr && current_screen->getProcessName() != name){
-        current_screen = current_screen->getNext();
-    }
-    
-    if(current_screen == nullptr){
-        std::cout << "Screen session with name '" << name << "' not found.\n";
-        system("pause");
-        return nullptr;
-    }
-
-    return current_screen;
-    
-}
 
 /// Create (but don’t attach) a screen session for this process.
 // void create_process_screen(const std::string& name, int total_lines = 1){
@@ -490,18 +464,56 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
             system("pause");
         } else {
             std::string name = choice.substr(10);
-            Process* proc_to_resume = find_screen(name);
+            if (name.empty()) {
+                std::cout << "Error: Process name not specified.\n";
+                system("pause");
+            } else {
+                // Ask the scheduler to find the process
+                Process* proc_to_resume = os_scheduler->findProcessByName(name);
 
-            if (proc_to_resume) {
- 
-                proc_to_resume->runScreenInterface();
-                
-                clear_screen();
-                screen_init();
-                return;
+                if (proc_to_resume) {
+                    // We found it! Block and run its UI.
+                    proc_to_resume->runScreenInterface();
+                    
+                    // After the user exits, clean up the main menu screen.
+                    clear_screen();
+                    screen_init();
+                    return; // Return to avoid double-printing the banner
+                } else {
+                    std::cout << "Process '" << name << "' not found.\n";
+                    system("pause");
+                }
             }
         }
     } else if (choice.rfind("screen -ls", 0) == 0) {
+        if (!os_scheduler) {
+            std::cout << "Scheduler not initialized.\n";
+        } else {
+            std::cout << "\n--- Process List ---\n";
+            // Ask the scheduler for a list of all processes
+            std::vector<Process*> all_procs = os_scheduler->getAllProcesses();
+
+            if (all_procs.empty()) {
+                std::cout << "  (No processes in system)\n";
+            } else {
+                // Use a stable width for formatting
+                const int nameWidth = 20;
+                const int pidWidth = 8;
+                
+                std::cout << std::left << std::setw(nameWidth) << "NAME" 
+                        << std::setw(pidWidth) << "PID" << "STATUS\n";
+                std::cout << "------------------------------------------\n";
+
+                for (Process* proc : all_procs) {
+                    if (proc) { // Safety first
+                        std::cout << std::left << std::setw(nameWidth) << proc->getProcessName()
+                                << std::setw(pidWidth) << proc->getPid()
+                                << processStateToString(proc->getState()) << std::endl;
+                    }
+                }
+            }
+        }
+        system("pause");
         //     std::cout << "\nActive screen sessions:\n";
 
 //     // If you ever spawn sessions from multiple threads, 
@@ -690,7 +702,7 @@ void menu(){
 
         clear_screen();
         screen_init();
-        
+
         if (!std::getline(std::cin, choice)) {
             current = OSState::EXITING;
             continue;

@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <thread>
+#include <deque>
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
@@ -14,7 +15,7 @@ class Scheduler {
 
     private:
     std::vector<std::unique_ptr<Process>> processes;
-    std::queue<std::unique_ptr<Process>> ready_queue; 
+    std::deque<std::unique_ptr<Process>> ready_queue;
     std::vector<std::unique_ptr<Process>> runningProcesses;
     std::vector<std::unique_ptr<Process>> completedProcesses;
     std::vector<std::thread> workerThreads;
@@ -30,21 +31,23 @@ class Scheduler {
         while (this->schedulerRunning) {
             std::unique_ptr<Process> current_process;
 
-            // process dequed from ready queue
             {
                 std::unique_lock<std::mutex> lock(this->queueMutex);
                 this->queueCV.wait(lock, [this] {
                     return !this->ready_queue.empty() || !this->schedulerRunning;
                 });
+
                 if (!this->schedulerRunning && this->ready_queue.empty()) {
-                    break; 
+                    break; // Exit the loop
                 }
                 if (this->ready_queue.empty()) {
-                    continue;
+                    continue; // Spurious wakeup, wait again
                 }
+                
                 current_process = std::move(this->ready_queue.front());
-                this->ready_queue.pop();
+                this->ready_queue.pop_front();
             } 
+
             // process execution
             if (current_process) {
                 current_process->setState(ProcessState::RUNNING);
@@ -82,9 +85,10 @@ class Scheduler {
                 if (this->ready_queue.empty()) {
                     continue;
                 }
+
                 current_process = std::move(this->ready_queue.front());
-                this->ready_queue.pop();
-            }
+                this->ready_queue.pop_front();
+            } 
 
             // time slice execution, rr
             if (current_process) {
@@ -112,7 +116,7 @@ class Scheduler {
                     current_process->setState(ProcessState::WAITING);
                     {
                         std::lock_guard<std::mutex> lock(this->queueMutex);
-                        this->ready_queue.push(std::move(current_process));
+                        this->ready_queue.push_back(std::move(current_process));
                         this->queueCV.notify_one(); 
                     }
                 } else {
@@ -140,6 +144,36 @@ class Scheduler {
     public:
     Scheduler(const std::string& Scheduler, int quantum) 
         : SchedulerType(Scheduler), quantumCycles(quantum) {}
+
+     Process* findProcessByName(const std::string& name) {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        
+        for (const auto& p : processes) { if (p->getProcessName() == name) return p.get(); }
+        for (const auto& p : runningProcesses) { if (p->getProcessName() == name) return p.get(); }
+        for (const auto& p : completedProcesses) { if (p->getProcessName() == name) return p.get(); }
+        
+
+        for (const auto& p : ready_queue) {
+            if (p->getProcessName() == name) return p.get();
+        }
+
+        return nullptr; 
+    }
+
+    std::vector<Process*> getAllProcesses() {
+        std::vector<Process*> all_procs;
+        std::lock_guard<std::mutex> lock(queueMutex);
+
+        for(const auto& p : processes) { all_procs.push_back(p.get()); }
+        for(const auto& p : runningProcesses) { all_procs.push_back(p.get()); }
+        for(const auto& p : completedProcesses) { all_procs.push_back(p.get()); }
+        
+        for(const auto& p : ready_queue) {
+            all_procs.push_back(p.get());
+        }
+        
+        return all_procs;
+    }
 
 
     void checkIfComplete() {
@@ -175,7 +209,7 @@ class Scheduler {
             if (p && p->getState() == ProcessState::IDLE) {
                 p->setState(ProcessState::WAITING);
 
-                ready_queue.push(std::move(p)); 
+                ready_queue.push_back(std::move(p)); 
                 queueCV.notify_one();
 
                 return true; 

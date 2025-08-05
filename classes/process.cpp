@@ -13,10 +13,10 @@ std::string processStateToString(ProcessState state) {
     }
 }
 
-Process::Process() : pid(-1), process_name("null"), current_core_id(-1), state(ProcessState::IDLE), next(nullptr), program_counter(0) {}
+Process::Process() : pid(-1), process_name("null"), current_core_id(-1), state(ProcessState::IDLE),  program_counter(0) {}
 
 Process::Process(int id, const std::string& name)
-    : pid(id), process_name(name), current_core_id(-1), state(ProcessState::IDLE), next(nullptr), program_counter(0) {
+    : pid(id), process_name(name), current_core_id(-1), state(ProcessState::IDLE),  program_counter(0) {
     arrival_time = 0;               //init to 0 or current time if needed
     burst_time = 0;                 //init to 0 or a default value
     remaining_burst = burst_time;   //init to burst_time
