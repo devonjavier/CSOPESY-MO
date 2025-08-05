@@ -441,7 +441,7 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         std::cout << "Quantum Cycles: " << quantumcycles << "\n";
         std::cout << "Batch Process Frequency: " << batchprocess_freq << "\n";
         std::cout << "Min Instructions: " << min_ins << "\n";
-        std::cout << "Max Instructions: " << (1ULL << max_ins) << "\n";
+        std::cout << "Max Instructions: " << max_ins << "\n";
         std::cout << "Delays per Execution: " << delays_perexec << "\n\n";
         std::cout << "Max Overall Memory: " << max_overall_mem << "\n";
         std::cout << "Memory per Frame: " << mem_per_frame << "\n";
@@ -452,6 +452,12 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         system("pause");
     } else if (choice == "scheduler-stop") {
         scheduler_stop();
+        system("pause");
+    } else if (choice == "screen") {
+        std::cout<<"Usage:\n"
+            <<"  screen -s <name>  # attach/create session\n"
+            <<"  screen -ls        # list sessions\n"
+            <<"  screen -r <name>  # re-attach session\n";
         system("pause");
     } else if (choice.rfind("screen -s", 0) == 0) {
         std::string name = choice.substr(10); // get process name
