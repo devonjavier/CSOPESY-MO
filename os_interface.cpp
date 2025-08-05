@@ -377,6 +377,30 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
     } else if (choice == "clear") { 
         clear_screen();
         screen_init();
+    } else if (choice == "vmstat") {
+        if (!g_memory_manager) {
+            std::cout << "Error: Memory Manager not initialized. Please run 'initialize' first.\n";
+        } else {
+
+            size_t total_mem = g_memory_manager->getTotalMemory();
+            size_t used_mem = g_memory_manager->getUsedMemory();
+            size_t free_mem = g_memory_manager->getFreeMemory();
+
+            std::cout << "\n--- Virtual Memory Statistics ---\n";
+            const int label_width = 15; 
+            
+            std::cout << std::left << std::setw(label_width) << "Total Memory:" 
+                      << total_mem << " bytes\n";
+            
+            std::cout << std::left << std::setw(label_width) << "Used Memory:"  
+                      << used_mem << " bytes\n";
+            
+            std::cout << std::left << std::setw(label_width) << "Free Memory:"  
+                      << free_mem << " bytes\n";
+            
+            std::cout << "---------------------------------\n";
+        }
+        system("pause");
     }
 
     if (*current != OSState::SCREEN_SESSION) {

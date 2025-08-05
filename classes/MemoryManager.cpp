@@ -9,7 +9,6 @@
 
 extern Scheduler* os_scheduler;
 
-
 MemoryManager::MemoryManager(size_t total_memory_size, size_t frame_size, size_t mem_per_proc) {
     if (frame_size == 0) {
         throw std::invalid_argument("Frame size cannot be zero.");
@@ -147,13 +146,19 @@ size_t MemoryManager::getPageSize() const {
 
 
 size_t MemoryManager::getTotalMemory() const {
+
     return physical_memory.size() * frame_size;
 }
 
+
 size_t MemoryManager::getFreeMemory() const {
+
+    std::lock_guard<std::mutex> lock(mmu_mutex);
     return free_frames.size() * frame_size;
 }
 
+
 size_t MemoryManager::getUsedMemory() const {
+
     return getTotalMemory() - getFreeMemory();
 }

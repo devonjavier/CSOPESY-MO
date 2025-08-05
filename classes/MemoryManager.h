@@ -17,6 +17,7 @@ private:
     size_t frame_size;
     size_t max_process_memory; 
     const std::string backing_store_filename = "csopesy-backing-store.txt";
+    mutable std::mutex mmu_mutex; 
     
     int selectVictimFrame();
     void releaseProcessMemory(int pid);
