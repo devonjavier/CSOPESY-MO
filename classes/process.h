@@ -16,7 +16,7 @@ enum class ProcessState {
     WAITING,
     RUNNING,
     FINISHED,
-    TERMINATED // NEW: For memory access violations, etc.
+    TERMINATED 
 };
 
 std::string processStateToString(ProcessState state);
@@ -49,9 +49,9 @@ private:
     SymbolTableEntry symbol_table[32]; 
     size_t symbol_count = 0;
 
-    size_t memory_size; // The total allocated memory for this process (e.g., 256 bytes)
+    size_t memory_size; 
     std::unique_ptr<PageTable> page_table;
-    std::string termination_reason = ""; // For storing access violation messages
+    std::string termination_reason = ""; 
 
 
     std::string creation_timestamp_str; 

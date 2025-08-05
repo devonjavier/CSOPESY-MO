@@ -4,14 +4,9 @@
 #include <vector>
 #include <cstddef> // for size_t
 
-/**
- * @class PageTable
- * @brief Manages the mapping of a single process's virtual pages to physical frames.
- * Each process will own one instance of this class.
- */
 class PageTable {
 public:
-    // Represents a single entry in the page table.
+    
     struct PageTableEntry {
         bool present_bit = false; // Is the page currently in a physical frame?
         bool dirty_bit = false;   // Has the page been modified since being loaded?

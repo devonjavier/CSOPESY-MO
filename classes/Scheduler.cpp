@@ -102,11 +102,7 @@ class Scheduler {
             Process* process_to_run = nullptr;
             {
                 std::lock_guard<std::mutex> lock(this->queueMutex);
-                // In a real multi-core RR, we'd need a better way to associate
-                // the coreId with the process, but for now, we find the one we just added.
-                // This is still slightly risky if two threads run this code simultaneously.
-                // A better way is to search by state or lack of coreId.
-                // For now, let's assume the last one is ours.
+    
                 for(auto& p : runningProcesses) {
                     if (p->getCurrentCoreId() == -1) { // Find one that hasn't been assigned a core yet
                         process_to_run = p.get();
@@ -135,11 +131,11 @@ class Scheduler {
                     process_to_run->getInstructionCount() - process_to_run->getProgramCounter()
                 );
 
-                // --- STEP 3: Move the process from running to its next state ---
+
                 {
                     std::lock_guard<std::mutex> lock(this->queueMutex);
                     
-                    // Find the unique_ptr in the running vector that matches our raw pointer
+
                     auto it = std::find_if(runningProcesses.begin(), runningProcesses.end(), 
                         [&](const auto& p) { return p.get() == process_to_run; });
 
@@ -155,12 +151,12 @@ class Scheduler {
                             }
                             this->completedProcesses.push_back(std::move(*it)); // Move to completed
                         }
-                        // Erase the now-empty unique_ptr from the running vector
+
                         runningProcesses.erase(it);
                     }
                 }
             } else {
-                // No unassigned process was found, this core is idle for a moment.
+               
                 idle_cpu_ticks++;
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }

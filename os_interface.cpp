@@ -146,8 +146,8 @@ void initialize() {
 }
 
 ICommand* generateRandomInstruction() {
-    // Randomly choose an instruction type
-    int instruction_type = rand() % 8; // 0 to 4 for 5 different types
+
+    int instruction_type = rand() % 8; 
 
     std::string randomVarName1 = "var" + std::to_string(rand() % 10);
     std::string randomVarName2 = "var" + std::to_string(rand() % 10);
@@ -186,7 +186,6 @@ ICommand* generateRandomInstruction() {
         }
         case 7: { // WRITE
             uint32_t random_address = rand() % mem_per_proc;
-            // Write the value of a random, potentially undeclared variable
             return new WRITE(randomVarName1, random_address);
         }
         default:
@@ -210,19 +209,31 @@ std::string parseStringLiteral(const std::string& input) {
 std::vector<std::unique_ptr<ICommand>> parseInstructionString(const std::string& raw_instructions) {
     std::vector<std::unique_ptr<ICommand>> program;
     std::stringstream ss(raw_instructions);
-    std::string instruction_token;
+    std::string instruction;
 
-    while (std::getline(ss, instruction_token, ';')) {
+        while (std::getline(ss, instruction, ';')) {
 
-        instruction_token.erase(0, instruction_token.find_first_not_of(" \t\n\r"));
-        instruction_token.erase(instruction_token.find_last_not_of(" \t\n\r") + 1);
+        instruction.erase(0, instruction.find_first_not_of(" \t\n\r"));
+        instruction.erase(instruction.find_last_not_of(" \t\n\r") + 1);
+        
+        if (instruction.empty()) continue;
+        
 
-        if (instruction_token.empty()) continue;
-
-        std::stringstream token_stream(instruction_token);
+        size_t start = instruction.find_first_not_of(" \t");
+        if (start == std::string::npos) continue;
+        
+        size_t end = instruction.find_first_of(" \t(", start);
         std::string opcode;
-        token_stream >> opcode;
+        if (end != std::string::npos) {
+            opcode = instruction.substr(start, end - start);
+        } else {
+            opcode = instruction.substr(start);
+        }
+        
 
+        std::string remainder = instruction.substr(start + opcode.length());
+        std::istringstream token_stream(remainder);
+        
         if (opcode == "DECLARE") {
             std::string varName;
             uint16_t value;
@@ -242,6 +253,7 @@ std::vector<std::unique_ptr<ICommand>> parseInstructionString(const std::string&
                 program.push_back(std::make_unique<SUBTRACT>(res, op1, op2));
             } else return {};
         }
+
         else if (opcode == "READ") {
             std::string varName;
             uint32_t address;
@@ -249,58 +261,55 @@ std::vector<std::unique_ptr<ICommand>> parseInstructionString(const std::string&
                 program.push_back(std::make_unique<READ>(varName, address));
             } else return {};
         }
-        else if (opcode == "WRITE") {
-             std::string varName;
-            uint32_t address;
 
+        else if (opcode == "WRITE") {
+            uint32_t address;
+            std::string varName;
             if (token_stream >> std::hex >> address >> varName) {
                 program.push_back(std::make_unique<WRITE>(varName, address));
             } else return {};
         }
-
         else if (opcode == "PRINT") {
-        std::string content;
-        std::getline(token_stream, content); // Get the rest of the line: (...)
+            char paren;
+            token_stream >> paren; 
+            if (paren != '(') return {}; 
 
-        size_t open_paren = content.find('(');
-        size_t close_paren = content.rfind(')');
-        if (open_paren == std::string::npos || close_paren == std::string::npos) return {};
+             if (token_stream.peek() == '"') {
+                std::string literal;
+                token_stream >> std::quoted(literal);
 
-        content = content.substr(open_paren + 1, close_paren - open_paren - 1);
+   
+                char plus_sign = 0;
+                token_stream >> plus_sign;
 
-        size_t plus_pos = content.find('+');
-        if (plus_pos != std::string::npos) {
-            // Case: "literal" + variable
-            std::string literal_part = content.substr(0, plus_pos);
-            std::string varName_part = content.substr(plus_pos + 1);
+                if (plus_sign == '+') {
 
-            // Use our new helper to correctly parse the literal
-            std::string literal = parseStringLiteral(literal_part);
+                    std::string varName;
+                    token_stream >> varName;
 
-            // Trim the variable part
-            varName_part.erase(0, varName_part.find_first_not_of(" \t"));
-            varName_part.erase(varName_part.find_last_not_of(" \t") + 1);
+                    token_stream >> paren;
+                    if (paren != ')') return {};
 
-            if (literal.empty() || varName_part.empty()) {
-                return {}; // Parsing failed
-            }
-            
-            program.push_back(std::make_unique<PRINT>(literal, varName_part));
+                    program.push_back(std::make_unique<PRINT>(literal, varName));
 
-        } else {
-            // Case: A single item (either a literal or a variable)
-            std::string literal = parseStringLiteral(content);
-            if (!literal.empty() || (content.find('"') != std::string::npos)) {
-                // It was a valid quoted string
-                program.push_back(std::make_unique<PRINT>(literal, true));
+                } else {
+
+                    if(plus_sign != ')') return {};
+                    program.push_back(std::make_unique<PRINT>(literal, true)); // isMsg = true
+                }
+
             } else {
-                // It's a single variable
-                content.erase(0, content.find_first_not_of(" \t"));
-                content.erase(content.find_last_not_of(" \t") + 1);
-                program.push_back(std::make_unique<PRINT>(content));
+
+                std::string varName;
+                token_stream >> varName;
+
+                token_stream >> paren;
+                if (paren != ')') return {};
+
+                program.push_back(std::make_unique<PRINT>(varName));
             }
-        }
-    } else if (opcode == "SLEEP") {
+        } 
+        else if (opcode == "SLEEP") {
             int duration;
             if (token_stream >> duration) {
                 program.push_back(std::make_unique<SLEEP>(duration));
@@ -329,20 +338,15 @@ std::vector<std::unique_ptr<ICommand>> parseInstructionString(const std::string&
 
             program.push_back(std::make_unique<FOR>(std::move(body), repeatCount));
         }
-        else if (opcode == "UNKNOWN") {
-            program.push_back(std::make_unique<UNKNOWN>());
-        }
         else {
-            return {}; 
+            // Unknown opcode - add debugging
+            std::cerr << "ERROR: Unknown opcode '" << opcode << "' in instruction: " << instruction << std::endl;
+            return {};
         }
     }
-
-    if (program.size() < 1 || program.size() > 50) {
-        std::cout << "[Parser] Error: Instruction count must be between 1 and 50.\n";
-        return {}; 
-    }
-
+    
     return program;
+
 }
 
 Process* create_new_process(std::string name) {
