@@ -251,6 +251,7 @@ void WRITE::execute(Process& process) {
     if (memory_address >= process.getMemorySize()) {
         std::stringstream ss;
         ss << "Access violation at 0x" << std::hex << memory_address << ".";
+        
         process.terminate(ss.str());
         return;
     }
