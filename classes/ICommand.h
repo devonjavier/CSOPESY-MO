@@ -115,14 +115,13 @@ public:
     void execute(Process& process) override;
     std::string toString(const Process& process) const override;
     uint32_t getAddress() const { return memory_address; }
-    // NEW: A static helper to determine which page this command accesses.
     int getRequiredPage(size_t page_size) const;
 };
 
 
 class WRITE : public ICommand {
 private:
-    std::string variable_name; // The variable WHOSE VALUE we are writing
+    std::string variable_name; 
     uint32_t memory_address;
 
 public:
@@ -130,7 +129,7 @@ public:
     void execute(Process& process) override;
     std::string toString(const Process& process) const override;
     uint32_t getAddress() const { return memory_address; }
-    // NEW: A static helper to determine which page this command accesses.
+
     int getRequiredPage(size_t page_size) const;
 };
 
@@ -139,7 +138,7 @@ private:
     std::string reason;
 
 public:
-    UNKNOWN(); // Default constructor
+    UNKNOWN();
     UNKNOWN(const std::string& reasonMessage);
     void execute(Process& process) override;
     std::string toString(const Process& process) const override;

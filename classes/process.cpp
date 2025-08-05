@@ -101,7 +101,7 @@ std::vector<std::string> Process::getLogs() const {
 }
 
 uint16_t Process::getVariableValue(const std::string& name) const { // Made const correct
-    // Linearly search the symbol table for the variable name.
+
     for (size_t i = 0; i < symbol_count; ++i) {
         if (symbol_table[i].in_use && symbol_table[i].name == name) {
             return symbol_table[i].value;
@@ -115,10 +115,10 @@ bool Process::getVariable(const std::string& name, uint16_t& value) const {
     for (size_t i = 0; i < symbol_count; ++i) {
         if (symbol_table[i].in_use && symbol_table[i].name == name) {
             value = symbol_table[i].value;
-            return true; // Found the variable
+            return true; 
         }
     }
-    return false; // Variable not found
+    return false; 
 }
 
 size_t Process::getProgramCounter() const {
