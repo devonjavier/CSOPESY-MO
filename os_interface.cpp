@@ -50,17 +50,7 @@ std::thread g_process_generator_thread;
 bool g_is_generating = false;
 
 
-//protect link list of session instance/screen list
 std::mutex screenListMutex;
-
-//initial declaration (maybe transfer to a header file)
-// std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp) {
-//     if (tp.time_since_epoch().count() == 0) return "N/A";
-//     std::time_t tt = std::chrono::system_clock::to_time_t(tp);
-//     char buffer[100];
-//     std::strftime(buffer, sizeof(buffer), "%d/%m/%Y %I:%M:%S%p", std::localtime(&tt));
-//     return std::string(buffer);
-// }
 
 
 ICommand* generateRandomInstruction() {
@@ -141,9 +131,8 @@ void initialize() {
     while (std::getline(config, line)) {
         std::istringstream iss(line);
         std::string key;
-        if (!(iss >> key)) continue; // Skip empty lines
+        if (!(iss >> key)) continue; 
 
-        //convert choice to lowercase for case-insensitive comparison
         for (char &c : key) {
             c = std::tolower(static_cast<unsigned char>(c));
         }
@@ -238,12 +227,7 @@ void screen_init() {
     std::cout << "Please enter a command:\n";
 }
 
-// 3. scheduler_start()
-//    - set up a test environment for the Scheduler
-//    - create several test processes or threads
-//    - according to the zoom kanina, each test process/thread will do some simple task
-//
-//    - starts the Scheduler
+
 void scheduler_start() {
     if (!os_scheduler) {
         std::cout << "Scheduler not initialized.\n";
@@ -266,20 +250,11 @@ void scheduler_start() {
 }
 
 
-// 4. scheduler_stop()
-//    -stops process generation, lets worker threads finish their current tasks
 void scheduler_stop() {
     // Scheduler_running = false;
     std::cout << "Scheduler stopped.\n";
 }
 
-// 5. report_util()
-//    - report system information a d statistics
-//        - Memory usage (total, used, free)
-//        - CPU usage
-//        - Running processes/threads
-//        - System uptime
-//        - Error logs
 
 void report_util() {
     std::ofstream log("csopesy-log.txt", std::ios::app);
@@ -292,141 +267,6 @@ void report_util() {
     log.close();
     std::cout << "System report saved to csopesy-log.txt\n";
 }
-
-// 6. clear_screen()
-//    - clears the entire terminal screen
-
-// 7. exit_os(int status)
-//    - shut down the operating system
-//        - stop Scheduler
-//        - unmount file systems (??idk)
-//        - disable hardware devices (??idk)
-//        - free memory
-//        - close open files
-//        - save system state
-//        - log shutdown information
-//        - notify other processes
-//        - clean up resources
-//        - stop all running processes
-//        - disable interrupts
-//        - set CPU to a known state
-//        - return control to bootloader or firmware
-//        - THEN halt CPU
-//    - int status parameter to indicate exit status (egg. 0 for success, non-zero for an error).
-
-
-// void generate_file(int core_id){
-//     int current_file = file_count.fetch_add(1);
-//     if (current_file >= num_processes) return;
-
-//     std::string filename = "process_file_" + std::to_string(current_file) + "_id_" + std::to_string(core_id) + ".txt";
-//     std::string start_time = get_timestamp();
-
-//     {
-//         std::lock_guard<std::mutex> lock(process_mutex);
-//         processes.push_back({current_file, filename, "Running", std::this_thread::get_id(), core_id, start_time, ""});
-
-//     }
-
-//     std::ofstream outfile(filename);
-//     for (int i = 0; i < 100; ++i) {
-//         std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Simulate work
-//         std::string timestamp = get_timestamp();
-//         outfile << "(" << timestamp << ") "
-//                 << "Core: " << core_id << " - "
-//                 << "\"Hello world from " << filename << "!\"\n";
-//     }
-//     outfile.close();
-
-//     {
-//         std::lock_guard<std::mutex> lock(process_mutex);
-//         for (auto& p : processes) {
-//             if (p.filename == filename) {
-//                 p.status = "Finished";
-//                 p.end_time = get_timestamp();
-//                 break;
-//             }
-//         }
-//     }
-// }
-
-
-// void start_file_generation() {
-//     std::cout << "Generating files using " << num_cores << " cores...\n";
-//     std::vector<std::thread> threads;
-
-//     for (int i = 0; i < num_cores; ++i) {
-//         threads.emplace_back([i]() {
-//             while (true) {
-//                 int current_file = file_count.load();
-//                 if (current_file >= num_processes) break;
-//                 generate_file(i); // core ID remains same
-//             }
-//         });
-//     }
-
-//     for (auto& t : threads) {
-//         t.join();
-//     }
-
-//     std::cout << "All files generated.\n";
-// }
-
-// void new_screen(std::string name) {
-
-//     if (head == nullptr) {
-//         head = new Process(name, 1, 50, get_timestamp()); // placeholder values
-//         screen_session(*head);
-//         return;
-//     }
-
-//     Process *current_screen = head;
-            
-//     while(current_screen != nullptr){
-
-//         if(current_screen.getProcessName() == name){
-//             std::cout << "Screen session with name '" << name << "' already exists.\n";
-//             system("pause");
-//             return;
-//         } else if (current_screen->next == nullptr) {
-
-//             Process *new_screen = new Process(name, 1, 50, get_timestamp()); //placeholder values
-//             current_screen->next = new_screen;
-//             screen_session(*new_screen);
-//             return;
-            
-//         } else {
-//             current_screen = current_screen->next;
-//         }
-//     }
-
-// }
-
-
-/// Create (but don’t attach) a screen session for this process.
-// void create_process_screen(const std::string& name, int total_lines = 1){
-//     std::cout << "  -> Process ID " << name << " created";
-
-//     std::lock_guard<std::mutex> lock(screenListMutex);
-
-//     // if empty, make head
-//     if (!head) {
-//         head = new Process(name, 0, total_lines, get_timestamp());
-//         return;
-//     }
-//     // else walk to end (avoid duplicates)
-//     Process *cur = head;
-//     while (cur) {
-//         if (cur->name == name) {
-//             // already have a session for this name
-//             return;
-//         }
-//         if (!cur->next) break;
-//         cur = cur->next;
-//     }
-//     cur->next = new Process(name, 0, total_lines, get_timestamp());
-//     std::cout << "  -> Process ID " << name << " created with Screen\n";
-// }
 
 
 void accept_main_menu_input(std::string choice, OSState* current, Process** active_process) {
@@ -514,28 +354,7 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
             }
         }
         system("pause");
-        //     std::cout << "\nActive screen sessions:\n";
 
-//     // If you ever spawn sessions from multiple threads, 
-//     // protect head with a mutex:
-//     // std::lock_guard<std::mutex> lock(screenListMutex);
-
-//     Process* curr = head;
-//     if (!curr) {
-//         std::cout << "  (none)\n";
-//     } else {
-//         while (curr) {
-//             std::cout
-//                 << "  Name:   "  << curr->name  
-//                 << "    Line:   " << curr->current_line 
-//                 << "/"        << curr->total_lines
-//                 << "    Created: " << curr->timestamp
-//                 << "\n";
-//             curr = curr->next;
-//         }
-//     }
-
-//     system("pause");
     } else if (choice == "exit") {
         *current = OSState::EXITING;
         std::cout << "Exiting the OS...\n";
@@ -556,11 +375,7 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
 void accept_screen_session_input(std::string choice, OSState* current, Process** active_session){
         if (choice == "process-smi") {
 
-        // only function in the screen session
-        // Logic to display process info for *active_session
-        // std::cout << "--- Process: " << (*active_session)->name << " ---\n";
-        // std::cout << "Instruction: " << (*active_session)->current_line << " / " << (*active_session)->total_lines << "\n";
-        // std::cout << "Created: " << (*active_session)->timestamp << "\n";
+
         system("pause");
     } else if (choice == "exit") {
         *current = OSState::MAIN_MENU; // Go back to the main menu
@@ -574,121 +389,6 @@ void accept_screen_session_input(std::string choice, OSState* current, Process**
 
 
 }
-
-// bool accept_input(std::string choice, Process *current_screen){
-//     bool exit = false;
-
-//     //convert choice to lowercase for case-insensitive comparison
-//     for (char &c : choice) {
-//         c = std::tolower(static_cast<unsigned char>(c));
-//     }
-
-//     if (choice == "initialize") {
-//         // initialize os env
-
-//         initialize();
-
-//         std::cout << std::endl << std::endl;
-//         std::cout << "Initialized configuration: \nCPU Cores: " << num_cpu << "\n";
-//         std::cout << "Scheduler: " << scheduler_type << "\n";
-//         std::cout << "Quantum Cycles: " << quantumcycles << "\n";
-//         std::cout << "Batch Process Frequency: " << batchprocess_freq << "\n";
-//         std::cout << "Min Instructions: " << min_ins << "\n";
-//         std::cout << "Max Instructions: " << (1ULL << max_ins) << "\n";
-//         std::cout << "Delays per Execution: " << delays_perexec << "\n\n";
-//         std::cout << "Max Overall Memory: " << max_overall_mem << "\n";
-//         std::cout << "Memory per Frame: " << mem_per_frame << "\n";
-//         std::cout << "Memory per Process: " << mem_per_proc << "\n\n\n\n";
-    
-//         if (current_screen) current_screen->current_line++;
-//         system("pause");
-//     } else if (choice == "scheduler-start") {
-//         scheduler_start();
-//         if (current_screen) current_screen->current_line++;
-//         std::cout << "ending scheduler_start() function\n";
-//         Sleep(60);
-//         system("pause");
-//     } else if (choice == "scheduler-stop") {
-//         std::cout << "Scheduler-stop command recognized. Doing something.\n";
-        
-//         //instead of forcibly joining all worker threads
-//         // scheduler_stop();
-
-//         //stop the process generation, but let it finish draining the queue
-//         os_scheduler->stopGenerating();
-
-//         if (current_screen) current_screen->current_line++;
-//         system("pause");
-//     } else if (choice == "report-util") {
-//         std::cout << "Report-util command recognized. Doing something.\n";
-//         report_util();
-//         if (current_screen) current_screen->current_line++;
-//         system("pause");
-//     } else if (choice == "clear") {
-//         std::cout << "Clear command recognized. Doing something.\n";
-//         clear_screen();
-//         if (current_screen) current_screen->current_line++;
-//         system("pause");
-//     } else if (choice == "exit") {
-//         std::cout << "Exit command recognized. Exiting...\n";
-//         exit = true;
-//     } else if (choice == "help") {
-//         std::cout << "Help command recognized.\n";
-//         std::cout << "Available commands:\n";
-//         std::cout << "1. initialize - Initialize the OS environment.\n";
-//         std::cout << "2. screen - Initialize the screen.\n";
-//         std::cout << "3. Scheduler-test - Start the Scheduler test.\n";
-//         std::cout << "4. Scheduler-stop - Stop the Scheduler.\n";
-//         std::cout << "5. report-util - Report system information and statistics.\n";
-//         std::cout << "6. clear - Clear the screen.\n";
-//         std::cout << "7. exit - Exit the OS.\n";
-//         std::cout << "8. help - Show this help message.\n";
-//         if (current_screen) current_screen->current_line++;
-//         system("pause");
-
-//     } else if (choice.rfind("screen -s ", 0) == 0) {
-//         std::string name = choice.substr(10);
-//         new_screen(name);
-//         if (current_screen) current_screen->current_line++;
-//     } else if (choice.rfind("screen -r ", 0) == 0) {
-//         std::string name = choice.substr(10);  // get <name>
-//         find_screen(name);
-//         if (current_screen) current_screen->current_line++;
-
-//     } else if (choice == "screen -ls") {
-//     std::cout << "\nActive screen sessions:\n";
-
-//     // If you ever spawn sessions from multiple threads, 
-//     // protect head with a mutex:
-//     // std::lock_guard<std::mutex> lock(screenListMutex);
-
-//     Process* curr = head;
-//     if (!curr) {
-//         std::cout << "  (none)\n";
-//     } else {
-//         while (curr) {
-//             std::cout
-//                 << "  Name:   "  << curr->name  
-//                 << "    Line:   " << curr->current_line 
-//                 << "/"        << curr->total_lines
-//                 << "    Created: " << curr->timestamp
-//                 << "\n";
-//             curr = curr->next;
-//         }
-//     }
-
-//     system("pause");
-//     if (current_screen) current_screen->current_line++;
-        
-//     } else if (choice == "^g") {
-//         std::thread(scheduler_start).detach();
-//     } else {
-//         std::cout << "Unknown command: " << choice << "\n";
-//     }
-    
-//     clear_screen();
-//     return exit;
-// }
 
 
 void menu(){

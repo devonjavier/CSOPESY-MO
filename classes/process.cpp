@@ -43,14 +43,6 @@ int Process::getInstructionCount() const {
     return instructions.size();
 }
 
-// uint64_t Process::getStartTime() const {
-//     return start_time;
-// }
-
-// uint64_t Process::getEndTime() const {
-//     return end_time;
-// }
-
 uint16_t Process::getArrivalTime() const {
     return arrival_time;
 }
