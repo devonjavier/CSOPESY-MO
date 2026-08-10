@@ -1,6 +1,7 @@
 // classes/Process.cpp
 #include "process.h"
 #include "ICommand.h"
+#include "helper.h"
 #include <iostream>
 
 std::string processStateToString(ProcessState state) {

@@ -21,8 +21,8 @@ class Scheduler {
     std::vector<std::unique_ptr<Process>> completedProcesses;
     std::vector<std::thread> workerThreads;
     std::atomic<bool> schedulerRunning{false};
-    std::atomic<bool> generatingProcesses{false};            //i think we only need one flag right??
-    std::mutex queueMutex;
+    std::atomic<bool> generatingProcesses{false};            
+    mutable std::mutex queueMutex;
     std::condition_variable queueCV;
     std::string SchedulerType;
     int quantumCycles; 
