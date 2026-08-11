@@ -3,13 +3,15 @@
 #include <cstdlib> // for system()
 #include <ctime>
 #include "header.h"
-#include "classes/helper.h"
+#include "classes/helper.cpp"
 #include <vector>
 #include <thread>
 #include <memory>
 #include <mutex>
 #include <atomic>
 #include "classes/MemoryManager.cpp"
+#include "classes/process.cpp"
+#include "classes/ICommand.cpp"
 #include <fstream>
 #include <sstream>
 #include <random> // For random number generation
@@ -430,9 +432,25 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         *current = OSState::EXITING;
         std::cout << "Exiting the OS...\n";
         system("pause");
-    } else if (choice == "clear") { 
+    } else if (choice == "clear") {
         clear_screen();
         screen_init();
+    } else if (choice == "help") {
+        std::cout << "\nAvailable commands:\n"
+            << "  initialize            # read config.txt and start the OS environment\n"
+            << "  screen -s <name>      # create a process and open its screen\n"
+            << "  screen -r <name>      # re-attach to an existing process screen\n"
+            << "  screen -ls            # list processes and CPU utilization\n"
+            << "  scheduler-start       # begin generating and scheduling processes\n"
+            << "  scheduler-stop        # stop generating new processes\n"
+            << "  report-util           # write a utilization report to csopesy-log.txt\n"
+            << "  clear                 # clear the screen\n"
+            << "  help                  # show this list\n"
+            << "  exit                  # quit the emulator\n\n";
+        system("pause");
+    } else if (!choice.empty()) {
+        std::cout << "Unknown command: '" << choice << "'. Type 'help' for a list of commands.\n";
+        system("pause");
     }
 
     if (*current != OSState::SCREEN_SESSION) {
