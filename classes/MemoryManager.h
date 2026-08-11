@@ -21,7 +21,6 @@ private:
 
 
     int selectVictimFrame();
-    void releaseProcessMemory(int pid);
     void loadPageFromBackingStore(int pid, int page_number, int frame_number);
     void writePageToBackingStore(int pid, int page_number);
 
@@ -30,6 +29,7 @@ public:
 
 
     void handlePageFault(Process& process, int page_number);
+    void releaseProcessMemory(int pid);
     size_t getPageSize() const;
     size_t getTotalMemory() const;
     size_t getFreeMemory() const;
