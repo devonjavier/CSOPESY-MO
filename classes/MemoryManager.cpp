@@ -108,19 +108,25 @@ void MemoryManager::handlePageFault(Process& faulting_process, int page_number) 
         int victim_pid = victim_frame.owner_pid;
         int victim_page_number = victim_frame.page_number;
         
-        Process* victim_process = os_scheduler->findProcessByName("Process" + std::to_string(victim_pid)); 
-        
+        // Look up by PID: process names come from "screen -s <name>", so they
+        // cannot be reconstructed as "Process<pid>".
+        Process* victim_process = os_scheduler->findProcessByPid(victim_pid);
+
         if (victim_process == nullptr) {
-            throw std::runtime_error("MMU CRITICAL ERROR: Could not find victim process with PID " + std::to_string(victim_pid));
-        }
+            // Owner already finished and released this frame. Nothing reachable
+            // lives here, so reclaim it rather than crashing the emulator.
+            std::cerr << "[MMU] WARNING: victim frame " << target_frame_index
+                      << " owned by unknown PID " << victim_pid
+                      << "; reclaiming without write-back." << std::endl;
+            physical_memory[target_frame_index].reset();
+        } else {
+            if (victim_process->getPageTable()->isDirty(victim_page_number)) {
+                pages_paged_out++;
+                writePageToBackingStore(victim_pid, victim_page_number);
+            }
 
-        if (victim_process->getPageTable()->isDirty(victim_page_number)) {
-            pages_paged_out++;
-            writePageToBackingStore(victim_pid, victim_page_number);
+            victim_process->getPageTable()->unmapPage(victim_page_number);
         }
-
-        victim_process->getPageTable()->unmapPage(victim_page_number);
-        
     }
 
     loadPageFromBackingStore(faulting_process.getPid(), page_number, target_frame_index);

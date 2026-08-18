@@ -708,6 +708,25 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
 
         }
         system("pause");
+    } else if (choice == "help") {
+        std::cout << "\nAvailable commands:\n"
+            << "  initialize                              # read config.txt and start the OS environment\n"
+            << "  screen -s <name> <mem_size>             # create a process with the given memory size\n"
+            << "  screen -c <name> <mem_size> \"<instr>\"   # create a process with custom instructions\n"
+            << "  screen -r <name>                        # re-attach to an existing process screen\n"
+            << "  screen -ls                              # list processes and CPU utilization\n"
+            << "  scheduler-start                         # begin generating and scheduling processes\n"
+            << "  scheduler-stop                          # stop generating new processes\n"
+            << "  process-smi                             # summary of memory use per process\n"
+            << "  vmstat                                  # detailed memory, tick and paging counters\n"
+            << "  report-util                             # write a utilization report to csopesy-log.txt\n"
+            << "  clear                                   # clear the screen\n"
+            << "  help                                    # show this list\n"
+            << "  exit                                    # quit the emulator\n\n";
+        system("pause");
+    } else if (!choice.empty()) {
+        std::cout << "Unknown command: '" << choice << "'. Type 'help' for a list of commands.\n";
+        system("pause");
     }
 
     if (*current != OSState::SCREEN_SESSION) {

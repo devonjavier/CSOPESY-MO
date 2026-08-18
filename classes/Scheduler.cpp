@@ -10,6 +10,8 @@
 #include <mutex>
 #include <condition_variable>
 #include <algorithm>
+#include <unordered_map>
+#include <exception>
 #include <windows.h>
 
 class Scheduler { 
@@ -31,6 +33,10 @@ class Scheduler {
     int delays_perexec;
     std::atomic<size_t> active_cpu_ticks{0};
     std::atomic<size_t> idle_cpu_ticks{0};
+
+    // Every process ever created, keyed by PID, so the MMU can reach the owner
+    // of an evicted frame regardless of which container currently holds it.
+    std::unordered_map<int, Process*> process_registry;
 
     void fcfs_scheduler(int coreId) {
         while (this->schedulerRunning) {
@@ -67,6 +73,10 @@ class Scheduler {
                 if (current_process->getState() != ProcessState::TERMINATED) {
                     current_process->setState(ProcessState::FINISHED);
                 }
+
+                // Return this process's frames to the free list before it is
+                // filed away. Kept outside queueMutex to preserve lock ordering.
+                mmu->releaseProcessMemory(current_process->getPid());
 
                 {
                     std::lock_guard<std::mutex> lock(this->queueMutex);
@@ -132,11 +142,15 @@ class Scheduler {
                 );
 
 
+                // Set when the process leaves the CPU for good; its frames are
+                // released after queueMutex is dropped (see below).
+                int finished_pid = -1;
+
                 {
                     std::lock_guard<std::mutex> lock(this->queueMutex);
-                    
 
-                    auto it = std::find_if(runningProcesses.begin(), runningProcesses.end(), 
+
+                    auto it = std::find_if(runningProcesses.begin(), runningProcesses.end(),
                         [&](const auto& p) { return p.get() == process_to_run; });
 
                     if (it != runningProcesses.end()) {
@@ -149,11 +163,19 @@ class Scheduler {
                             if (process_to_run->getState() != ProcessState::TERMINATED) {
                                 process_to_run->setState(ProcessState::FINISHED);
                             }
+                            finished_pid = process_to_run->getPid();
                             this->completedProcesses.push_back(std::move(*it)); // Move to completed
                         }
 
                         runningProcesses.erase(it);
                     }
+                }
+
+                // Outside queueMutex on purpose: releaseProcessMemory takes
+                // mmu_mutex, and handlePageFault takes mmu_mutex then queueMutex.
+                // Holding queueMutex here would invert that order and deadlock.
+                if (finished_pid != -1) {
+                    mmu->releaseProcessMemory(finished_pid);
                 }
             } else {
                
@@ -204,9 +226,12 @@ class Scheduler {
     }
 
     bool executeInstruction(Process& process) {
+      // An exception escaping a worker thread calls std::terminate and takes the
+      // whole emulator down, so contain it here and kill only this process.
+      try {
         size_t pc = process.getProgramCounter();
         if (pc >= process.getInstructionCount()) {
-            return false; 
+            return false;
         }
         const auto& command = process.getInstructions()[pc];
 
@@ -239,10 +264,16 @@ class Scheduler {
         if (process.getState() == ProcessState::TERMINATED) {
             std::cout << "[Scheduler] Process " << process.getPid() << " terminated due to: " 
                       << process.getTerminationReason() << std::endl;
-            return false; 
+            return false;
         }
-        
+
         return true;
+      } catch (const std::exception& e) {
+        std::cerr << "[Scheduler] Exception while executing PID " << process.getPid()
+                  << ": " << e.what() << std::endl;
+        process.terminate(std::string("Internal error: ") + e.what());
+        return false;
+      }
     }
 
     std::string get_timestamp() {
@@ -301,7 +332,15 @@ class Scheduler {
     
     void addProcess(std::unique_ptr<Process> process) {
         std::lock_guard<std::mutex> lock(queueMutex);
+        process_registry[process->getPid()] = process.get();
         processes.push_back(std::move(process));
+    }
+
+    // Used by the MMU to find the owner of a frame it is about to evict.
+    Process* findProcessByPid(int pid) {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        auto it = process_registry.find(pid);
+        return (it == process_registry.end()) ? nullptr : it->second;
     }
 
     void schedulerAlgo(int coreId) {
