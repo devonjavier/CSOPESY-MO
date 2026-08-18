@@ -192,6 +192,12 @@ ICommand* generateRandomInstruction() {
             return new UNKNOWN;
     }
 }
+// Per MO2: process memory must be a power of 2 within [2^6, 2^16] bytes.
+bool isValidProcessMemory(size_t mem_size) {
+    bool is_power_of_two = (mem_size > 0) && ((mem_size & (mem_size - 1)) == 0);
+    return is_power_of_two && mem_size >= 64 && mem_size <= 65536;
+}
+
 std::string parseStringLiteral(const std::string& input) {
     std::string trimmed = input;
     // Trim leading/trailing whitespace first
@@ -377,6 +383,34 @@ Process* create_new_process(std::string name) {
 }
 
 // overload, instruction parse
+// Same as create_new_process(name) but with a caller-supplied memory size,
+// used by "screen -s <name> <mem_size>".
+Process* create_new_process(std::string name, size_t mem_size) {
+    if (!os_scheduler) return nullptr;
+
+    std::default_random_engine generator(
+        std::chrono::system_clock::now().time_since_epoch().count()
+    );
+
+    std::uniform_int_distribution<int> instructionDist(min_ins, max_ins);
+    int num_instructions = instructionDist(generator);
+
+    auto proc = std::make_unique<Process>(g_next_pid, name, mem_size, mem_per_frame);
+    Process* raw_ptr = proc.get();
+
+    for (int i = 0; i < num_instructions; ++i) {
+        proc->addInstruction(std::unique_ptr<ICommand>(generateRandomInstruction()));
+    }
+
+    raw_ptr->setBurstTime();
+    raw_ptr->setRemainingBurst(raw_ptr->getBurstTime());
+
+    os_scheduler->addProcess(std::move(proc));
+    g_next_pid++;
+
+    return raw_ptr;
+}
+
 Process* create_new_process(std::string name, size_t mem_size, std::vector<std::unique_ptr<ICommand>> program) {
     if (!os_scheduler) return nullptr;
 
@@ -495,10 +529,27 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         scheduler_stop();
         system("pause");
     } else if (choice.rfind("screen -s", 0) == 0) {
-        std::string name = choice.substr(10);
+        if (!os_scheduler) {
+            std::cout << "Scheduler not initialized. Please run 'initialize' first.\n";
+        } else {
+            std::stringstream ss(choice);
+            std::string command, flag, name;
+            size_t mem_size = 0;
+            ss >> command >> flag >> name >> mem_size;
 
-        Process* proc = create_new_process(name); 
-        proc->runScreenInterface();
+            if (name.empty() || ss.fail()) {
+                std::cout << "Error: Invalid format. Usage: screen -s <name> <memory_size>\n";
+            } else if (!isValidProcessMemory(mem_size)) {
+                std::cout << "Error: Invalid memory allocation. Size must be a power of 2 between 64 and 65536.\n";
+            } else if (os_scheduler->findProcessByName(name)) {
+                std::cout << "Error: Process with that name already exists.\n";
+            } else {
+                Process* proc = create_new_process(name, mem_size);
+                if (proc) {
+                    proc->runScreenInterface();
+                }
+            }
+        }
         system("pause");
     } else if (choice.rfind("screen -r", 0) == 0){ 
         if (!os_scheduler) {
@@ -594,8 +645,7 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
         }
         std::string raw_instructions = choice.substr(first_quote + 1, last_quote - first_quote - 1);
 
-        bool is_power_of_two = (mem_size > 0) && ((mem_size & (mem_size - 1)) == 0);
-        if (mem_size < 64 || mem_size > 65536 || !is_power_of_two) {
+        if (!isValidProcessMemory(mem_size)) {
             std::cout << "Error: Invalid memory allocation. Size must be a power of 2 between 64 and 65536.\n";
             system("pause");
             return;
