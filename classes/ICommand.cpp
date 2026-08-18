@@ -25,12 +25,12 @@ PRINT::PRINT(const std::string& msg, const std::string& varName)
 void PRINT::execute(Process& process) {
 
     std::string messageContent;
+    // Combined must be checked first and exclusively: it also sets isVariable,
+    // so a plain "if" here would let the next branch overwrite the result.
     if (isCombined) {
         uint16_t value = process.getVariableValue(variableName);
         messageContent = message + std::to_string(value);
-    }
-
-    if (isVariable && !variableName.empty()) {
+    } else if (isVariable && !variableName.empty()) {
         uint16_t value = process.getVariableValue(variableName);
         messageContent = variableName + " = " + std::to_string(value);
     } else if (!message.empty()) {

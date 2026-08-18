@@ -192,10 +192,29 @@ ICommand* generateRandomInstruction() {
             return new UNKNOWN;
     }
 }
-// Per MO2: process memory must be a power of 2 within [2^6, 2^16] bytes.
+// Accepts a memory size only if it is a power of 2 within [64, 65536] bytes.
 bool isValidProcessMemory(size_t mem_size) {
     bool is_power_of_two = (mem_size > 0) && ((mem_size & (mem_size - 1)) == 0);
     return is_power_of_two && mem_size >= 64 && mem_size <= 65536;
+}
+
+// Helper function : converts \" to " and \\ to \ so instruction strings can carry quoted
+// literals inside an already-quoted argument.
+std::string unescapeInstructionString(const std::string& input) {
+    std::string out;
+    out.reserve(input.size());
+
+    for (size_t i = 0; i < input.size(); ++i) {
+        if (input[i] == '\\' && i + 1 < input.size() &&
+            (input[i + 1] == '"' || input[i + 1] == '\\')) {
+            out += input[i + 1];
+            ++i;
+        } else {
+            out += input[i];
+        }
+    }
+
+    return out;
 }
 
 std::string parseStringLiteral(const std::string& input) {
@@ -293,8 +312,16 @@ std::vector<std::unique_ptr<ICommand>> parseInstructionString(const std::string&
                     std::string varName;
                     token_stream >> varName;
 
-                    token_stream >> paren;
-                    if (paren != ')') return {};
+                    // remove trailing ')' if glued to variable name ex: PRINT("Hello" + varC)
+                    // otherwise read and validate ')' from the stream
+                    if (!varName.empty() && varName.back() == ')') {
+                        varName.pop_back();
+                    } else {
+                        token_stream >> paren;
+                        if (paren != ')') return {};
+                    }
+
+                    if (varName.empty()) return {};
 
                     program.push_back(std::make_unique<PRINT>(literal, varName));
 
@@ -309,8 +336,15 @@ std::vector<std::unique_ptr<ICommand>> parseInstructionString(const std::string&
                 std::string varName;
                 token_stream >> varName;
 
-                token_stream >> paren;
-                if (paren != ')') return {};
+                // Same paren-gluing case as above: PRINT(varC) yields "varC)".
+                if (!varName.empty() && varName.back() == ')') {
+                    varName.pop_back();
+                } else {
+                    token_stream >> paren;
+                    if (paren != ')') return {};
+                }
+
+                if (varName.empty()) return {};
 
                 program.push_back(std::make_unique<PRINT>(varName));
             }
@@ -643,7 +677,8 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
             system("pause");
             return;
         }
-        std::string raw_instructions = choice.substr(first_quote + 1, last_quote - first_quote - 1);
+        std::string raw_instructions =
+            unescapeInstructionString(choice.substr(first_quote + 1, last_quote - first_quote - 1));
 
         if (!isValidProcessMemory(mem_size)) {
             std::cout << "Error: Invalid memory allocation. Size must be a power of 2 between 64 and 65536.\n";
