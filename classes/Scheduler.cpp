@@ -237,10 +237,23 @@ class Scheduler {
 
         int required_page = -1;
         if (auto* read_cmd = dynamic_cast<READ*>(command.get())) {
+
+            // bounds check run before the page table is consulted
+            // an address past the process's memory maps to a page number
+            // the table does not have, which would throw exceptions and crash
+            // the emulator
+            if (read_cmd->getAddress() >= process.getMemorySize()) {
+                process.terminateWithViolation(read_cmd->getAddress());
+                return false;
+            }
             required_page = read_cmd->getRequiredPage(mmu->getPageSize());
 
         } else if (auto* write_cmd = dynamic_cast<WRITE*>(command.get())) {
 
+            if (write_cmd->getAddress() >= process.getMemorySize()) {
+                process.terminateWithViolation(write_cmd->getAddress());
+                return false;
+            }
             required_page = write_cmd->getRequiredPage(mmu->getPageSize());
 
         } else {

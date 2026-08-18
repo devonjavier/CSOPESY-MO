@@ -600,12 +600,25 @@ void accept_main_menu_input(std::string choice, OSState* current, Process** acti
 
                 if (proc_to_resume) {
 
+                    // a process killed by a bad memory access reports the fault
+                    // instead of opening its screen.
+                    if (proc_to_resume->wasTerminatedByViolation()) {
+                        std::cout << "Process " << proc_to_resume->getProcessName()
+                                  << " shut down due to memory access violation error that occurred at "
+                                  << proc_to_resume->getViolationTime() << ". "
+                                  << proc_to_resume->getViolationAddress() << " invalid.\n";
+                        system("pause");
+                        clear_screen();
+                        screen_init();
+                        return;
+                    }
+
                     proc_to_resume->runScreenInterface();
-                    
-   
+
+
                     clear_screen();
                     screen_init();
-                    return; 
+                    return;
                 } else {
                     std::cout << "Process '" << name << "' not found.\n";
                     system("pause");
