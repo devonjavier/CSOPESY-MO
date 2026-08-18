@@ -3,17 +3,15 @@
 
 #include <string>
 
+class Process;
+
 void initialize();
 void screen_init();
 void scheduler_start();
 void scheduler_stop();
 void report_util();
 void clear_screen();
-void exit_os(int status);
-bool accept_input(std::string, ScreenSession*);
+bool accept_input(std::string, Process*);
 void menu();
-
-
-
 
 #endif

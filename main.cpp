@@ -3,12 +3,11 @@
 /*
     BALINGIT, JAVIER, RAMOS
 
- * Task: MCO1
- */
+*/
 
 
 int main() {
+    srand(time(NULL));
     menu();
-    exit_os(0);
     return 0;
 }
