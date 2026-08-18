@@ -346,3 +346,30 @@ std::string Process::getTerminationReason() const {
     return termination_reason;
 }
 
+void Process::terminateWithViolation(uint32_t address) {
+    std::stringstream addr_ss;
+    addr_ss << "0x" << std::hex << std::uppercase << address;
+    this->violation_address = addr_ss.str();
+
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    char buffer[16];
+    std::strftime(buffer, sizeof(buffer), "%H:%M:%S", std::localtime(&now_time));
+    this->violation_time = buffer;
+
+    this->terminated_by_violation = true;
+    terminate("Memory access violation at " + this->violation_address);
+}
+
+bool Process::wasTerminatedByViolation() const {
+    return terminated_by_violation;
+}
+
+std::string Process::getViolationTime() const {
+    return violation_time;
+}
+
+std::string Process::getViolationAddress() const {
+    return violation_address;
+}
+

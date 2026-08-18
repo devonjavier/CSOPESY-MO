@@ -51,10 +51,13 @@ private:
 
     size_t memory_size; 
     std::unique_ptr<PageTable> page_table;
-    std::string termination_reason = ""; 
+    std::string termination_reason = "";
 
+    bool terminated_by_violation = false;
+    std::string violation_time = "";
+    std::string violation_address = "";
 
-    std::string creation_timestamp_str; 
+    std::string creation_timestamp_str;
 
     std::vector<uint16_t> memory_space;
 
@@ -105,8 +108,14 @@ public:
     void setCurrentCoreId(int coreId);
     void setState(ProcessState newState);
     bool setVariable(const std::string& name, uint16_t value);
-    void terminate(const std::string& reason); 
+    void terminate(const std::string& reason);
     std::string getTerminationReason() const;
+
+    // Records an out-of-range memory access and terminates the process.
+    void terminateWithViolation(uint32_t address);
+    bool wasTerminatedByViolation() const;
+    std::string getViolationTime() const;   // HH:MM:SS
+    std::string getViolationAddress() const; // e.g. "0x900"
 
     std::string formatTime(const std::chrono::time_point<std::chrono::system_clock>& tp);
     void displayInstructionList() const;
